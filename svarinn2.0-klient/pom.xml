@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>svarinn2.0-klient</artifactId>
+    <groupId>no.ks.fiks</groupId>
+    <version>1.0.0-SNAPSHOT</version>
+
+    <dependencies>
+        <dependency>
+            <groupId>no.difi.commons</groupId>
+            <artifactId>commons-asic</artifactId>
+            <version>0.9.3</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-codegen-maven-plugin</artifactId>
+                <version>2.3.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>
+                                ${project.build.directory}/api/${serviceName}-service-${serviceVersion}-${serviceName}-api-${apiVersion}.json
+                            </inputSpec>
+                            <language>java</language>
+                            <generateApiTests>false</generateApiTests>
+                            <generateModelTests>false</generateModelTests>
+
+                            <configOptions>
+                                <library>feign</library>
+                                <dateLibrary>java8</dateLibrary>
+                                <sourceFolder>src/main/java/</sourceFolder>
+                                <addCompileSourceRoot>false</addCompileSourceRoot>
+                                <groupId>${serviceGroupId}</groupId>
+                                <artifactId>${apiArtifactId}-${apiVersion}</artifactId>
+                                <artifactVersion>${serviceVersion}</artifactVersion>
+                                <modelPackage>${apiBasePackage}.model.${apiVersion}</modelPackage>
+                                <apiPackage>${apiBasePackage}.api.${apiVersion}</apiPackage>
+                                <invokerPackage>${apiBasePackage}.invoker.${apiVersion}</invokerPackage>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

@@ -1,0 +1,9 @@
+{
+  "hideGenerationTimestamp":true,
+  "groupId":"no.ks.fiks",
+  "artifactId":"mottak-api-client",
+  "artifactDescription":"mottak-api-client",
+  "invokerPackage":"no.ks.fiks.klient.mottak.invoker.v1",
+  "apiPackage":"no.ks.fiks.klient.mottak.api.v1",
+  "modelPackage":"no.ks.fiks.klient.mottak.model.v1"
+}
