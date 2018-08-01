@@ -1,4 +1,4 @@
 *.iml
 .idea
 target
-mottak/*
+mottak-api-client/*
