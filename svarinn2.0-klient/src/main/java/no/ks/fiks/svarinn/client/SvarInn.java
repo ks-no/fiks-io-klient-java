@@ -6,11 +6,10 @@ import no.ks.fiks.amqp.RabbitMqHeaders;
 import no.ks.fiks.klient.mottak.api.v1.SvarInnMeldingApi;
 import no.ks.fiks.klient.mottak.model.v1.BadRequestKvittering;
 import no.ks.fiks.klient.mottak.model.v1.FeiletKvittering;
-import no.ks.fiks.klient.mottak.model.v1.Melding;
 import no.ks.fiks.klient.mottak.model.v1.MottattKvittering;
+import org.apache.commons.io.IOUtils;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.util.UUID;
 
 @Slf4j
@@ -33,21 +32,10 @@ public class SvarInn {
         }
     }
 
-    public void sendMelding(UUID mottakerid, UUID korrelasjonId, String message, UUID avsenderId) {
-        sendMelding(mottakerid, korrelasjonId, message, avsenderId, null);
-    }
-
-    public void sendMelding(UUID mottakerid, UUID korrelasjonId, String message, UUID avsenderId, Long ttl) {
-        final Melding body = new Melding()
-                .contentType("application/json")
-                .korrelasjonId(korrelasjonId)
-                .meldingType("test.type")
-                .melding(message)
-                .avsenderId(avsenderId)
-                .meldingsMottakerId(mottakerid)
-                .ttl(ttl);
-
-        svarInnMeldingApi.sendMelding( body);
+    public void sendMelding(UUID mottakerid, UUID korrelasjonId, byte[] message, UUID avsenderId, Long ttl) throws IOException {
+        final File pdf = File.createTempFile(UUID.randomUUID().toString(), "pdf");
+        IOUtils.write(message, new FileOutputStream(pdf));
+        svarInnMeldingApi.sendMelding(avsenderId.toString(), mottakerid.toString(), "meldingstype", ttl, pdf,null);
     }
 
     public void sendKvitteringMottatt(UUID correlationId, UUID avsenderId, UUID kvitteringsMottakerId) {
@@ -102,16 +90,12 @@ public class SvarInn {
                         }
                     } else {
 
-                        final Melding melding = new Melding()
+                        final Melding melding = Melding.builder()
                                 .korrelasjonId(UUID.fromString(properties.getCorrelationId()))
                                 .avsenderId(UUID.fromString(String.valueOf(properties.getHeaders().get(RabbitMqHeaders.AVSENDER_ID))))
-                                .meldingType(String.valueOf(properties.getHeaders().get(RabbitMqHeaders.MELDING_TYPE)));
+                                .meldingType(String.valueOf(properties.getHeaders().get(RabbitMqHeaders.MELDING_TYPE)))
+                            .melding(body).build();
 
-                        try {
-                            melding.setMelding(new String(body, "UTF-8"));
-                        } catch (UnsupportedEncodingException e) {
-                            throw new RuntimeException(e);
-                        }
 
                         consumer.handleMessage(melding);
                         try {
