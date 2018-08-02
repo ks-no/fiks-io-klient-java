@@ -4,6 +4,8 @@ import com.rabbitmq.client.*;
 import lombok.extern.slf4j.Slf4j;
 import no.ks.fiks.amqp.RabbitMqHeaders;
 import no.ks.fiks.klient.mottak.api.v1.SvarInnMeldingApi;
+import no.ks.fiks.klient.mottak.model.v1.BadRequestKvittering;
+import no.ks.fiks.klient.mottak.model.v1.FeiletKvittering;
 import no.ks.fiks.klient.mottak.model.v1.Melding;
 import no.ks.fiks.klient.mottak.model.v1.MottattKvittering;
 
@@ -54,6 +56,27 @@ public class SvarInn {
                 .avsenderId(avsenderId)
                 .kvitteringsMottakerId(kvitteringsMottakerId);
         svarInnMeldingApi.kvitterMottatt(kvittering);
+
+    }
+
+    public void sendKvitteringBadRequest(UUID correlationId, UUID avsenderId, UUID kvitteringsMottakerId, String feilid, String melding) {
+        final BadRequestKvittering kvittering = new BadRequestKvittering()
+                .korrelasjonId(correlationId)
+                .avsenderId(avsenderId)
+                .kvitteringsMottakerId(kvitteringsMottakerId)
+                .feilid(feilid)
+                .melding(melding);
+        svarInnMeldingApi.kvitterBadRequest(kvittering);
+
+    }
+    public void sendKvitteringFeilet(UUID correlationId, UUID avsenderId, UUID kvitteringsMottakerId, String feilid, String melding) {
+        final FeiletKvittering kvittering = new FeiletKvittering()
+                .korrelasjonId(correlationId)
+                .avsenderId(avsenderId)
+                .kvitteringsMottakerId(kvitteringsMottakerId)
+                .feilid(feilid)
+                .melding(melding);
+        svarInnMeldingApi.kvitterFeilet(kvittering);
 
     }
 
