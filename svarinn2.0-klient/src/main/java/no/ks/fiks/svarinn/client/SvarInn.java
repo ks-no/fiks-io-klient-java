@@ -35,7 +35,7 @@ public class SvarInn {
     public void sendMelding(UUID mottakerid, UUID korrelasjonId, byte[] message, UUID avsenderId, Long ttl) throws IOException {
         final File pdf = File.createTempFile(UUID.randomUUID().toString(), "pdf");
         IOUtils.write(message, new FileOutputStream(pdf));
-        svarInnMeldingApi.sendMelding(avsenderId.toString(), mottakerid.toString(), "meldingstype", ttl, pdf,null);
+        svarInnMeldingApi.sendMelding(avsenderId.toString(), mottakerid.toString(), "meldingstype", ttl, null, pdf);
     }
 
     public void sendKvitteringMottatt(UUID correlationId, UUID avsenderId, UUID kvitteringsMottakerId) {
