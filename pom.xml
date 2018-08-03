@@ -12,4 +12,5 @@
         <module>svarinn2.0-klient</module>
         <module>mottak-api-client</module>
     </modules>
+
 </project>

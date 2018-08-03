@@ -45,7 +45,7 @@ pipeline {
             }
 
             steps {
-                sh "mvn enforcer:enforce@validate-snap"
+                sh "cd svarinn2.0-klient && mvn enforcer:enforce@validate-snap"
             }
         }
 
