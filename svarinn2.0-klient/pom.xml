@@ -35,6 +35,20 @@
             <version>2.6</version>
         </dependency>
     </dependencies>
+    <distributionManagement>
+        <repository>
+            <uniqueVersion>false</uniqueVersion>
+            <id>ks-nexus</id>
+            <name>KS Repository</name>
+            <url>http://ksjenkins1-u.usrv.ubergenkom.no:8082/repository/ks-nexus/</url>
+        </repository>
+        <snapshotRepository>
+            <uniqueVersion>true</uniqueVersion>
+            <id>ks-nexus-snapshot</id>
+            <name>KS Snapshots</name>
+            <url>http://ksjenkins1-u.usrv.ubergenkom.no:8082/repository/ks-nexus-snapshot/</url>
+        </snapshotRepository>
+    </distributionManagement>
     <build>
         <plugins>
             <plugin>
