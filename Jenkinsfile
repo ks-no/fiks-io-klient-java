@@ -25,7 +25,7 @@ pipeline {
         stage('generate api') {
             steps {
 
-                sh 'generateFeignClient.sh'
+                sh './generateFeignClient.sh'
             }
         }
 
