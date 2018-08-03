@@ -69,7 +69,7 @@ pipeline {
 
         stage('Deploy artifacts') {
             steps {
-                sh 'mvn -U -B -Dmaven.install.skip=true deploy'
+                sh 'cd svarinn2.0-klient && mvn -U -B -Dmaven.install.skip=true deploy'
             }
         }
 
