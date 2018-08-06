@@ -8,7 +8,7 @@ import java.util.UUID;
 @Data
 @Builder
 public class Melding {
-    private final UUID korrelasjonId;
+    private final UUID meldingId;
     private final UUID avsenderId;
     private final String meldingType;
     private final byte[] melding;

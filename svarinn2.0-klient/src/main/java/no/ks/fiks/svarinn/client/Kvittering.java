@@ -7,7 +7,7 @@ import java.util.UUID;
 @Data
 public class Kvittering {
     private final UUID avsenderId;
-    private final UUID korrelasjonId;
+    private final UUID meldingId;
     private final String type;
     private final byte[] body;
 }
