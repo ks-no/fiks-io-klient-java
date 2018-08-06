@@ -33,6 +33,14 @@ public class SvarInn {
         }
     }
 
+    public UUID sendMelding(UUID mottakerid, UUID svarPaMelding, byte[] message, UUID avsenderId) throws IOException {
+        return sendMelding(mottakerid, svarPaMelding, message, avsenderId, (long) (60 * 60 * 2 * 24));
+    }
+
+    public UUID sendMelding(UUID mottakerid, byte[] message, UUID avsenderId) throws IOException {
+        return sendMelding(mottakerid, null, message, avsenderId);
+    }
+
     public UUID sendMelding(UUID mottakerid, UUID svarPaMelding, byte[] message, UUID avsenderId, Long ttl) throws IOException {
         final File pdf = File.createTempFile(UUID.randomUUID().toString(), "pdf");
         IOUtils.write(message, new FileOutputStream(pdf));
@@ -59,6 +67,7 @@ public class SvarInn {
         svarInnMeldingApi.kvitterBadRequest(kvittering);
 
     }
+
     public void sendKvitteringFeilet(UUID correlationId, UUID avsenderId, UUID kvitteringsMottakerId, String feilid, String melding) {
         final FeiletKvittering kvittering = new FeiletKvittering()
                 .kvitteringForMeldingId(correlationId)
@@ -96,7 +105,8 @@ public class SvarInn {
                                 .meldingId(UUID.fromString(String.valueOf(properties.getHeaders().get(RabbitMqHeaders.MELDING_ID))))
                                 .avsenderId(UUID.fromString(String.valueOf(properties.getHeaders().get(RabbitMqHeaders.AVSENDER_ID))))
                                 .meldingType(String.valueOf(properties.getHeaders().get(RabbitMqHeaders.MELDING_TYPE)))
-                            .melding(body).build();
+                                .svarPaMelding(properties.getHeaders().get(RabbitMqHeaders.SVAR_PA_MELDING_ID) != null ? UUID.fromString(String.valueOf(properties.getHeaders().get(RabbitMqHeaders.SVAR_PA_MELDING_ID))) : null)
+                                .melding(body).build();
 
 
                         consumer.handleMessage(melding);
