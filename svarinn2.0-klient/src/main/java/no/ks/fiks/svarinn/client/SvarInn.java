@@ -1,13 +1,14 @@
 package no.ks.fiks.svarinn.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Optional;
 import com.rabbitmq.client.*;
+import jdk.nashorn.internal.ir.CatchNode;
 import lombok.extern.slf4j.Slf4j;
+import no.ks.fiks.amqp.MeldingsType;
 import no.ks.fiks.amqp.RabbitMqHeaders;
 import no.ks.fiks.klient.mottak.api.v1.SvarInnMeldingApi;
-import no.ks.fiks.klient.mottak.model.v1.BadRequestKvittering;
-import no.ks.fiks.klient.mottak.model.v1.FeiletKvittering;
-import no.ks.fiks.klient.mottak.model.v1.MeldingRespons;
-import no.ks.fiks.klient.mottak.model.v1.MottattKvittering;
+import no.ks.fiks.klient.mottak.model.v1.*;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
@@ -86,12 +87,24 @@ public class SvarInn {
                 public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) {
                     if (String.valueOf(properties.getHeaders().get(RabbitMqHeaders.MELDING_TYPE)).startsWith("kvittering.")) {
                         Object avsenderId = properties.getHeaders().get(RabbitMqHeaders.AVSENDER_ID);
-
+                        log.info("Kvittering mottat, headers:" + properties.getHeaders());
                         final Kvittering kvittering = new Kvittering(
                                 UUID.fromString(avsenderId.toString()),
-                                UUID.fromString(properties.getCorrelationId()),
-                                String.valueOf(properties.getHeaders().get(RabbitMqHeaders.MELDING_TYPE)),
-                                body);
+                                UUID.fromString(String.valueOf(properties.getHeaders().get(RabbitMqHeaders.KVITTERING_FOR_MELDING))),
+                                String.valueOf(properties.getHeaders().get(RabbitMqHeaders.MELDING_TYPE)));
+                        try{
+                            if (MeldingsType.KVITTERING_BAD_REQUEST.equals(kvittering.getType())) {
+                                kvittering.setBadRequestKvittering(new ObjectMapper().readValue(body, BadRequestKvittering.class));
+                            } else if(MeldingsType.KVITTERING_FEILET.equals(kvittering.getType())){
+                                kvittering.setFeiletKvittering(new ObjectMapper().readValue(body, FeiletKvittering.class));
+                            } else if(MeldingsType.KVITTERING_MOTTATT.equals(kvittering.getType())){
+                                kvittering.setMottattKvittering(new ObjectMapper().readValue(body, MottattKvittering.class));
+                            } else if(MeldingsType.KVITTERING_TIMEOUT.equals(kvittering.getType())){
+                                kvittering.setExpiredKvittering(new ObjectMapper().readValue(body, ExpiredKvittering.class));
+                            }
+                        } catch (Exception e){
+                            throw new RuntimeException(e);
+                        }
 
                         kvitteringConsumer.handleKvittering(kvittering);
                         try {
@@ -105,9 +118,8 @@ public class SvarInn {
                                 .meldingId(UUID.fromString(String.valueOf(properties.getHeaders().get(RabbitMqHeaders.MELDING_ID))))
                                 .avsenderId(UUID.fromString(String.valueOf(properties.getHeaders().get(RabbitMqHeaders.AVSENDER_ID))))
                                 .meldingType(String.valueOf(properties.getHeaders().get(RabbitMqHeaders.MELDING_TYPE)))
-                                .svarPaMelding(properties.getHeaders().get(RabbitMqHeaders.SVAR_PA_MELDING_ID) != null ? UUID.fromString(String.valueOf(properties.getHeaders().get(RabbitMqHeaders.SVAR_PA_MELDING_ID))) : null)
-                                .melding(body).build();
-
+                                .svarPaMelding(Optional.fromNullable(properties.getHeaders().get(RabbitMqHeaders.SVAR_PA_MELDING_ID)).transform(v -> UUID.fromString(String.valueOf(v))).orNull())
+                        .melding(body).build();
 
                         consumer.handleMessage(melding);
                         try {
