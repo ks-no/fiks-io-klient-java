@@ -1,4 +1,4 @@
-package no.ks.fiks.svarinn.client;
+package no.ks.fiks.svarinn.client.model;
 
 import lombok.Data;
 import no.ks.fiks.klient.mottak.model.v1.BadRequestKvittering;

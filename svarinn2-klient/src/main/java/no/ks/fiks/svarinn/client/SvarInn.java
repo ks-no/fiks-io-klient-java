@@ -8,6 +8,8 @@ import no.ks.fiks.amqp.MeldingsType;
 import no.ks.fiks.amqp.RabbitMqHeaders;
 import no.ks.fiks.klient.mottak.api.v1.SvarInnApi;
 import no.ks.fiks.klient.mottak.model.v1.*;
+import no.ks.fiks.svarinn.client.model.Kvittering;
+import no.ks.fiks.svarinn.client.model.Melding;
 import org.apache.commons.io.IOUtils;
 
 import java.io.File;
@@ -79,7 +81,7 @@ public class SvarInn {
 
     }
 
-    public void consume(UUID mottakerid, final SvarInnMessageConsumer consumer, final SvarInnKvitteringConsumer kvitteringConsumer) {
+    public void consume(UUID mottakerid, final SvarInnMeldingConsumer consumer, final SvarInnKvitteringConsumer kvitteringConsumer) {
         try {
             channel.basicConsume(mottakerid.toString(), new DefaultConsumer(channel) {
                 @Override
