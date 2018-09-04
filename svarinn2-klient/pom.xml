@@ -21,7 +21,7 @@
         </dependency>
         <dependency>
             <groupId>no.ks.fiks</groupId>
-            <artifactId>mottak-api-client</artifactId>
+            <artifactId>svarinn2-api-client</artifactId>
             <version>1.0.0</version>
         </dependency>
         <dependency>

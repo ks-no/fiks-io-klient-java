@@ -1,10 +1,10 @@
 package no.ks.fiks.svarinn.client.model;
 
 import lombok.Data;
-import no.ks.fiks.klient.mottak.model.v1.BadRequestKvittering;
-import no.ks.fiks.klient.mottak.model.v1.ExpiredKvittering;
-import no.ks.fiks.klient.mottak.model.v1.FeiletKvittering;
-import no.ks.fiks.klient.mottak.model.v1.MottattKvittering;
+import no.ks.fiks.klient.svarinn2.model.v1.BadRequestKvittering;
+import no.ks.fiks.klient.svarinn2.model.v1.ExpiredKvittering;
+import no.ks.fiks.klient.svarinn2.model.v1.FeiletKvittering;
+import no.ks.fiks.klient.svarinn2.model.v1.MottattKvittering;
 
 import java.util.UUID;
 
