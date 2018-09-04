@@ -3,28 +3,28 @@ package no.ks.fiks.svarinn.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
 import com.rabbitmq.client.*;
-import jdk.nashorn.internal.ir.CatchNode;
 import lombok.extern.slf4j.Slf4j;
 import no.ks.fiks.amqp.MeldingsType;
 import no.ks.fiks.amqp.RabbitMqHeaders;
-import no.ks.fiks.klient.mottak.api.v1.SvarInnMeldingApi;
+import no.ks.fiks.klient.mottak.api.v1.SvarInnApi;
 import no.ks.fiks.klient.mottak.model.v1.*;
 import org.apache.commons.io.IOUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.UUID;
 
 @Slf4j
 public class SvarInn {
     private ConnectionFactory factory;
-    private SvarInnMeldingApi svarInnMeldingApi;
+    private SvarInnApi svarInnApi;
     private Connection connection;
     private Channel channel;
 
-
-    public SvarInn(ConnectionFactory factory, SvarInnMeldingApi svarInnMeldingApi) {
+    public SvarInn(ConnectionFactory factory, SvarInnApi svarInnApi) {
         this.factory = factory;
-        this.svarInnMeldingApi = svarInnMeldingApi;
+        this.svarInnApi = svarInnApi;
         try {
             connection = factory.newConnection();
             channel = connection.createChannel();
@@ -45,7 +45,7 @@ public class SvarInn {
     public UUID sendMelding(UUID mottakerid, UUID svarPaMelding, byte[] message, UUID avsenderId, Long ttl) throws IOException {
         final File pdf = File.createTempFile(UUID.randomUUID().toString(), "pdf");
         IOUtils.write(message, new FileOutputStream(pdf));
-        final MeldingRespons melding = svarInnMeldingApi.sendMelding(avsenderId.toString(), mottakerid.toString(), "meldingstype", ttl, pdf, svarPaMelding != null ? svarPaMelding.toString() : null);
+        final MeldingRespons melding = svarInnApi.sendMelding(avsenderId.toString(), mottakerid.toString(), "meldingstype", ttl, pdf, svarPaMelding != null ? svarPaMelding.toString() : null);
         return melding.getMeldingId();
     }
 
@@ -54,8 +54,7 @@ public class SvarInn {
                 .kvitteringForMeldingId(meldingId)
                 .avsenderId(avsenderId)
                 .kvitteringsMottakerId(kvitteringsMottakerId);
-        svarInnMeldingApi.kvitterMottatt(kvittering);
-
+        svarInnApi.kvitterMottatt(kvittering);
     }
 
     public void sendKvitteringBadRequest(UUID correlationId, UUID avsenderId, UUID kvitteringsMottakerId, String feilid, String melding) {
@@ -65,7 +64,7 @@ public class SvarInn {
                 .kvitteringsMottakerId(kvitteringsMottakerId)
                 .feilid(feilid)
                 .melding(melding);
-        svarInnMeldingApi.kvitterBadRequest(kvittering);
+        svarInnApi.kvitterBadRequest(kvittering);
 
     }
 
@@ -76,7 +75,7 @@ public class SvarInn {
                 .kvitteringsMottakerId(kvitteringsMottakerId)
                 .feilid(feilid)
                 .melding(melding);
-        svarInnMeldingApi.kvitterFeilet(kvittering);
+        svarInnApi.kvitterFeilet(kvittering);
 
     }
 
@@ -92,17 +91,17 @@ public class SvarInn {
                                 UUID.fromString(avsenderId.toString()),
                                 UUID.fromString(String.valueOf(properties.getHeaders().get(RabbitMqHeaders.KVITTERING_FOR_MELDING))),
                                 String.valueOf(properties.getHeaders().get(RabbitMqHeaders.MELDING_TYPE)));
-                        try{
+                        try {
                             if (MeldingsType.KVITTERING_BAD_REQUEST.equals(kvittering.getType())) {
                                 kvittering.setBadRequestKvittering(new ObjectMapper().readValue(body, BadRequestKvittering.class));
-                            } else if(MeldingsType.KVITTERING_FEILET.equals(kvittering.getType())){
+                            } else if (MeldingsType.KVITTERING_FEILET.equals(kvittering.getType())) {
                                 kvittering.setFeiletKvittering(new ObjectMapper().readValue(body, FeiletKvittering.class));
-                            } else if(MeldingsType.KVITTERING_MOTTATT.equals(kvittering.getType())){
+                            } else if (MeldingsType.KVITTERING_MOTTATT.equals(kvittering.getType())) {
                                 kvittering.setMottattKvittering(new ObjectMapper().readValue(body, MottattKvittering.class));
-                            } else if(MeldingsType.KVITTERING_TIMEOUT.equals(kvittering.getType())){
+                            } else if (MeldingsType.KVITTERING_TIMEOUT.equals(kvittering.getType())) {
                                 kvittering.setExpiredKvittering(new ObjectMapper().readValue(body, ExpiredKvittering.class));
                             }
-                        } catch (Exception e){
+                        } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
 
@@ -119,7 +118,7 @@ public class SvarInn {
                                 .avsenderId(UUID.fromString(String.valueOf(properties.getHeaders().get(RabbitMqHeaders.AVSENDER_ID))))
                                 .meldingType(String.valueOf(properties.getHeaders().get(RabbitMqHeaders.MELDING_TYPE)))
                                 .svarPaMelding(Optional.fromNullable(properties.getHeaders().get(RabbitMqHeaders.SVAR_PA_MELDING_ID)).transform(v -> UUID.fromString(String.valueOf(v))).orNull())
-                        .melding(body).build();
+                                .melding(body).build();
 
                         consumer.handleMessage(melding);
                         try {

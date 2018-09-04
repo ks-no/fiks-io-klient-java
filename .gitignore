@@ -1,4 +1,4 @@
 *.iml
 .idea
 target
-mottak-api-client/*
+svarinn2-api-client/*
