@@ -45,7 +45,7 @@ pipeline {
             }
 
             steps {
-                sh "cd svarinn2.0-klient && mvn enforcer:enforce@validate-snap"
+                sh "cd svarinn2-klient && mvn enforcer:enforce@validate-snap"
             }
         }
 
@@ -69,7 +69,7 @@ pipeline {
 
         stage('Deploy artifacts') {
             steps {
-                sh 'cd svarinn2.0-klient && mvn -U -B -Dmaven.install.skip=true deploy'
+                sh 'cd svarinn2-klient && mvn -U -B -Dmaven.install.skip=true deploy'
             }
         }
 
