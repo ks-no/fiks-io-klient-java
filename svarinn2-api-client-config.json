@@ -1,9 +1,0 @@
-{
-  "hideGenerationTimestamp":true,
-  "groupId":"no.ks.fiks",
-  "artifactId":"svarinn2-api-client",
-  "artifactDescription":"svarinn2-api-client",
-  "invokerPackage":"no.ks.fiks.klient.svarinn2.invoker.v1",
-  "apiPackage":"no.ks.fiks.klient.svarinn2.api.v1",
-  "modelPackage":"no.ks.fiks.klient.svarinn2.model.v1"
-}

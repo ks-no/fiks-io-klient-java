@@ -9,7 +9,9 @@ import no.ks.fiks.amqp.RabbitMqHeaders;
 import no.ks.fiks.klient.svarinn2.api.v1.SvarInnApi;
 import no.ks.fiks.klient.svarinn2.model.v1.*;
 import no.ks.fiks.svarinn.client.model.Kvittering;
-import no.ks.fiks.svarinn.client.model.Melding;
+import no.ks.fiks.svarinn.client.model.MeldingSpesifikasjon;
+import no.ks.fiks.svarinn2.model.MeldingsType;
+import no.ks.fiks.svarinn2.model.RabbitMqHeaders;
 import org.apache.commons.io.IOUtils;
 
 import java.io.File;
@@ -24,9 +26,10 @@ public class SvarInn {
     private Connection connection;
     private Channel channel;
 
-    public SvarInn(ConnectionFactory factory, SvarInnApi svarInnApi) {
-        this.factory = factory;
-        this.svarInnApi = svarInnApi;
+
+    public SvarInn(SvarInn2Settings settings) {
+        this.factory = settings.getRabbitMqConnectionFactory();
+        this.svarInnApi = settings.getSvarInn2Api();
         try {
             connection = factory.newConnection();
             channel = connection.createChannel();
@@ -67,7 +70,6 @@ public class SvarInn {
                 .feilid(feilid)
                 .melding(melding);
         svarInnApi.kvitterBadRequest(kvittering);
-
     }
 
     public void sendKvitteringFeilet(UUID correlationId, UUID avsenderId, UUID kvitteringsMottakerId, String feilid, String melding) {
@@ -78,7 +80,6 @@ public class SvarInn {
                 .feilid(feilid)
                 .melding(melding);
         svarInnApi.kvitterFeilet(kvittering);
-
     }
 
     public void consume(UUID mottakerid, final SvarInnMeldingConsumer consumer, final SvarInnKvitteringConsumer kvitteringConsumer) {
@@ -115,14 +116,14 @@ public class SvarInn {
                         }
                     } else {
 
-                        final Melding melding = Melding.builder()
+                        final MeldingSpesifikasjon melding = MeldingSpesifikasjon.builder()
                                 .meldingId(UUID.fromString(String.valueOf(properties.getHeaders().get(RabbitMqHeaders.MELDING_ID))))
                                 .avsenderId(UUID.fromString(String.valueOf(properties.getHeaders().get(RabbitMqHeaders.AVSENDER_ID))))
                                 .meldingType(String.valueOf(properties.getHeaders().get(RabbitMqHeaders.MELDING_TYPE)))
                                 .svarPaMelding(Optional.fromNullable(properties.getHeaders().get(RabbitMqHeaders.SVAR_PA_MELDING_ID)).transform(v -> UUID.fromString(String.valueOf(v))).orNull())
                                 .melding(body).build();
 
-                        consumer.handleMessage(melding);
+                        consumer.prosesserMelding(melding);
                         try {
                             channel.basicAck(envelope.getDeliveryTag(), false);
                         } catch (IOException e) {
@@ -136,7 +137,6 @@ public class SvarInn {
         }
     }
 
-
     public void close() throws IOException {
         try {
             channel.waitForConfirms();
@@ -146,5 +146,20 @@ public class SvarInn {
         }
 
         connection.close();
+    }
+
+    public MeldingId send(MeldingSpesifikasjon meldingSpesifikasjon) {
+    }
+
+    public void subscribe(SubscribeSettings subscribeSettings) {
+
+    }
+
+    public void lookup() {
+
+    }
+
+    public KontoId lookup(String s, String s1, int i) {
+
     }
 }

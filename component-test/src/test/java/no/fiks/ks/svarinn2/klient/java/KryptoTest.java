@@ -1,12 +1,12 @@
-/*
+
 package no.fiks.ks.svarinn2.klient.java;
 
+import no.difi.asic.*;
 import no.difi.asic.extras.CmsEncryptedAsicReader;
 import no.difi.asic.extras.CmsEncryptedAsicWriter;
 import org.apache.commons.io.IOUtils;
 import org.bouncycastle.cms.CMSAlgorithm;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
@@ -14,8 +14,7 @@ import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class KryptoTest {
     @Test
@@ -61,7 +60,7 @@ public class KryptoTest {
         reader.writeFile(file1);
 
         // Verify no more files are found
-        Assert.assertNull(reader.getNextFile());
+        assertNull(reader.getNextFile());
 
         // Verify certificate used for signing of ASiC is the same as the one used for signing
         //assertEquals(reader.getAsicManifest().getCertificate().get(0).getCertificate(), certificate.getEncoded());
@@ -83,4 +82,4 @@ public class KryptoTest {
         return keyStore;
     }
 }
-*/
+
