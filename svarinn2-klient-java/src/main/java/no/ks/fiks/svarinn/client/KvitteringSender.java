@@ -5,11 +5,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
-import no.ks.fiks.svarinn.client.model.Melding;
+import no.ks.fiks.svarinn.client.model.MottattMelding;
+import no.ks.fiks.svarinn.client.model.SendtMelding;
 import no.ks.fiks.svarinn2.swagger.api.v1.SvarInnApi;
 import no.ks.fiks.svarinn2.swagger.model.v1.MottattKvittering;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.security.cert.X509Certificate;
 
 import static lombok.AccessLevel.NONE;
 
@@ -18,38 +21,40 @@ import static lombok.AccessLevel.NONE;
 @Builder
 public class KvitteringSender {
 
-    @NonNull private Melding meldingSomSkalKvitteres;
+    @NonNull private MottattMelding meldingSomSkalKvitteres;
+    @NonNull private X509Certificate mottakerSertifikat;
     @NonNull private Long deliveryTag;
     @NonNull private SvarInnApi svarInnApi;
     @NonNull private Channel channel;
-    @NonNull private AsicGenerator asicGenerator;
+    @NonNull private AsicHandler asicGenerator;
 
-    public Melding aksepter() {
+    public SendtMelding kvitterAkseptert() {
         no.ks.fiks.svarinn2.swagger.model.v1.Melding respons = svarInnApi.kvitterAkseptert(new MottattKvittering()
                 .avsenderId(this.meldingSomSkalKvitteres.getMottakerKontoId().getUuid())
+                .kvitteringsMottakerId(this.meldingSomSkalKvitteres.getAvsenderKontoId().getUuid())
                 .kvitteringForMeldingId(this.meldingSomSkalKvitteres.getMeldingId().getUuid()));
         ack();
-        return Melding.fromSendResponse(respons);
+        return SendtMelding.fromSendResponse(respons);
     }
 
-    public Melding settFeilet(String melding) {
+    public SendtMelding kvitterFeilet(String melding) {
         no.ks.fiks.svarinn2.swagger.model.v1.Melding respons = svarInnApi.kvitterFeilet(
                 meldingSomSkalKvitteres.getMottakerKontoId().toString(),
                 meldingSomSkalKvitteres.getAvsenderKontoId().toString(),
                 meldingSomSkalKvitteres.getMeldingId().toString(),
-                asicGenerator.encrypt(melding));
+                asicGenerator.encrypt(mottakerSertifikat, new ByteArrayInputStream(melding.getBytes())));
         ack();
-        return Melding.fromSendResponse(respons);
+        return SendtMelding.fromSendResponse(respons);
     }
 
-    public Melding avvist(String melding) {
+    public SendtMelding kvitterAvvist(String melding) {
         no.ks.fiks.svarinn2.swagger.model.v1.Melding respons = svarInnApi.kvitterFeilet(
                 meldingSomSkalKvitteres.getMottakerKontoId().toString(),
                 meldingSomSkalKvitteres.getAvsenderKontoId().toString(),
                 meldingSomSkalKvitteres.getMeldingId().toString(),
-                asicGenerator.encrypt(melding));
+                asicGenerator.encrypt(mottakerSertifikat, new ByteArrayInputStream(melding.getBytes())));
         ack();
-        return Melding.fromSendResponse(respons);
+        return SendtMelding.fromSendResponse(respons);
     }
 
     public void kvitterUtenMelding() {

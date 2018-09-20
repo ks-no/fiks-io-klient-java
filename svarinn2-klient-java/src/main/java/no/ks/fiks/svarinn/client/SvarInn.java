@@ -1,3 +1,4 @@
+/*
 package no.ks.fiks.svarinn.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -163,3 +164,4 @@ public class SvarInn {
 
     }
 }
+*/

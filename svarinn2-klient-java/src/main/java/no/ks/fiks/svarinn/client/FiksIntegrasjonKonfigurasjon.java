@@ -4,12 +4,13 @@ import lombok.Builder;
 import lombok.Value;
 
 import java.io.File;
+import java.security.cert.X509Certificate;
 import java.util.UUID;
 
 @Value
 @Builder
-public class FiksIntegrasjon {
+public class FiksIntegrasjonKonfigurasjon {
     private UUID integrasjonId;
     private String integrasjonPassord;
-    private String virksomhetsertifikat;
+    private X509Certificate virksomhetsertifikat;
 }

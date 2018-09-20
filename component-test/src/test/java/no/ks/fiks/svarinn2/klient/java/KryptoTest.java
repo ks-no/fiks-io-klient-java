@@ -1,5 +1,5 @@
 
-package no.fiks.ks.svarinn2.klient.java;
+package no.ks.fiks.svarinn2.klient.java;
 
 import no.difi.asic.*;
 import no.difi.asic.extras.CmsEncryptedAsicReader;

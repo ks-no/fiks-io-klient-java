@@ -1,11 +1,11 @@
+/*
 package no.ks.fiks.svarinn2.klient;
 
 import com.rabbitmq.client.ConnectionFactory;
 import no.ks.fiks.svarinn.client.*;
 import no.ks.fiks.svarinn.client.model.Konto;
-import no.ks.fiks.svarinn.client.model.Melding;
+import no.ks.fiks.svarinn.client.model.SendtMelding;
 import no.ks.fiks.svarinn.client.model.MeldingRequest;
-import no.ks.fiks.svarinn.client.model.NavKontorId;
 import no.ks.fiks.svarinn2.katalog.swagger.model.v1.Identifikator;
 import no.ks.fiks.svarinn2.swagger.api.v1.SvarInnApi;
 import no.ks.fiks.svarinn2.swagger.invoker.v1.ApiClient;
@@ -18,19 +18,19 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
-import static no.ks.fiks.svarinn2.katalog.swagger.model.v1.Identifikator.IdentifikatorTypeEnum.*;
+import static no.ks.fiks.svarinn2.katalog.swagger.model.v1.Identifikator.IdentifikatorTypeEnum.NAV_ENHET_ID;
+import static no.ks.fiks.svarinn2.katalog.swagger.model.v1.Identifikator.IdentifikatorTypeEnum.ORG_NO;
 
 class SvarInnTest {
 
     @Test
     void name() throws IOException, TimeoutException {
         //konfigurer svarInn2 klienten
-        SvarInn2 svarInn2 = new SvarInn2(SvarInn2Settings.builder()
+        SvarInn2 svarInn2 = new SvarInn2(SvarInnKonfigurasjon.builder()
                 .kontoId(new KontoId(UUID.randomUUID()))
-                .rabbitMqChannel(new ConnectionFactory().newConnection().createChannel())
                 .lookupCache(p -> new KontoId(UUID.randomUUID()))
                 .svarInn2Api(new ApiClient().buildClient(SvarInnApi.class))
-                .fiksIntegrasjon(FiksIntegrasjon.builder()
+                .fiksIntegrasjon(FiksIntegrasjonKonfigurasjon.builder()
                         .integrasjonId(UUID.randomUUID())
                         .integrasjonPassord("et passord")
                         .virksomhetsertifikat("et virkesomhetssertifikat")
@@ -52,7 +52,7 @@ class SvarInnTest {
                 .build());
 
         //send en melding
-        Melding melding = svarInn2.send(MeldingRequest.builder()
+        SendtMelding melding = svarInn2.send(MeldingRequest.builder()
                 .mottakerKontoId(konto.get().getKontoId())
                 .ttl(Duration.ofDays(1))
                 .build(),
@@ -66,12 +66,12 @@ class SvarInnTest {
                 .build(), new ByteArrayInputStream(new byte[0]));
 
         //subscribe på innkommende meldinger, og kvitter OK til avsender ved mottak
-        svarInn2.subscribe(SubscribeSettings.builder()
+        svarInn2.subscribe(new ConnectionFactory().newConnection().createChannel(), SubscribeSettings.builder()
                 .onMelding((m, k) -> {
                     System.out.println("Mottok melding " + m.getMeldingId());
-                    k.aksepter();
+                    k.kvitterAkseptert();
                 })
                 .onClose(error -> System.exit(1))
                 .build());
     }
-}
+}*/

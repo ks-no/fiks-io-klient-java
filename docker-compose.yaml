@@ -1,0 +1,65 @@
+version: '3'
+services:
+  fiks-svarinn2-service:
+    image: ksjenkins1-u.usrv.ubergenkom.no:8083/svarinn2-service
+    environment:
+      - SPRING_CONFIG_NAME=component-test-properties
+    volumes:
+      - ./local/jks:/etc/jks
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - rabbitmq
+
+  fiks-svarinn2-katalog-service:
+    image: ksjenkins1-u.usrv.ubergenkom.no:8083/svarinn2-katalog-service
+    environment:
+      - SPRING_CONFIG_NAME=component-test-properties
+    volumes:
+      - ./local/jks:/etc/jks
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+
+  fiks-svarinn2-authorization-service:
+    image: ksjenkins1-u.usrv.ubergenkom.no:8083/svarinn2-authorization-service
+    environment:
+      - SPRING_CONFIG_NAME=component-test-properties
+    volumes:
+      - ./local/jks:/etc/jks
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+
+  rabbitmq:
+    image: rabbitmq:3.7.6-management
+    volumes:
+      - ./local/rabbitmq:/etc/rabbitmq
+
+  eventstore:
+    image: eventstore/eventstore
+    environment:
+      - EVENTSTORE_RUN_PROJECTIONS=All
+      - EVENTSTORE_START_STANDARD_PROJECTIONS=True
+
+  oidc-mock:
+    image: ksjenkins1-u.usrv.ubergenkom.no:8083/oidc-provider-mock
+
+  fiks-autorisasjon-query-service:
+    image: rodolpheche/wiremock
+    command: java -cp /var/wiremock/lib/*:/var/wiremock/extensions/* com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --global-response-templating
+
+  fiks-autorisasjon-update-service:
+    image: rodolpheche/wiremock
+    command: java -cp /var/wiremock/lib/*:/var/wiremock/extensions/* com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --global-response-templating
+
+  fiks-konfigurasjon-service:
+    image: rodolpheche/wiremock
+    command: java -cp /var/wiremock/lib/*:/var/wiremock/extensions/* com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --global-response-templating
