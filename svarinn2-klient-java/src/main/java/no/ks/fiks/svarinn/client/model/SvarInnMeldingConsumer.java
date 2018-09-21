@@ -1,4 +1,4 @@
-package no.ks.fiks.svarinn.client;
+package no.ks.fiks.svarinn.client.model;
 
 import no.ks.fiks.svarinn.client.model.MeldingSpesifikasjon;
 

@@ -1,3 +1,4 @@
+/*
 package no.ks.fiks.svarinn2.klient.java;
 
 import no.ks.fiks.svarinn.client.AsicHandler;
@@ -28,3 +29,4 @@ public class AsicTest {
         assertEquals(input, output);
     }
 }
+*/

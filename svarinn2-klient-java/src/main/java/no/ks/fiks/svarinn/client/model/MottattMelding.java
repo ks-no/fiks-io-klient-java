@@ -3,10 +3,10 @@ package no.ks.fiks.svarinn.client.model;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
-import no.ks.fiks.svarinn.client.KontoId;
-import no.ks.fiks.svarinn.client.MeldingId;
+import no.ks.fiks.svarinn2.commons.MottattMeldingMetadata;
 
 import java.time.Duration;
+import java.util.List;
 
 @Data
 @Builder
@@ -17,9 +17,9 @@ public class MottattMelding implements Melding {
     @NonNull private KontoId mottakerKontoId;
     @NonNull private Duration ttl;
     private MeldingId svarPaMelding;
-    byte[] dekryptertPayload;
+    List<MottattPayload> dekryptertPayload;
 
-    public static MottattMelding fromMottattMeldingMetadata(no.ks.fiks.svarinn2.model.MottattMeldingMetadata melding, byte[] dekryptertPayload) {
+    public static MottattMelding fromMottattMeldingMetadata(MottattMeldingMetadata melding, List<MottattPayload> mottattPayloads) {
         return MottattMelding.builder()
                 .meldingId(new MeldingId(melding.getMeldingId()))
                 .meldingType(melding.getMeldingType())
@@ -27,7 +27,7 @@ public class MottattMelding implements Melding {
                 .mottakerKontoId(new KontoId(melding.getMottakerKontoId()))
                 .ttl(Duration.ofMillis(melding.getTtl()))
                 .svarPaMelding(melding.getSvarPaMelding() != null ? new MeldingId(melding.getSvarPaMelding()) : null)
-                .dekryptertPayload(dekryptertPayload)
+                .dekryptertPayload(mottattPayloads)
                 .build();
     }
 }

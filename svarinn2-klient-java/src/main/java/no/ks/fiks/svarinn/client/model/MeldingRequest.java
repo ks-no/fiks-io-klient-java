@@ -3,8 +3,6 @@ package no.ks.fiks.svarinn.client.model;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import no.ks.fiks.svarinn.client.KontoId;
-import no.ks.fiks.svarinn.client.MeldingId;
 
 import java.time.Duration;
 

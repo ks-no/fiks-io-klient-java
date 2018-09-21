@@ -1,61 +1,95 @@
 package no.ks.fiks.svarinn.client;
 
-import no.difi.asic.*;
+import no.difi.asic.AsicReader;
+import no.difi.asic.AsicReaderFactory;
+import no.difi.asic.AsicWriterFactory;
+import no.difi.asic.SignatureHelper;
 import no.difi.asic.extras.CmsEncryptedAsicReader;
 import no.difi.asic.extras.CmsEncryptedAsicWriter;
-import org.apache.commons.io.FileUtils;
+import no.ks.fiks.svarinn.client.model.MottattPayload;
+import no.ks.fiks.svarinn.client.model.Payload;
 import org.bouncycastle.cms.CMSAlgorithm;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-import java.io.*;
-import java.security.KeyStore;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.Security;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
-public class AsicHandler {
+import static com.google.common.io.Closeables.closeQuietly;
+
+class AsicHandler {
     private PrivateKey privatNokkel;
     private AsicReaderFactory asicReaderFactory = AsicReaderFactory.newFactory();
+    private AsicWriterFactory asicWriterFactory = AsicWriterFactory.newFactory();
 
-    public AsicHandler(PrivateKey privatNokkel) {
+    AsicHandler(PrivateKey privatNokkel) {
         this.privatNokkel = privatNokkel;
     }
 
-    public File encrypt(X509Certificate certificate, InputStream inputStream) {
+    File encrypt(X509Certificate certificate, List<Payload> payload) {
         try {
             File archiveOutputFile = File.createTempFile(UUID.randomUUID().toString(), ".asice");
-
             Security.addProvider(new BouncyCastleProvider());
 
-            CmsEncryptedAsicWriter writer = new CmsEncryptedAsicWriter(AsicWriterFactory.newFactory()
+            CmsEncryptedAsicWriter writer = new CmsEncryptedAsicWriter(asicWriterFactory
                     .newContainer(archiveOutputFile),
                     certificate,
                     CMSAlgorithm.AES256_GCM);
 
-            writer.add(inputStream, "payload.txt");
-            writer.setRootEntryName("payload.txt");
-           // writer.sign(new SignatureHelper(getClass().getResourceAsStream("/kommune2.p12"), "123456", "kommune2keyalias", "123456"));
+            payload.forEach(p -> write(writer, p));
+
+            writer.setRootEntryName(payload.get(0).getFilnavn());
+            writer.sign(new SignatureHelper(getClass().getResourceAsStream("/kommune1.p12"), "123456", "kommune1keyalias", "123456"));
 
             return archiveOutputFile;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
     }
 
-    public byte[] decrypt(byte[] body) {
+    List<MottattPayload> decrypt(byte[] body) {
         if (body == null || body.length == 0)
-            return null;
+            return Collections.emptyList();
 
         try (AsicReader asicReader = asicReaderFactory.open(new ByteArrayInputStream(body))) {
             CmsEncryptedAsicReader reader = new CmsEncryptedAsicReader(asicReader, privatNokkel);
-            ByteArrayOutputStream output = new ByteArrayOutputStream();
-            reader.getNextFile();
-            reader.writeFile(output);
-            return output.toByteArray();
+
+
+            List<MottattPayload> mottattPayloads = new ArrayList<>();
+
+            while (true){
+                String filnavn = reader.getNextFile();
+
+                if (filnavn == null)
+                    break;
+
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                reader.writeFile(out);
+                mottattPayloads.add(new MottattPayload(filnavn, out.toByteArray()));
+            }
+
+            return mottattPayloads;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void write(CmsEncryptedAsicWriter writer, Payload p) {
+        try {
+            writer.add(p.getPayload(), p.getFilnavn());
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            closeQuietly(p.getPayload());
+        }
+
     }
 }

@@ -1,14 +1,10 @@
 package no.ks.fiks.svarinn2.klient.java;
 
-import feign.codec.StringDecoder;
 import feign.form.FormEncoder;
-import feign.httpclient.ApacheHttpClient;
 import feign.jackson.JacksonEncoder;
 import feign.okhttp.OkHttpClient;
 import no.ks.fiks.componenttest.support.ComponentTestConfiguration;
 import no.ks.fiks.componenttest.support.ComponentTestConfigurationProperties;
-import no.ks.fiks.componenttest.support.autorisasjon.AutorisasjonQueryMock;
-import no.ks.fiks.componenttest.support.autorisasjon.AutorisasjonUpdateMock;
 import no.ks.fiks.componenttest.support.feign.TestApi;
 import no.ks.fiks.componenttest.support.feign.TestApiBuilder;
 import no.ks.fiks.componenttest.support.konfigurasjon.KonfigurasjonMock;
@@ -27,8 +23,7 @@ public class TestContext {
     @Bean
     public TestApiBuilder<SvarInnKatalogApi> katalogApiBuilder(TestApi testApi) {
         return testApi
-                .buildApi(new no.ks.fiks.svarinn2.katalog.swagger.invoker.v1.ApiClient(), SvarInnKatalogApi.class, FIKS_SVARINN2_KATALOG_SERVICE)
-                .withDecoder(new StringDecoder());
+                .buildApi(new no.ks.fiks.svarinn2.katalog.swagger.invoker.v1.ApiClient(), SvarInnKatalogApi.class, FIKS_SVARINN2_KATALOG_SERVICE);
     }
 
     @Bean
@@ -48,8 +43,8 @@ public class TestContext {
     }
 
     @Bean
-    public SvarInn2KlientGenerator svarInn2KlientGenerator(ComponentTestConfigurationProperties properties, AutorisasjonQueryMock queryMock, KonfigurasjonMock konfigurasjonMock, AutorisasjonUpdateMock autorisasjonUpdateMock,  TestApiBuilder<SvarInnKontoApi> kontoApiTestApiBuilder, TestApiBuilder<SvarInnKatalogApi> katalogApiTestApiBuilder, TestApiBuilder<SvarInnApi> svarInnApiTestApiBuilder){
-        return new SvarInn2KlientGenerator(properties, queryMock, konfigurasjonMock, autorisasjonUpdateMock, kontoApiTestApiBuilder, katalogApiTestApiBuilder, svarInnApiTestApiBuilder);
+    public SvarInn2KlientGenerator svarInn2KlientGenerator(ComponentTestConfigurationProperties properties, KonfigurasjonMock konfigurasjonMock, TestApiBuilder<SvarInnKontoApi> kontoApiTestApiBuilder, TestApiBuilder<SvarInnKatalogApi> katalogApiTestApiBuilder, TestApiBuilder<SvarInnApi> svarInnApiTestApiBuilder){
+        return new SvarInn2KlientGenerator(properties, konfigurasjonMock, kontoApiTestApiBuilder, katalogApiTestApiBuilder, svarInnApiTestApiBuilder);
     }
 
 }
