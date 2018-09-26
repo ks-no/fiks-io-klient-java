@@ -1,5 +1,7 @@
 package no.ks.fiks.svarinn.client.model;
 
+import lombok.NonNull;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
@@ -7,7 +9,7 @@ public class StringPayload implements Payload {
     private String payload;
     private String filnavn;
 
-    public StringPayload(String payload, String filnavn) {
+    public StringPayload(@NonNull String payload, @NonNull String filnavn) {
         this.payload = payload;
         this.filnavn = filnavn;
     }

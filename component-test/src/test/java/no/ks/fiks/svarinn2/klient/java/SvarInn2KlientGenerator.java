@@ -5,11 +5,9 @@ import io.vavr.Tuple2;
 import no.ks.fiks.componenttest.support.ComponentTestConfigurationProperties;
 import no.ks.fiks.componenttest.support.feign.TestApiBuilder;
 import no.ks.fiks.componenttest.support.konfigurasjon.KonfigurasjonMock;
-import no.ks.fiks.svarinn.client.*;
-import no.ks.fiks.svarinn.client.model.FiksIntegrasjonKonfigurasjon;
+import no.ks.fiks.svarinn.client.SvarInnKlient;
+import no.ks.fiks.svarinn.client.konfigurasjon.*;
 import no.ks.fiks.svarinn.client.model.KontoId;
-import no.ks.fiks.svarinn.client.model.KontoKonfigurasjon;
-import no.ks.fiks.svarinn.client.model.SvarInnKonfigurasjon;
 import no.ks.fiks.svarinn2.katalog.swagger.api.v1.SvarInnKatalogApi;
 import no.ks.fiks.svarinn2.katalog.swagger.api.v1.SvarInnKontoApi;
 import no.ks.fiks.svarinn2.katalog.swagger.model.v1.Konto;
@@ -21,6 +19,7 @@ import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 
 import java.io.File;
 import java.io.StringWriter;
+import java.net.URI;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.UUID;
@@ -45,12 +44,11 @@ public class SvarInn2KlientGenerator {
         this.katalogApi = katalogApiBuilder.asPerson(TestUtil.randomFnr()).build();
     }
 
-    public SvarInnKlient opprettKontoOgKlient(Tuple2<X509Certificate, PrivateKey> credentials, ConnectionFactory factory) throws Exception {
+    public SvarInnKlient opprettKontoOgKlient(Tuple2<X509Certificate, PrivateKey> credentials) throws Exception {
         UUID integrasjonId = UUID.randomUUID();
         String password = UUID.randomUUID().toString();
-        String token = UUID.randomUUID().toString();
 
-        konfigurasjonMock.setupIntegrasjonAuthenticateOk(integrasjonId, password, token);
+        konfigurasjonMock.setupIntegrasjonAuthenticateOk(integrasjonId);
 
         Konto opprettetKonto = svarInnKontoApi.opprettKonto(new KontoSpesifikasjon()
                 .fiksOrgId(UUID.randomUUID())
@@ -67,11 +65,6 @@ public class SvarInn2KlientGenerator {
 
         svarInnKontoApi.settOffentligNokkelPem(opprettetKonto.getKontoId(), certFile);
 
-        factory.setHost(DockerComposeIpResolver.getIp(properties.getProject(), "rabbitmq").orElseThrow(() -> new RuntimeException("Could not find rabbitmq container")));
-        factory.setPort(5672);
-        factory.setUsername(integrasjonId.toString());
-        factory.setPassword(String.format("%s %s", password, token));
-
         return new SvarInnKlient(SvarInnKonfigurasjon.builder()
                 .kontoKonfigurasjon(KontoKonfigurasjon.builder()
                         .kontoId(new KontoId(opprettetKonto.getKontoId()))
@@ -80,10 +73,19 @@ public class SvarInn2KlientGenerator {
                 .lookupCache(p -> new KontoId(UUID.randomUUID()))
                 .svarInn2Api(svarInnApi)
                 .katalogApi(katalogApi)
+                    .amqpKonfigurasjon(AmqpKonfigurasjon.builder()
+                            .host(DockerComposeIpResolver.getIp(properties.getProject(), "rabbitmq").orElseThrow(() -> new RuntimeException("Could not find rabbitmq container")))
+                            .port(5672)
+                            .build())
                 .fiksIntegrasjonKonfigurasjon(FiksIntegrasjonKonfigurasjon.builder()
                         .integrasjonId(integrasjonId)
                         .integrasjonPassord(password)
-                        .virksomhetsertifikat(credentials._1)
+                        .idPortenKonfigurasjon(IdPortenKonfigurasjon.builder()
+                                .virksomhetsertifikat(credentials._1)
+                                .privatNokkel(credentials._2)
+                                .klientId("asdf")
+                                .accessTokenUri(URI.create("http://" + DockerComposeIpResolver.getIp(properties.getProject(), "oidc-mock").orElseThrow(() -> new RuntimeException("Could not find oidc mock container")) + ":8080/oidc-provider-mock/token"))
+                                .build())
                         .build())
                 .build());
     }

@@ -1,9 +1,6 @@
 package no.ks.fiks.svarinn2.klient.java;
 
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.ConnectionFactory;
 import no.ks.fiks.componenttest.support.feign.TestApiBuilder;
-import no.ks.fiks.svarinn.client.model.LookupRequest;
 import no.ks.fiks.svarinn.client.SvarInnKlient;
 import no.ks.fiks.svarinn.client.model.*;
 import no.ks.fiks.svarinn2.commons.MeldingsType;
@@ -31,11 +28,8 @@ class KlientTest extends AutorisertServiceTest {
     @Test
     @DisplayName("Test at alice kan finne bobs konto, og sende han en melding")
     void testSendString(@Autowired SvarInn2KlientGenerator generator) throws Exception {
-        ConnectionFactory aliceConnection = new ConnectionFactory();
-        SvarInnKlient aliceKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune1.p12"), "123456", "kommune1keyalias"), aliceConnection);
-
-        ConnectionFactory bobConnection = new ConnectionFactory();
-        SvarInnKlient bobKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune2.p12"), "123456", "kommune2keyalias"), bobConnection);
+        SvarInnKlient aliceKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune1.p12"), "123456", "kommune1keyalias"));
+        SvarInnKlient bobKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune2.p12"), "123456", "kommune2keyalias"));
 
         String payload = UUID.randomUUID().toString();
         aliceKlient.send(MeldingRequest.builder()
@@ -44,9 +38,8 @@ class KlientTest extends AutorisertServiceTest {
                 .build(), payload);
 
         CompletableFuture<MottattMelding> futureMelding = new CompletableFuture<>();
-        Channel channel = bobConnection.newConnection().createChannel();
 
-        bobKlient.subscribe(channel, (m, k) -> futureMelding.complete(m));
+        bobKlient.newSubscription((m, k) -> futureMelding.complete(m));
 
         MottattMelding melding = futureMelding.get(10, TimeUnit.SECONDS);
         assertEquals(payload, new String(melding.getDekryptertPayload().get(0).getBytes()));
@@ -55,11 +48,8 @@ class KlientTest extends AutorisertServiceTest {
     @Test
     @DisplayName("Test at alice kan finne bobs konto på lookup")
     void testLookup(@Autowired SvarInn2KlientGenerator generator, @Autowired TestApiBuilder<SvarInnKontoApi> kontoApi) throws Exception {
-        ConnectionFactory aliceConnection = new ConnectionFactory();
-        SvarInnKlient aliceKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune1.p12"), "123456", "kommune1keyalias"), aliceConnection);
-
-        ConnectionFactory bobConnection = new ConnectionFactory();
-        SvarInnKlient bobKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune2.p12"), "123456", "kommune2keyalias"), bobConnection);
+        SvarInnKlient aliceKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune1.p12"), "123456", "kommune1keyalias"));
+        SvarInnKlient bobKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune2.p12"), "123456", "kommune2keyalias"));
 
         String meldingType = UUID.randomUUID().toString();
         Identifikator identifikator = new Identifikator().identifikatorType(Identifikator.IdentifikatorTypeEnum.ORG_NO).identifikator("123456789");
@@ -82,8 +72,7 @@ class KlientTest extends AutorisertServiceTest {
     @Test
     @DisplayName("Test at alice får en optional-empty for en lookup på en ikke-eksisterende adresse")
     void testEmptyLookup(@Autowired SvarInn2KlientGenerator generator, @Autowired TestApiBuilder<SvarInnKontoApi> kontoApi) throws Exception {
-        ConnectionFactory aliceConnection = new ConnectionFactory();
-        SvarInnKlient aliceKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune1.p12"), "123456", "kommune1keyalias"), aliceConnection);
+        SvarInnKlient aliceKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune1.p12"), "123456", "kommune1keyalias"));
 
         Optional<Konto> konto = aliceKlient.lookup(LookupRequest.builder()
                 .dokumentType(UUID.randomUUID().toString())
@@ -97,11 +86,8 @@ class KlientTest extends AutorisertServiceTest {
     @Test
     @DisplayName("Test at Bob kan kvittere akseptert på en melding fra Alice")
     void testKvitteringAkseptert(@Autowired SvarInn2KlientGenerator generator) throws Exception {
-        ConnectionFactory aliceConnection = new ConnectionFactory();
-        SvarInnKlient aliceKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune1.p12"), "123456", "kommune1keyalias"), aliceConnection);
-
-        ConnectionFactory bobConnection = new ConnectionFactory();
-        SvarInnKlient bobKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune2.p12"), "123456", "kommune2keyalias"), bobConnection);
+        SvarInnKlient aliceKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune1.p12"), "123456", "kommune1keyalias"));
+        SvarInnKlient bobKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune2.p12"), "123456", "kommune2keyalias"));
 
         String payload = "heisann bob";
         SendtMelding sendtMelding = aliceKlient.send(MeldingRequest.builder()
@@ -110,10 +96,10 @@ class KlientTest extends AutorisertServiceTest {
                 .build(), payload);
 
         CompletableFuture<Melding> futureSendtKvittering = new CompletableFuture<>();
-        bobKlient.subscribe(bobConnection.newConnection().createChannel(), (m, k) -> futureSendtKvittering.complete(k.kvitterAkseptert()));
+        bobKlient.newSubscription((m, k) -> futureSendtKvittering.complete(k.kvitterAkseptert()));
 
         CompletableFuture<Melding> futureMottattKvittering = new CompletableFuture<>();
-        aliceKlient.subscribe(aliceConnection.newConnection().createChannel(), (m, k) -> futureMottattKvittering.complete(m));
+        aliceKlient.newSubscription((m, k) -> futureMottattKvittering.complete(m));
 
         Melding sendtKvittering = futureSendtKvittering.get(10, TimeUnit.SECONDS);
         Melding mottattKvittering = futureMottattKvittering.get(10, TimeUnit.SECONDS);
@@ -128,11 +114,8 @@ class KlientTest extends AutorisertServiceTest {
     @Test
     @DisplayName("Test at Bob kan kvittere avvist på en melding fra Alice")
     void testKvitteringAvvist(@Autowired SvarInn2KlientGenerator generator) throws Exception {
-        ConnectionFactory aliceConnection = new ConnectionFactory();
-        SvarInnKlient aliceKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune1.p12"), "123456", "kommune1keyalias"), aliceConnection);
-
-        ConnectionFactory bobConnection = new ConnectionFactory();
-        SvarInnKlient bobKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune2.p12"), "123456", "kommune2keyalias"), bobConnection);
+        SvarInnKlient aliceKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune1.p12"), "123456", "kommune1keyalias"));
+        SvarInnKlient bobKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune2.p12"), "123456", "kommune2keyalias"));
 
         String payload = "heisann bob";
         SendtMelding sendtMelding = aliceKlient.send(MeldingRequest.builder()
@@ -142,10 +125,10 @@ class KlientTest extends AutorisertServiceTest {
 
         String kvitteringTekst = UUID.randomUUID().toString();
         CompletableFuture<Melding> futureSendtKvittering = new CompletableFuture<>();
-        bobKlient.subscribe(bobConnection.newConnection().createChannel(), (m, k) -> futureSendtKvittering.complete(k.kvitterAvvist(kvitteringTekst)));
+        bobKlient.newSubscription((m, k) -> futureSendtKvittering.complete(k.kvitterAvvist(kvitteringTekst)));
 
         CompletableFuture<MottattMelding> futureMottattKvittering = new CompletableFuture<>();
-        aliceKlient.subscribe(aliceConnection.newConnection().createChannel(), (m, k) -> futureMottattKvittering.complete(m));
+        aliceKlient.newSubscription((m, k) -> futureMottattKvittering.complete(m));
 
         Melding sendtKvittering = futureSendtKvittering.get(10, TimeUnit.SECONDS);
         MottattMelding mottattKvittering = futureMottattKvittering.get(10, TimeUnit.SECONDS);
@@ -161,11 +144,8 @@ class KlientTest extends AutorisertServiceTest {
     @Test
     @DisplayName("Test at Bob kan kvittere feilet på en melding fra Alice")
     void testKvitteringFeilet(@Autowired SvarInn2KlientGenerator generator) throws Exception {
-        ConnectionFactory aliceConnection = new ConnectionFactory();
-        SvarInnKlient aliceKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune1.p12"), "123456", "kommune1keyalias"), aliceConnection);
-
-        ConnectionFactory bobConnection = new ConnectionFactory();
-        SvarInnKlient bobKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune2.p12"), "123456", "kommune2keyalias"), bobConnection);
+        SvarInnKlient aliceKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune1.p12"), "123456", "kommune1keyalias"));
+        SvarInnKlient bobKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune2.p12"), "123456", "kommune2keyalias"));
 
         String payload = "heisann bob";
         SendtMelding sendtMelding = aliceKlient.send(MeldingRequest.builder()
@@ -175,10 +155,10 @@ class KlientTest extends AutorisertServiceTest {
 
         String kvitteringTekst = UUID.randomUUID().toString();
         CompletableFuture<Melding> futureSendtKvittering = new CompletableFuture<>();
-        bobKlient.subscribe(bobConnection.newConnection().createChannel(), (m, k) -> futureSendtKvittering.complete(k.kvitterFeilet(kvitteringTekst)));
+        bobKlient.newSubscription( (m, k) -> futureSendtKvittering.complete(k.kvitterFeilet(kvitteringTekst)));
 
         CompletableFuture<MottattMelding> futureMottattKvittering = new CompletableFuture<>();
-        aliceKlient.subscribe(aliceConnection.newConnection().createChannel(), (m, k) -> futureMottattKvittering.complete(m));
+        aliceKlient.newSubscription((m, k) -> futureMottattKvittering.complete(m));
 
         Melding sendtKvittering = futureSendtKvittering.get(10, TimeUnit.SECONDS);
         MottattMelding mottattKvittering = futureMottattKvittering.get(10, TimeUnit.SECONDS);

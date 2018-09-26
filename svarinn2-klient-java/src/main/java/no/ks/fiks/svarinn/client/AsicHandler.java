@@ -1,5 +1,6 @@
 package no.ks.fiks.svarinn.client;
 
+import lombok.NonNull;
 import no.difi.asic.AsicReader;
 import no.difi.asic.AsicReaderFactory;
 import no.difi.asic.AsicWriterFactory;
@@ -30,11 +31,11 @@ class AsicHandler {
     private AsicReaderFactory asicReaderFactory = AsicReaderFactory.newFactory();
     private AsicWriterFactory asicWriterFactory = AsicWriterFactory.newFactory();
 
-    AsicHandler(PrivateKey privatNokkel) {
+    AsicHandler(@NonNull PrivateKey privatNokkel) {
         this.privatNokkel = privatNokkel;
     }
 
-    File encrypt(X509Certificate certificate, List<Payload> payload) {
+    File encrypt(@NonNull X509Certificate certificate, @NonNull List<Payload> payload) {
         try {
             File archiveOutputFile = File.createTempFile(UUID.randomUUID().toString(), ".asice");
             Security.addProvider(new BouncyCastleProvider());
@@ -55,7 +56,7 @@ class AsicHandler {
         }
     }
 
-    List<MottattPayload> decrypt(byte[] body) {
+    List<MottattPayload> decrypt(@NonNull byte[] body) {
         if (body == null || body.length == 0)
             return Collections.emptyList();
 
@@ -82,7 +83,7 @@ class AsicHandler {
         }
     }
 
-    private void write(CmsEncryptedAsicWriter writer, Payload p) {
+    private void write(@NonNull CmsEncryptedAsicWriter writer, @NonNull Payload p) {
         try {
             writer.add(p.getPayload(), p.getFilnavn());
         } catch (IOException e) {

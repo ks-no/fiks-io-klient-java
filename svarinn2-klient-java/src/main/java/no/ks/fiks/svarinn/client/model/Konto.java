@@ -13,7 +13,7 @@ public class Konto {
     @NonNull private String fiksOrgNavn;
     private boolean aktiv;
 
-    public static Konto fromKatalogModel(no.ks.fiks.svarinn2.katalog.swagger.model.v1.Konto konto){
+    public static Konto fromKatalogModel(@NonNull no.ks.fiks.svarinn2.katalog.swagger.model.v1.Konto konto){
         return Konto.builder()
                 .kontoId(new KontoId(konto.getKontoId()))
                 .kontoNavn(konto.getKontoNavn())

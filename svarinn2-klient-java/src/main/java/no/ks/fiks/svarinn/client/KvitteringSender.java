@@ -1,19 +1,20 @@
 package no.ks.fiks.svarinn.client;
 
-import com.rabbitmq.client.Channel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import no.ks.fiks.svarinn.client.model.MottattMelding;
+import no.ks.fiks.svarinn.client.model.Payload;
 import no.ks.fiks.svarinn.client.model.SendtMelding;
 import no.ks.fiks.svarinn.client.model.StringPayload;
 import no.ks.fiks.svarinn2.swagger.api.v1.SvarInnApi;
 import no.ks.fiks.svarinn2.swagger.model.v1.MottattKvittering;
 
-import java.io.IOException;
-import java.security.cert.X509Certificate;
+import java.io.File;
 import java.util.Collections;
+import java.util.List;
+import java.util.function.Function;
 
 import static lombok.AccessLevel.NONE;
 
@@ -23,12 +24,11 @@ import static lombok.AccessLevel.NONE;
 public class KvitteringSender {
 
     private static final String KVITTERING_FILNAVN = "kvitteringTekst.txt";
+
     @NonNull private MottattMelding meldingSomSkalKvitteres;
-    @NonNull private X509Certificate mottakerSertifikat;
-    @NonNull private Long deliveryTag;
     @NonNull private SvarInnApi svarInnApi;
-    @NonNull private Channel channel;
-    @NonNull private AsicHandler asicGenerator;
+    @NonNull private Runnable doQueueAck;
+    @NonNull private Function<List<Payload>, File> encrypt;
 
     public SendtMelding kvitterAkseptert() {
         no.ks.fiks.svarinn2.swagger.model.v1.Melding respons = svarInnApi.kvitterAkseptert(new MottattKvittering()
@@ -39,22 +39,30 @@ public class KvitteringSender {
         return SendtMelding.fromSendResponse(respons);
     }
 
-    public SendtMelding kvitterFeilet(String melding) {
+    public SendtMelding kvitterFeilet() {
+        return kvitterAvvist(null);
+    }
+
+    public SendtMelding kvitterFeilet(String beskjed) {
         no.ks.fiks.svarinn2.swagger.model.v1.Melding respons = svarInnApi.kvitterFeilet(
                 meldingSomSkalKvitteres.getMottakerKontoId().toString(),
                 meldingSomSkalKvitteres.getAvsenderKontoId().toString(),
                 meldingSomSkalKvitteres.getMeldingId().toString(),
-                asicGenerator.encrypt(mottakerSertifikat, Collections.singletonList(new StringPayload(melding, KVITTERING_FILNAVN) )));
+                beskjed == null ? null : encrypt.apply(Collections.singletonList(new StringPayload(beskjed, KVITTERING_FILNAVN))));
         ack();
         return SendtMelding.fromSendResponse(respons);
     }
 
-    public SendtMelding kvitterAvvist(String melding) {
+    public SendtMelding kvitterAvvist() {
+        return kvitterAvvist(null);
+    }
+
+    public SendtMelding kvitterAvvist(String beskjed) {
         no.ks.fiks.svarinn2.swagger.model.v1.Melding respons = svarInnApi.kvitterAvvist(
                 meldingSomSkalKvitteres.getMottakerKontoId().toString(),
                 meldingSomSkalKvitteres.getAvsenderKontoId().toString(),
                 meldingSomSkalKvitteres.getMeldingId().toString(),
-                asicGenerator.encrypt(mottakerSertifikat, Collections.singletonList(new StringPayload(melding, KVITTERING_FILNAVN) )));
+                beskjed == null ? null : encrypt.apply(Collections.singletonList(new StringPayload(beskjed, KVITTERING_FILNAVN))));
         ack();
         return SendtMelding.fromSendResponse(respons);
     }
@@ -63,11 +71,7 @@ public class KvitteringSender {
         ack();
     }
 
-    private void ack(){
-        try {
-            channel.basicAck(deliveryTag, false);
-        } catch (IOException e) {
-            throw new RuntimeException("Feil under acking mot rabbitmq", e);
-        }
+    private void ack() {
+        doQueueAck.run();
     }
 }

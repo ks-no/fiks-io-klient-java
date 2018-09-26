@@ -16,7 +16,7 @@ public class SendtMelding implements Melding{
     @NonNull private Duration ttl;
     private MeldingId svarPaMelding;
 
-    public static SendtMelding fromSendResponse(no.ks.fiks.svarinn2.swagger.model.v1.Melding melding) {
+    public static SendtMelding fromSendResponse(@NonNull no.ks.fiks.svarinn2.swagger.model.v1.Melding melding) {
         return SendtMelding.builder()
                 .meldingId(new MeldingId(melding.getMeldingId()))
                 .meldingType(melding.getMeldingType())
