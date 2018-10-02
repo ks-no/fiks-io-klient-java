@@ -5,10 +5,6 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.ShutdownSignalException;
 import com.rabbitmq.client.impl.CredentialsProvider;
 import lombok.NonNull;
-import no.ks.fiks.security.idporten.m2m.IdPortenJwtConfig;
-import no.ks.fiks.security.idporten.m2m.IdPortenJwtCreater;
-import no.ks.fiks.security.idporten.m2m.client.JwtAccessTokenProvider;
-import no.ks.fiks.security.idporten.m2m.client.JwtResourceDetails;
 import no.ks.fiks.svarinn.client.konfigurasjon.AmqpKonfigurasjon;
 import no.ks.fiks.svarinn.client.konfigurasjon.FiksIntegrasjonKonfigurasjon;
 import no.ks.fiks.svarinn.client.model.KontoId;
@@ -16,18 +12,15 @@ import no.ks.fiks.svarinn.client.model.MeldingId;
 import no.ks.fiks.svarinn.client.model.MottattMelding;
 import no.ks.fiks.svarinn2.commons.MottattMeldingMetadata;
 import no.ks.fiks.svarinn2.commons.SvarInnMeldingParser;
-import org.springframework.security.oauth2.client.DefaultOAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 
 import java.io.IOException;
-import java.security.cert.CertificateEncodingException;
-import java.util.Objects;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-class MeldingHandler {
+class AmqpHandler {
 
     private final Channel channel;
     private final Predicate<MeldingId> meldingErBehandlet;
@@ -35,17 +28,18 @@ class MeldingHandler {
     private final SvarInnHandler svarInnApi;
     private final AsicHandler asic;
 
-    MeldingHandler(@NonNull AmqpKonfigurasjon amqpKonf,
-                   @NonNull FiksIntegrasjonKonfigurasjon intKonf,
-                   @NonNull SvarInnHandler svarInn,
-                   @NonNull AsicHandler asic,
-                   @NonNull KontoId kontoId) {
+    AmqpHandler(@NonNull AmqpKonfigurasjon amqpKonf,
+                @NonNull FiksIntegrasjonKonfigurasjon intKonf,
+                @NonNull SvarInnHandler svarInn,
+                @NonNull AsicHandler asic,
+                @NonNull OAuth2RestTemplate oAuth2RestTemplate,
+                @NonNull KontoId kontoId) {
         this.svarInnApi = svarInn;
         this.asic = asic;
         this.kontoId = kontoId;
         this.meldingErBehandlet = amqpKonf.getMeldingErBehandlet();
 
-        ConnectionFactory factory = getConnectionFactory(amqpKonf, intKonf, getOauthTemplate(intKonf));
+        ConnectionFactory factory = getConnectionFactory(amqpKonf, intKonf, oAuth2RestTemplate);
 
         try {
             channel = factory.newConnection().createChannel();
@@ -79,8 +73,8 @@ class MeldingHandler {
 
     private ConnectionFactory getConnectionFactory(AmqpKonfigurasjon amqpKonf, FiksIntegrasjonKonfigurasjon intKonf, OAuth2RestTemplate oAuth2RestTemplate) {
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(amqpKonf.getHost());
-        factory.setPort(amqpKonf.getPort());
+        factory.setHost(amqpKonf.getAmqpHost());
+        factory.setPort(amqpKonf.getAmqpPort());
         factory.setUsername(intKonf.getIntegrasjonId().toString());
         factory.setAutomaticRecoveryEnabled(true);
 
@@ -96,30 +90,6 @@ class MeldingHandler {
             }
         });
         return factory;
-    }
-
-    private OAuth2RestTemplate getOauthTemplate(FiksIntegrasjonKonfigurasjon intKonf) {
-        JwtResourceDetails jwtResourceDetails = new JwtResourceDetails();
-
-        jwtResourceDetails.setId("ID-porten");
-        jwtResourceDetails.setClientId(intKonf.getIdPortenKonfigurasjon().getKlientId());
-        jwtResourceDetails.setGrantType("urn:ietf:params:oauth:grant-type:jwt-bearer");
-        jwtResourceDetails.setAccessTokenUri(intKonf.getIdPortenKonfigurasjon().getAccessTokenUri().toString());
-
-        OAuth2RestTemplate oAuth2RestTemplate = new OAuth2RestTemplate(jwtResourceDetails, new DefaultOAuth2ClientContext());
-
-        IdPortenJwtConfig config = new IdPortenJwtConfig();
-        config.setAudience("asdf");
-        config.setIssuer("asdf");
-        config.setScope("asdf");
-
-        try {
-
-            oAuth2RestTemplate.setAccessTokenProvider(new JwtAccessTokenProvider(new IdPortenJwtCreater(intKonf.getIdPortenKonfigurasjon().getPrivatNokkel(), intKonf.getIdPortenKonfigurasjon().getVirksomhetsertifikat(), config)));
-        } catch (CertificateEncodingException e) {
-            throw new RuntimeException(e);
-        }
-        return oAuth2RestTemplate;
     }
 
 }

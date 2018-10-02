@@ -33,7 +33,6 @@ public class TestContext {
                 .withEncoder(new FormEncoder(new JacksonEncoder()));
     }
 
-
     @Bean
     public TestApiBuilder<SvarInnApi> svarInnApiBuilder(TestApi testApi) {
         return testApi
@@ -43,8 +42,8 @@ public class TestContext {
     }
 
     @Bean
-    public SvarInn2KlientGenerator svarInn2KlientGenerator(ComponentTestConfigurationProperties properties, KonfigurasjonMock konfigurasjonMock, TestApiBuilder<SvarInnKontoApi> kontoApiTestApiBuilder, TestApiBuilder<SvarInnKatalogApi> katalogApiTestApiBuilder, TestApiBuilder<SvarInnApi> svarInnApiTestApiBuilder){
-        return new SvarInn2KlientGenerator(properties, konfigurasjonMock, kontoApiTestApiBuilder, katalogApiTestApiBuilder, svarInnApiTestApiBuilder);
+    public SvarInn2KlientGenerator svarInn2KlientGenerator(ComponentTestConfigurationProperties properties, KonfigurasjonMock konfigurasjonMock, TestApiBuilder<SvarInnKontoApi> kontoApiTestApiBuilder){
+        return new SvarInn2KlientGenerator(properties, konfigurasjonMock, kontoApiTestApiBuilder);
     }
 
 }

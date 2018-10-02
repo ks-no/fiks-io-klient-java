@@ -28,8 +28,8 @@ class KlientTest extends AutorisertServiceTest {
     @Test
     @DisplayName("Test at alice kan finne bobs konto, og sende han en melding")
     void testSendString(@Autowired SvarInn2KlientGenerator generator) throws Exception {
-        SvarInnKlient aliceKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune1.p12"), "123456", "kommune1keyalias"));
-        SvarInnKlient bobKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune2.p12"), "123456", "kommune2keyalias"));
+        SvarInnKlient aliceKlient = getAliceKlient(generator);
+        SvarInnKlient bobKlient = getBobKlient(generator);
 
         String payload = UUID.randomUUID().toString();
         aliceKlient.send(MeldingRequest.builder()
@@ -45,11 +45,19 @@ class KlientTest extends AutorisertServiceTest {
         assertEquals(payload, new String(melding.getDekryptertPayload().get(0).getBytes()));
     }
 
+    private SvarInnKlient getAliceKlient(@Autowired SvarInn2KlientGenerator generator) throws Exception {
+        return generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune1.p12"), "123456"), "123456", "kommune1keyalias", "kommune1keyalias", "123456");
+    }
+
+    private SvarInnKlient getBobKlient(@Autowired SvarInn2KlientGenerator generator) throws Exception {
+        return generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune2.p12"), "123456"), "123456", "kommune2keyalias", "kommune2keyalias", "123456");
+    }
+
     @Test
     @DisplayName("Test at alice kan finne bobs konto på lookup")
     void testLookup(@Autowired SvarInn2KlientGenerator generator, @Autowired TestApiBuilder<SvarInnKontoApi> kontoApi) throws Exception {
-        SvarInnKlient aliceKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune1.p12"), "123456", "kommune1keyalias"));
-        SvarInnKlient bobKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune2.p12"), "123456", "kommune2keyalias"));
+        SvarInnKlient aliceKlient = getAliceKlient(generator);
+        SvarInnKlient bobKlient = getBobKlient(generator);
 
         String meldingType = UUID.randomUUID().toString();
         Identifikator identifikator = new Identifikator().identifikatorType(Identifikator.IdentifikatorTypeEnum.ORG_NO).identifikator("123456789");
@@ -72,7 +80,7 @@ class KlientTest extends AutorisertServiceTest {
     @Test
     @DisplayName("Test at alice får en optional-empty for en lookup på en ikke-eksisterende adresse")
     void testEmptyLookup(@Autowired SvarInn2KlientGenerator generator, @Autowired TestApiBuilder<SvarInnKontoApi> kontoApi) throws Exception {
-        SvarInnKlient aliceKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune1.p12"), "123456", "kommune1keyalias"));
+        SvarInnKlient aliceKlient = getAliceKlient(generator);
 
         Optional<Konto> konto = aliceKlient.lookup(LookupRequest.builder()
                 .dokumentType(UUID.randomUUID().toString())
@@ -86,8 +94,8 @@ class KlientTest extends AutorisertServiceTest {
     @Test
     @DisplayName("Test at Bob kan kvittere akseptert på en melding fra Alice")
     void testKvitteringAkseptert(@Autowired SvarInn2KlientGenerator generator) throws Exception {
-        SvarInnKlient aliceKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune1.p12"), "123456", "kommune1keyalias"));
-        SvarInnKlient bobKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune2.p12"), "123456", "kommune2keyalias"));
+        SvarInnKlient aliceKlient = getAliceKlient(generator);
+        SvarInnKlient bobKlient = getBobKlient(generator);
 
         String payload = "heisann bob";
         SendtMelding sendtMelding = aliceKlient.send(MeldingRequest.builder()
@@ -114,8 +122,8 @@ class KlientTest extends AutorisertServiceTest {
     @Test
     @DisplayName("Test at Bob kan kvittere avvist på en melding fra Alice")
     void testKvitteringAvvist(@Autowired SvarInn2KlientGenerator generator) throws Exception {
-        SvarInnKlient aliceKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune1.p12"), "123456", "kommune1keyalias"));
-        SvarInnKlient bobKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune2.p12"), "123456", "kommune2keyalias"));
+        SvarInnKlient aliceKlient = getAliceKlient(generator);
+        SvarInnKlient bobKlient = getBobKlient(generator);
 
         String payload = "heisann bob";
         SendtMelding sendtMelding = aliceKlient.send(MeldingRequest.builder()
@@ -144,8 +152,8 @@ class KlientTest extends AutorisertServiceTest {
     @Test
     @DisplayName("Test at Bob kan kvittere feilet på en melding fra Alice")
     void testKvitteringFeilet(@Autowired SvarInn2KlientGenerator generator) throws Exception {
-        SvarInnKlient aliceKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune1.p12"), "123456", "kommune1keyalias"));
-        SvarInnKlient bobKlient = generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune2.p12"), "123456", "kommune2keyalias"));
+        SvarInnKlient aliceKlient = getAliceKlient(generator);
+        SvarInnKlient bobKlient = getBobKlient(generator);
 
         String payload = "heisann bob";
         SendtMelding sendtMelding = aliceKlient.send(MeldingRequest.builder()

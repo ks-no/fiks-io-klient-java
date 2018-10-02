@@ -7,15 +7,14 @@ import no.difi.asic.AsicWriterFactory;
 import no.difi.asic.SignatureHelper;
 import no.difi.asic.extras.CmsEncryptedAsicReader;
 import no.difi.asic.extras.CmsEncryptedAsicWriter;
+import no.ks.fiks.svarinn.client.konfigurasjon.SigneringKonfigurasjon;
 import no.ks.fiks.svarinn.client.model.MottattPayload;
 import no.ks.fiks.svarinn.client.model.Payload;
 import org.bouncycastle.cms.CMSAlgorithm;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.Security;
 import java.security.cert.X509Certificate;
@@ -28,30 +27,39 @@ import static com.google.common.io.Closeables.closeQuietly;
 
 class AsicHandler {
     private PrivateKey privatNokkel;
+    private SigneringKonfigurasjon signeringKonfigurasjon;
     private AsicReaderFactory asicReaderFactory = AsicReaderFactory.newFactory();
     private AsicWriterFactory asicWriterFactory = AsicWriterFactory.newFactory();
 
-    AsicHandler(@NonNull PrivateKey privatNokkel) {
+    AsicHandler(@NonNull PrivateKey privatNokkel, @NonNull SigneringKonfigurasjon signeringKonfigurasjon) {
         this.privatNokkel = privatNokkel;
+        this.signeringKonfigurasjon = signeringKonfigurasjon;
     }
 
-    File encrypt(@NonNull X509Certificate certificate, @NonNull List<Payload> payload) {
-        try {
+    File encrypt(@NonNull X509Certificate mottakerCert, @NonNull List<Payload> payload) {
+        try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+
             File archiveOutputFile = File.createTempFile(UUID.randomUUID().toString(), ".asice");
             Security.addProvider(new BouncyCastleProvider());
 
             CmsEncryptedAsicWriter writer = new CmsEncryptedAsicWriter(asicWriterFactory
                     .newContainer(archiveOutputFile),
-                    certificate,
+                    mottakerCert,
                     CMSAlgorithm.AES256_GCM);
 
             payload.forEach(p -> write(writer, p));
 
             writer.setRootEntryName(payload.get(0).getFilnavn());
-            writer.sign(new SignatureHelper(getClass().getResourceAsStream("/kommune1.p12"), "123456", "kommune1keyalias", "123456"));
+            KeyStore keyStore = signeringKonfigurasjon.getKeyStore();
+
+            keyStore.store(output, signeringKonfigurasjon.getKeyStorePassword().toCharArray());
+
+            try(InputStream inputStream = new ByteArrayInputStream(output.toByteArray())) {
+                writer.sign(new SignatureHelper(inputStream, signeringKonfigurasjon.getKeyStorePassword(), signeringKonfigurasjon.getKeyAlias(), signeringKonfigurasjon.getKeyPassword()));
+            }
 
             return archiveOutputFile;
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -66,7 +74,7 @@ class AsicHandler {
 
             List<MottattPayload> mottattPayloads = new ArrayList<>();
 
-            while (true){
+            while (true) {
                 String filnavn = reader.getNextFile();
 
                 if (filnavn == null)

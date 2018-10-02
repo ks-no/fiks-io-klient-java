@@ -9,7 +9,6 @@ import no.ks.fiks.svarinn.client.model.Payload;
 import no.ks.fiks.svarinn.client.model.SendtMelding;
 import no.ks.fiks.svarinn.client.model.StringPayload;
 import no.ks.fiks.svarinn2.swagger.api.v1.SvarInnApi;
-import no.ks.fiks.svarinn2.swagger.model.v1.MottattKvittering;
 
 import java.io.File;
 import java.util.Collections;
@@ -31,10 +30,10 @@ public class KvitteringSender {
     @NonNull private Function<List<Payload>, File> encrypt;
 
     public SendtMelding kvitterAkseptert() {
-        no.ks.fiks.svarinn2.swagger.model.v1.Melding respons = svarInnApi.kvitterAkseptert(new MottattKvittering()
-                .avsenderId(this.meldingSomSkalKvitteres.getMottakerKontoId().getUuid())
-                .kvitteringsMottakerId(this.meldingSomSkalKvitteres.getAvsenderKontoId().getUuid())
-                .kvitteringForMeldingId(this.meldingSomSkalKvitteres.getMeldingId().getUuid()));
+        no.ks.fiks.svarinn2.swagger.model.v1.Melding respons = svarInnApi.kvitterAkseptert(
+                this.meldingSomSkalKvitteres.getMottakerKontoId().getUuid(),
+                this.meldingSomSkalKvitteres.getAvsenderKontoId().getUuid(),
+                this.meldingSomSkalKvitteres.getMeldingId().getUuid());
         ack();
         return SendtMelding.fromSendResponse(respons);
     }
