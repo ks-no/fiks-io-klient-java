@@ -80,7 +80,7 @@ class KlientTest extends AutorisertServiceTest {
 
     @Test
     @DisplayName("Test at alice får en optional-empty for en lookup på en ikke-eksisterende adresse")
-    void testEmptyLookup(@Autowired SvarInn2KlientGenerator generator, @Autowired TestApiBuilder<SvarInnKontoApi> kontoApi) throws Exception {
+    void testEmptyLookup(@Autowired SvarInn2KlientGenerator generator) throws Exception {
         SvarInnKlient aliceKlient = getAliceKlient(generator);
 
         Optional<Konto> konto = aliceKlient.lookup(LookupRequest.builder()

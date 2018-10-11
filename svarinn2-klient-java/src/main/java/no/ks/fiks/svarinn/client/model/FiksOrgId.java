@@ -6,6 +6,6 @@ import lombok.Value;
 import java.util.UUID;
 
 @Value
-class FiksOrgId {
+public class FiksOrgId {
     @NonNull UUID fiksOrgId;
 }
