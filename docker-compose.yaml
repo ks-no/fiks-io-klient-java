@@ -54,6 +54,8 @@ services:
 
   fiks-autorisasjon-query-service:
     image: rodolpheche/wiremock
+    volumes:
+    - ./local/fiks-autorisasjon-service-mock:/home/wiremock/mappings
     command: java -cp /var/wiremock/lib/*:/var/wiremock/extensions/* com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --global-response-templating
 
   fiks-autorisasjon-update-service:
@@ -62,6 +64,8 @@ services:
 
   fiks-konfigurasjon-service:
     image: rodolpheche/wiremock
+    volumes:
+    - ./local/fiks-konfigurasjon-service-mock:/home/wiremock/mappings
     command: java -cp /var/wiremock/lib/*:/var/wiremock/extensions/* com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --global-response-templating
 
   fiks-fullmakt-service:

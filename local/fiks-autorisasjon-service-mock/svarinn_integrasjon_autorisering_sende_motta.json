@@ -1,0 +1,22 @@
+{
+  "request": {
+    "method": "GET",
+    "url" : "/autorisasjon-query/api/v1/autorisasjon/isAutorisert?aktor=12de1c82-a315-49c8-a2d9-3bd9cac83454&privilegium=SVARINN.SENDE_MOTTA&ressurs=00000000-0000-0000-0000-000000000000",
+    "headers": {
+      "IntegrasjonId": {
+        "equalTo": "7eaea626-03f9-43d2-9a9c-6b6bd23f76bb"
+      },
+      "IntegrasjonPassord": {
+        "equalTo": "thepassword"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": "true",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
+

@@ -18,7 +18,6 @@ public class FiksIntegrasjonKonfigurasjon {
      */
     @NonNull private UUID integrasjonId;
 
-
     /**
      * Påkrevd felt. Passord for integrasjonen som generert i fiks-konfigurasjon
      */

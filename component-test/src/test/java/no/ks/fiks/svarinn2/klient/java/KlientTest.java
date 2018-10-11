@@ -1,6 +1,7 @@
 package no.ks.fiks.svarinn2.klient.java;
 
 import no.ks.fiks.componenttest.support.feign.TestApiBuilder;
+import no.ks.fiks.componenttest.support.invoker.TestInvoker;
 import no.ks.fiks.svarinn.client.SvarInnKlient;
 import no.ks.fiks.svarinn.client.model.*;
 import no.ks.fiks.svarinn2.commons.MeldingsType;
@@ -68,13 +69,13 @@ class KlientTest extends AutorisertServiceTest {
                 .addIdentifikatorItem(identifikator)
                 .addMeldingTypeItem(meldingType));
 
-        Optional<Konto> konto = aliceKlient.lookup(LookupRequest.builder()
+        Konto konto = new TestInvoker().invoke(() -> aliceKlient.lookup(LookupRequest.builder()
                 .dokumentType(meldingType)
                 .identifikator(identifikator)
                 .sikkerhetsNiva(sikkerhetsniva)
-                .build());
+                .build()).get());
 
-        assertEquals(bobKlient.getKontoId(), konto.map(Konto::getKontoId).orElseThrow(() -> new RuntimeException("ingen konto funnet")));
+        assertEquals(bobKlient.getKontoId(), konto.getKontoId());
     }
 
     @Test

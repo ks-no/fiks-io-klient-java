@@ -14,7 +14,6 @@ import org.bouncycastle.cms.CMSAlgorithm;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.io.*;
-import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.Security;
 import java.security.cert.X509Certificate;
@@ -26,19 +25,33 @@ import java.util.UUID;
 import static com.google.common.io.Closeables.closeQuietly;
 
 class AsicHandler {
-    private PrivateKey privatNokkel;
-    private SigneringKonfigurasjon signeringKonfigurasjon;
-    private AsicReaderFactory asicReaderFactory = AsicReaderFactory.newFactory();
-    private AsicWriterFactory asicWriterFactory = AsicWriterFactory.newFactory();
+    private final PrivateKey privatNokkel;
+    private final SigneringKonfigurasjon signeringKonfigurasjon;
+    private final AsicReaderFactory asicReaderFactory = AsicReaderFactory.newFactory();
+    private final AsicWriterFactory asicWriterFactory = AsicWriterFactory.newFactory();
+    private final byte[] keyStoreBytes;
 
-    AsicHandler(@NonNull PrivateKey privatNokkel, @NonNull SigneringKonfigurasjon signeringKonfigurasjon) {
+    AsicHandler(@NonNull X509Certificate publisertOffentligNokkel, @NonNull PrivateKey privatNokkel, @NonNull SigneringKonfigurasjon signeringKonfigurasjon) {
         this.privatNokkel = privatNokkel;
         this.signeringKonfigurasjon = signeringKonfigurasjon;
+
+        try {
+        if (signeringKonfigurasjon.getKeyStore().getCertificateAlias(publisertOffentligNokkel) == null)
+            throw new RuntimeException("Offentlig nøkkel publisert for denne kontoen i Fiks Konfigurasjon finnes ikke i signering-jks. For at mottaker skal kunne validere avsender må meldingen signeres med den publiserte nøkkelen.");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        try(ByteArrayOutputStream output = new ByteArrayOutputStream()){
+            signeringKonfigurasjon.getKeyStore().store(output, signeringKonfigurasjon.getKeyStorePassword().toCharArray());
+            keyStoreBytes = output.toByteArray();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     File encrypt(@NonNull X509Certificate mottakerCert, @NonNull List<Payload> payload) {
-        try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-
+        try {
             File archiveOutputFile = File.createTempFile(UUID.randomUUID().toString(), ".asice");
             Security.addProvider(new BouncyCastleProvider());
 
@@ -46,15 +59,10 @@ class AsicHandler {
                     .newContainer(archiveOutputFile),
                     mottakerCert,
                     CMSAlgorithm.AES256_GCM);
-
             payload.forEach(p -> write(writer, p));
-
             writer.setRootEntryName(payload.get(0).getFilnavn());
-            KeyStore keyStore = signeringKonfigurasjon.getKeyStore();
 
-            keyStore.store(output, signeringKonfigurasjon.getKeyStorePassword().toCharArray());
-
-            try(InputStream inputStream = new ByteArrayInputStream(output.toByteArray())) {
+            try (InputStream inputStream = new ByteArrayInputStream(keyStoreBytes)) {
                 writer.sign(new SignatureHelper(inputStream, signeringKonfigurasjon.getKeyStorePassword(), signeringKonfigurasjon.getKeyAlias(), signeringKonfigurasjon.getKeyPassword()));
             }
 

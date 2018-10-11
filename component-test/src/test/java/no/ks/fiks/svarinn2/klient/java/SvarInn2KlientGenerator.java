@@ -88,6 +88,7 @@ class SvarInn2KlientGenerator {
                                 .privatNokkel(privateKey)
                                 .klientId("asdf")
                                 .accessTokenUri(URI.create("http://" + DockerComposeIpResolver.getIp(properties.getProject(), "oidc-mock").orElseThrow(() -> new RuntimeException("Could not find oidc mock container")) + ":8080/oidc-provider-mock/token"))
+                                .idPortenAudience("asdf")
                                 .build())
                         .build())
                 .build());

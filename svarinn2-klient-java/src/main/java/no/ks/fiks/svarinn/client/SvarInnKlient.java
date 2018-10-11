@@ -33,13 +33,16 @@ import static java.util.Collections.singletonList;
 public class SvarInnKlient {
 
     private static final int DEFAULT_API_PORT = 443;
+    private static final String INTEGRASJON_PASSORD_HEADER = "IntegrasjonPassord";
+    private static final String INTEGRASJON_ID_HEADER = "IntegrasjonId";
+
     private final KontoId kontoId;
     private final AmqpHandler meldingHandler;
     private final KatalogHandler katalogHandler;
     private final SvarInnHandler svarInnHandler;
 
-    public SvarInnKlient(@NonNull SvarInnKonfigurasjon settings) {
-        OAuth2RestTemplate oauthTemplate = getOauthTemplate(settings.getFiksIntegrasjonKonfigurasjon());
+    public SvarInnKlient(@NonNull SvarInnKonfigurasjon konfigurasjon) {
+        OAuth2RestTemplate oauthTemplate = getOauthTemplate(konfigurasjon.getFiksIntegrasjonKonfigurasjon());
 
         ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
         SvarInnKatalogApi katalogApi = Feign.builder()
@@ -47,24 +50,24 @@ public class SvarInnKlient {
                 .encoder(new JacksonEncoder(objectMapper))
                 .requestInterceptor(new IdPortenFeignRequestInterceptor(oauthTemplate))
                 .requestInterceptor(rt -> rt
-                        .header("IntegrasjonId", settings.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId().toString())
-                        .header("ServicePassword", settings.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
-                .target(SvarInnKatalogApi.class, generateApiUri(settings.getFiksHost(), settings.getKatalogApiHost(), settings.getSvarInnApiPort(), "katalogApi"));
+                        .header(INTEGRASJON_ID_HEADER, konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId().toString())
+                        .header(INTEGRASJON_PASSORD_HEADER, konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
+                .target(SvarInnKatalogApi.class, generateApiUri(konfigurasjon.getFiksHost(), konfigurasjon.getKatalogApiHost(), konfigurasjon.getSvarInnApiPort(), "katalogApi"));
 
         SvarInnApi svarInnApi = Feign.builder()
                 .decoder(new JacksonDecoder(objectMapper))
                 .encoder(new FormEncoder())
                 .requestInterceptor(new IdPortenFeignRequestInterceptor(oauthTemplate))
                 .requestInterceptor(rt -> rt
-                        .header("IntegrasjonId", settings.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId().toString())
-                        .header("ServicePassword", settings.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
-                .target(SvarInnApi.class, generateApiUri(settings.getFiksHost(), settings.getSvarInnApiHost(), settings.getSvarInnApiPort(), "svarInnApi"));
+                        .header(INTEGRASJON_ID_HEADER, konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId().toString())
+                        .header(INTEGRASJON_PASSORD_HEADER, konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
+                .target(SvarInnApi.class, generateApiUri(konfigurasjon.getFiksHost(), konfigurasjon.getSvarInnApiHost(), konfigurasjon.getSvarInnApiPort(), "svarInnApi"));
 
-        kontoId = settings.getKontoKonfigurasjon().getKontoId();
+        kontoId = konfigurasjon.getKontoKonfigurasjon().getKontoId();
         katalogHandler = new KatalogHandler(katalogApi);
-        AsicHandler asicHandler = new AsicHandler(settings.getKontoKonfigurasjon().getPrivatNokkel(), settings.getSigneringKonfigurasjon());
+        AsicHandler asicHandler = new AsicHandler(katalogHandler.getPublicKey(kontoId), konfigurasjon.getKontoKonfigurasjon().getPrivatNokkel(), konfigurasjon.getSigneringKonfigurasjon());
         svarInnHandler = new SvarInnHandler(kontoId, svarInnApi, katalogHandler, asicHandler);
-        meldingHandler = new AmqpHandler(settings.getAmqpKonfigurasjon(), settings.getFiksIntegrasjonKonfigurasjon(), svarInnHandler, asicHandler, oauthTemplate, kontoId);
+        meldingHandler = new AmqpHandler(konfigurasjon.getAmqpKonfigurasjon(), konfigurasjon.getFiksIntegrasjonKonfigurasjon(), svarInnHandler, asicHandler, oauthTemplate, kontoId);
     }
 
     public KontoId getKontoId() {
@@ -116,9 +119,9 @@ public class SvarInnKlient {
         OAuth2RestTemplate oAuth2RestTemplate = new OAuth2RestTemplate(jwtResourceDetails, new DefaultOAuth2ClientContext());
 
         IdPortenJwtConfig config = new IdPortenJwtConfig();
-        config.setAudience("asdf");
-        config.setIssuer("asdf");
-        config.setScope("asdf");
+        config.setAudience(intKonf.getIdPortenKonfigurasjon().getIdPortenAudience());
+        config.setIssuer(intKonf.getIdPortenKonfigurasjon().getKlientId());
+        config.setScope("ks");
 
         try {
             oAuth2RestTemplate.setAccessTokenProvider(new JwtAccessTokenProvider(new IdPortenJwtCreater(intKonf.getIdPortenKonfigurasjon().getPrivatNokkel(), intKonf.getIdPortenKonfigurasjon().getVirksomhetsertifikat(), config)));

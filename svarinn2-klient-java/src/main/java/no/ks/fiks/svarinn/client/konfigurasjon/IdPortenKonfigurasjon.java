@@ -30,6 +30,11 @@ public class IdPortenKonfigurasjon {
     @NonNull private URI accessTokenUri;
 
     /**
+     * Påkrevd. Aud-claim for request tokens mot ID-Porten
+     */
+    @NonNull private String idPortenAudience;
+
+    /**
      * Påkrevd. Organisasjonens oauth klient-id, som registrert hos ID-Porten.
      */
     @NonNull private String klientId;
