@@ -64,7 +64,7 @@ class KlientTest extends AutorisertServiceTest {
         Identifikator identifikator = new Identifikator().identifikatorType(Identifikator.IdentifikatorTypeEnum.ORG_NO).identifikator("123456789");
         int sikkerhetsniva = 4;
 
-        kontoApi.asPerson(TestUtil.randomFnr()).build().leggTilAdresse(bobKlient.getKontoId().getUuid(), new AdresseSpesifikasjon()
+        kontoApi.asPerson(TestUtil.randomPerson()).build().leggTilAdresse(bobKlient.getKontoId().getUuid(), new AdresseSpesifikasjon()
                 .addSikkerhetsnivaerItem(sikkerhetsniva)
                 .addIdentifikatorItem(identifikator)
                 .addMeldingTypeItem(meldingType));

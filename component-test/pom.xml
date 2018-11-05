@@ -13,7 +13,33 @@
     <artifactId>component-test</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
+    <properties>
+        <autorisasjon.version>1.0.14-SNAPSHOT</autorisasjon.version>
+        <fullmakt.version>1.0.13-SNAPSHOT</fullmakt.version>
+        <konfigurasjon.version>1.0.12-SNAPSHOT</konfigurasjon.version>
+    </properties>
+
     <dependencies>
+        <dependency>
+            <groupId>no.ks.fiks</groupId>
+            <artifactId>autorisasjon-query-mock</artifactId>
+            <version>${autorisasjon.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>no.ks.fiks</groupId>
+            <artifactId>autorisasjon-update-mock</artifactId>
+            <version>${autorisasjon.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>no.ks.fiks</groupId>
+            <artifactId>fullmakt-mock</artifactId>
+            <version>${fullmakt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>no.ks.fiks</groupId>
+            <artifactId>konfigurasjon-mock</artifactId>
+            <version>${konfigurasjon.version}</version>
+        </dependency>
         <dependency>
             <groupId>no.difi.commons</groupId>
             <artifactId>commons-asic</artifactId>
@@ -23,11 +49,6 @@
             <groupId>no.ks.fiks</groupId>
             <artifactId>svarinn2-commons</artifactId>
             <version>1.0.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.6</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.security.oauth</groupId>
@@ -82,7 +103,7 @@
         <dependency>
             <groupId>no.ks.fiks</groupId>
             <artifactId>test-support</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>1.0.4</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -110,78 +131,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    <distributionManagement>
-        <repository>
-            <uniqueVersion>false</uniqueVersion>
-            <id>ks-nexus</id>
-            <name>KS Repository</name>
-            <url>http://ksjenkins1-u.usrv.ubergenkom.no:8082/repository/ks-nexus/</url>
-        </repository>
-        <snapshotRepository>
-            <uniqueVersion>true</uniqueVersion>
-            <id>ks-nexus-snapshot</id>
-            <name>KS Snapshots</name>
-            <url>http://ksjenkins1-u.usrv.ubergenkom.no:8082/repository/ks-nexus-snapshot/</url>
-        </snapshotRepository>
-    </distributionManagement>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.0.0-M2</version>
-                <inherited>true</inherited>
-                <executions>
-                    <execution>
-                        <id>default-cli</id>
-                        <configuration>
-                            <rules>
-                                <requireReleaseVersion/>
-                                <requireReproducibleBuilds
-                                        implementation="org.scijava.maven.plugin.enforcer.RequireReproducibleBuilds">
-                                </requireReproducibleBuilds>
-                            </rules>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>validate-snap</id>
-                        <configuration>
-                            <rules>
-                                <requireSnapshotVersion>
-                                    <failWhenParentIsRelease>false</failWhenParentIsRelease>
-                                </requireSnapshotVersion>
-                            </rules>
-                            <fail>true</fail>
-                        </configuration>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.scijava</groupId>
-                        <artifactId>scijava-maven-plugin</artifactId>
-                        <version>1.0.0</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.7.0</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-        </plugins>
-
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>${maven-enforcer-plugin.version}</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
 </project>

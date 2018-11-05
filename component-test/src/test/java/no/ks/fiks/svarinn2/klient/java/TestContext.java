@@ -7,7 +7,7 @@ import no.ks.fiks.componenttest.support.ComponentTestConfiguration;
 import no.ks.fiks.componenttest.support.ComponentTestConfigurationProperties;
 import no.ks.fiks.componenttest.support.feign.TestApi;
 import no.ks.fiks.componenttest.support.feign.TestApiBuilder;
-import no.ks.fiks.componenttest.support.konfigurasjon.KonfigurasjonMock;
+import no.ks.fiks.konfigurasjon.mock.KonfigurasjonMock;
 import no.ks.fiks.svarinn2.katalog.swagger.api.v1.SvarInnKatalogApi;
 import no.ks.fiks.svarinn2.katalog.swagger.api.v1.SvarInnKontoApi;
 import no.ks.fiks.svarinn2.swagger.api.v1.SvarInnApi;

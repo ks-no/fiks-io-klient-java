@@ -21,6 +21,7 @@ import no.ks.fiks.svarinn2.swagger.api.v1.SvarInnApi;
 import org.springframework.security.oauth2.client.DefaultOAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 
+import java.io.Closeable;
 import java.io.File;
 import java.security.cert.CertificateEncodingException;
 import java.util.List;
@@ -30,7 +31,7 @@ import java.util.function.Consumer;
 
 import static java.util.Collections.singletonList;
 
-public class SvarInnKlient {
+public class SvarInnKlient implements Closeable {
 
     private static final int DEFAULT_API_PORT = 443;
     private static final String INTEGRASJON_PASSORD_HEADER = "IntegrasjonPassord";
@@ -96,6 +97,10 @@ public class SvarInnKlient {
 
     public void newSubscription(@NonNull BiConsumer<MottattMelding, KvitteringSender> onMelding, @NonNull Consumer<ShutdownSignalException> onClose) {
         meldingHandler.newConsume(onMelding, onClose);
+    }
+
+    public void close(){
+        //TODO close-it
     }
 
     private static String generateApiUri(String fiksHost, String apiHost, Integer apiPort, String apiName) {

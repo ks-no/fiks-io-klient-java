@@ -37,7 +37,7 @@ public class KatalogHandler {
             if (cf == null)
                 cf = CertificateFactory.getInstance("X.509");
 
-            return (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(katalogApi.getOffentligNokkelPem(mottakerKontoId.getUuid()).getNokkel().getBytes()));
+            return (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(katalogApi.getOffentligNokkel(mottakerKontoId.getUuid()).getNokkel().getBytes()));
         } catch (CertificateException e) {
             throw new RuntimeException(String.format("Feil under generering av offentlig sertifikat for mottaker %s", mottakerKontoId), e);
         }

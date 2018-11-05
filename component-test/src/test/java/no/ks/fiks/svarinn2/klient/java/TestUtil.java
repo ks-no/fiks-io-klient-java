@@ -1,5 +1,6 @@
 package no.ks.fiks.svarinn2.klient.java;
 
+import no.ks.fiks.componenttest.support.feign.Person;
 import no.ks.fiks.svarinn2.katalog.swagger.model.v1.Identifikator;
 import org.apache.commons.lang3.RandomStringUtils;
 
@@ -41,5 +42,12 @@ public class TestUtil {
         final byte[] bytes = new byte[length];
         ThreadLocalRandom.current().nextBytes(bytes);
         return bytes;
+    }
+
+    public static Person randomPerson() {
+        return Person.builder()
+                .fnr(randomFnr())
+                .orgno(randomOrgNo())
+                .build();
     }
 }

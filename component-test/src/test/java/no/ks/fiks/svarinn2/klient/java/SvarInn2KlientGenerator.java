@@ -1,10 +1,8 @@
 package no.ks.fiks.svarinn2.klient.java;
 
-import io.vavr.Tuple;
-import io.vavr.Tuple2;
 import no.ks.fiks.componenttest.support.ComponentTestConfigurationProperties;
 import no.ks.fiks.componenttest.support.feign.TestApiBuilder;
-import no.ks.fiks.componenttest.support.konfigurasjon.KonfigurasjonMock;
+import no.ks.fiks.konfigurasjon.mock.KonfigurasjonMock;
 import no.ks.fiks.svarinn.client.SvarInnKlient;
 import no.ks.fiks.svarinn.client.konfigurasjon.*;
 import no.ks.fiks.svarinn.client.model.KontoId;
@@ -33,7 +31,7 @@ class SvarInn2KlientGenerator {
                             TestApiBuilder<SvarInnKontoApi> kontoApiBuilder) {
         this.properties = properties;
         this.konfigurasjonMock = konfigurasjonMock;
-        this.svarInnKontoApi = kontoApiBuilder.asPerson(TestUtil.randomFnr()).build();
+        this.svarInnKontoApi = kontoApiBuilder.asPerson(TestUtil.randomPerson()).build();
     }
 
     SvarInnKlient opprettKontoOgKlient(KeyStore keyStore, String keyStorePassword, String certAlias, String keyAlias, String keyPassword) throws Exception {
