@@ -3,19 +3,10 @@ package no.ks.fiks.svarinn.client.konfigurasjon;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import no.ks.fiks.svarinn.client.model.KontoId;
-import no.ks.fiks.svarinn.client.model.LookupRequest;
-
-import java.util.function.Function;
 
 @Value
 @Builder
 public class SvarInnKonfigurasjon {
-
-    /**
-     * Påkrevd felt. Host-navn for ks-fiks.
-     */
-    @NonNull private String fiksHost;
 
     /**
      * Påkrevd felt. Se {@link KontoKonfigurasjon}
@@ -33,32 +24,28 @@ public class SvarInnKonfigurasjon {
     @NonNull private FiksIntegrasjonKonfigurasjon fiksIntegrasjonKonfigurasjon;
 
     /**
-     * Ikke påkrevd. Se {@link AmqpKonfigurasjon}
+     * Ikke påkrevd. Kan brukes for å overkjøre defaults for fiks-api-host. Se {@link FiksApiKonfigurasjon}
      */
-    private AmqpKonfigurasjon amqpKonfigurasjon;
+    @Builder.Default private FiksApiKonfigurasjon fiksApiKonfigurasjon = FiksApiKonfigurasjon.builder().build();
 
     /**
-     * Ikke påkrevd. Kan brukes til å overstyre {@link SvarInnKonfigurasjon#fiksHost} for dette endepunktet.
+     * Ikke påkrevd. Kan brukes for å overkjøre defaults for fiks-dokumentlager. Se {@link DokumentLagerKonfigurasjon}
      */
-    private String katalogApiHost;
+    @Builder.Default private DokumentLagerKonfigurasjon dokumentlagerKonfigurasjon = DokumentLagerKonfigurasjon.builder().build();
 
     /**
-     * Ikke påkrevd. Kan brukes til å overstyre default port for dette endepunktet.
+     * Ikke påkrevd. Kan brukes for å overkjøre defaults for fiks-svarinn-amqp. Se {@link AmqpKonfigurasjon}
      */
-    private Integer katalogApiPort;
+    @Builder.Default private AmqpKonfigurasjon amqpKonfigurasjon = AmqpKonfigurasjon.builder().build();
 
     /**
-     * Ikke påkrevd. Gir mulighet til å benytte en cache for oppslag mot svarinn katalogen for å bedre ytelse. Hvis dette ikke settes vil ikke caching bli benyttet
+     * Ikke påkrevd. Kan brukes for å overkjøre defaults for fiks-katalog. Se {@link KatalogKonfigurasjon}
      */
-    private Function<LookupRequest, KontoId> katalogApiCache;
+    @Builder.Default private KatalogKonfigurasjon katalogKonfigurasjon = KatalogKonfigurasjon.builder().build();
 
      /**
-      * Ikke påkrevd. Kan brukes til å overstyre {@link SvarInnKonfigurasjon#fiksHost} for dette endepunktet.
+      * Ikke påkrevd. Kan brukes for å overkjøre defaults for endepunkt for å sende meldinger til SvarInn. Se {@link SendMeldingKonfigurasjon}
       */
-    private String svarInnApiHost;
+    @Builder.Default private SendMeldingKonfigurasjon sendMeldingKonfigurasjon = SendMeldingKonfigurasjon.builder().build();
 
-    /**
-     * Ikke påkrevd. Kan brukes til å overstyre default port for dette endepunktet.
-     */
-    private Integer svarInnApiPort;
 }

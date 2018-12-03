@@ -17,7 +17,7 @@ public class AutorisertServiceTest extends ServiceComponentTest {
 
     @BeforeAll
     public void beforeAll(@Autowired AutorisasjonQueryMock autorisasjonQueryMock, @Autowired AutorisasjonUpdateMock autorisasjonUpdateMock, @Autowired FullmaktMock fullmaktMock) {
-        autorisasjonQueryMock.setupAuthorizationQuery(null, Privilegier.ADMIN, null, RessursType.TJENESTE_SVARINN.getId());
+        autorisasjonQueryMock.setupAuthorizationQuery(null, Privilegier.ADMIN, null, RessursType.TJENESTE_SVARINN2.getId());
         autorisasjonQueryMock.setupAuthorizationSuccess();
         autorisasjonQueryMock.setupRessurs();
 

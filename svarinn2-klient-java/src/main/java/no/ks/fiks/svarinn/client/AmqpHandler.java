@@ -2,9 +2,12 @@ package no.ks.fiks.svarinn.client;
 
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.Delivery;
 import com.rabbitmq.client.ShutdownSignalException;
 import com.rabbitmq.client.impl.CredentialsProvider;
 import lombok.NonNull;
+import no.ks.fiks.dokumentlager.klient.DokumentlagerKlient;
+import no.ks.fiks.maskinporten.Maskinportenklient;
 import no.ks.fiks.svarinn.client.konfigurasjon.AmqpKonfigurasjon;
 import no.ks.fiks.svarinn.client.konfigurasjon.FiksIntegrasjonKonfigurasjon;
 import no.ks.fiks.svarinn.client.model.KontoId;
@@ -12,9 +15,10 @@ import no.ks.fiks.svarinn.client.model.MeldingId;
 import no.ks.fiks.svarinn.client.model.MottattMelding;
 import no.ks.fiks.svarinn2.commons.MottattMeldingMetadata;
 import no.ks.fiks.svarinn2.commons.SvarInnMeldingParser;
-import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -22,8 +26,10 @@ import java.util.function.Predicate;
 
 class AmqpHandler {
 
+    private static final String DOKUMENTLAGER_PAYLOAD_TYPE_HEADER = "DOKUMENTLAGER_PAYLOAD";
     private final Channel channel;
     private final Predicate<MeldingId> meldingErBehandlet;
+    private final DokumentlagerKlient dokumentlagerKlient;
     private KontoId kontoId;
     private final SvarInnHandler svarInnApi;
     private final AsicHandler asic;
@@ -32,14 +38,16 @@ class AmqpHandler {
                 @NonNull FiksIntegrasjonKonfigurasjon intKonf,
                 @NonNull SvarInnHandler svarInn,
                 @NonNull AsicHandler asic,
-                @NonNull OAuth2RestTemplate oAuth2RestTemplate,
-                @NonNull KontoId kontoId) {
+                @NonNull Maskinportenklient maskinportenklient,
+                @NonNull KontoId kontoId,
+                @NonNull DokumentlagerKlient dokumentlagerKlient) {
         this.svarInnApi = svarInn;
         this.asic = asic;
         this.kontoId = kontoId;
         this.meldingErBehandlet = amqpKonf.getMeldingErBehandlet();
+        this.dokumentlagerKlient = dokumentlagerKlient;
 
-        ConnectionFactory factory = getConnectionFactory(amqpKonf, intKonf, oAuth2RestTemplate);
+        ConnectionFactory factory = getConnectionFactory(amqpKonf, intKonf, maskinportenklient);
 
         try {
             channel = factory.newConnection().createChannel();
@@ -56,7 +64,10 @@ class AmqpHandler {
                 if (m.getEnvelope().isRedeliver() && meldingErBehandlet.test(new MeldingId(parsed.getMeldingId()))) {
                     channel.basicAck(m.getEnvelope().getDeliveryTag(), false);
                 } else {
-                    MottattMelding melding = MottattMelding.fromMottattMeldingMetadata(parsed, asic.decrypt(m.getBody()));
+                    MottattMelding melding = MottattMelding.fromMottattMeldingMetadata(
+                            parsed,
+                            () -> payloadInDokumentlager(m) ? dokumentlagerKlient.download(getDokumentlagerId(m)) : new ByteArrayInputStream(m.getBody()),
+                            () -> asic.decrypt(payloadInDokumentlager(m) ? dokumentlagerKlient.download(getDokumentlagerId(m)) : new ByteArrayInputStream(m.getBody())));
                     onMelding.accept(melding, svarInnApi.buildKvitteringSender(() -> {
                         try {
                             channel.basicAck(m.getEnvelope().getDeliveryTag(), false);
@@ -71,10 +82,18 @@ class AmqpHandler {
         }
     }
 
-    private ConnectionFactory getConnectionFactory(AmqpKonfigurasjon amqpKonf, FiksIntegrasjonKonfigurasjon intKonf, OAuth2RestTemplate oAuth2RestTemplate) {
+    private static UUID getDokumentlagerId(Delivery m) {
+        return UUID.fromString((String) m.getProperties().getHeaders().get(DOKUMENTLAGER_PAYLOAD_TYPE_HEADER));
+    }
+
+    private static boolean payloadInDokumentlager(Delivery m) {
+        return m.getProperties().getHeaders().containsKey(DOKUMENTLAGER_PAYLOAD_TYPE_HEADER);
+    }
+
+    private ConnectionFactory getConnectionFactory(AmqpKonfigurasjon amqpKonf, FiksIntegrasjonKonfigurasjon intKonf, Maskinportenklient maskinportenklient) {
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(amqpKonf.getAmqpHost());
-        factory.setPort(amqpKonf.getAmqpPort());
+        factory.setHost(amqpKonf.getHost());
+        factory.setPort(amqpKonf.getPort());
         factory.setUsername(intKonf.getIntegrasjonId().toString());
         factory.setAutomaticRecoveryEnabled(true);
 
@@ -86,7 +105,7 @@ class AmqpHandler {
 
             @Override
             public String getPassword() {
-                return String.format("%s %s", intKonf.getIntegrasjonPassord(), oAuth2RestTemplate.getAccessToken().getValue());
+                return String.format("%s %s", intKonf.getIntegrasjonPassord(), maskinportenklient.getAccessToken());
             }
         });
         return factory;

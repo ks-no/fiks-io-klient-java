@@ -27,7 +27,7 @@ public class IdPortenKonfigurasjon {
     /**
      * Påkrevd. Uri som skal benyttes for å utføre token-request mot ID-Porten.
      */
-    @NonNull private URI accessTokenUri;
+    @NonNull private String accessTokenUri;
 
     /**
      * Påkrevd. Aud-claim for request tokens mot ID-Porten

@@ -7,19 +7,16 @@ import feign.Feign;
 import feign.form.FormEncoder;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
+import io.vavr.control.Option;
 import lombok.NonNull;
-import no.ks.fiks.security.idporten.m2m.IdPortenJwtConfig;
-import no.ks.fiks.security.idporten.m2m.IdPortenJwtCreater;
-import no.ks.fiks.security.idporten.m2m.client.JwtAccessTokenProvider;
-import no.ks.fiks.security.idporten.m2m.client.JwtResourceDetails;
-import no.ks.fiks.security.idporten.m2m.feign.IdPortenFeignRequestInterceptor;
-import no.ks.fiks.svarinn.client.konfigurasjon.FiksIntegrasjonKonfigurasjon;
-import no.ks.fiks.svarinn.client.konfigurasjon.SvarInnKonfigurasjon;
+import no.ks.fiks.dokumentlager.klient.*;
+import no.ks.fiks.feign.RequestInterceptors;
+import no.ks.fiks.maskinporten.Maskinportenklient;
+import no.ks.fiks.maskinporten.MaskinportenklientProperties;
+import no.ks.fiks.svarinn.client.konfigurasjon.*;
 import no.ks.fiks.svarinn.client.model.*;
 import no.ks.fiks.svarinn2.katalog.swagger.api.v1.SvarInnKatalogApi;
 import no.ks.fiks.svarinn2.swagger.api.v1.SvarInnApi;
-import org.springframework.security.oauth2.client.DefaultOAuth2ClientContext;
-import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 
 import java.io.Closeable;
 import java.io.File;
@@ -33,42 +30,25 @@ import static java.util.Collections.singletonList;
 
 public class SvarInnKlient implements Closeable {
 
-    private static final int DEFAULT_API_PORT = 443;
-    private static final String INTEGRASJON_PASSORD_HEADER = "IntegrasjonPassord";
-    private static final String INTEGRASJON_ID_HEADER = "IntegrasjonId";
-
     private final KontoId kontoId;
     private final AmqpHandler meldingHandler;
     private final KatalogHandler katalogHandler;
     private final SvarInnHandler svarInnHandler;
+    private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     public SvarInnKlient(@NonNull SvarInnKonfigurasjon konfigurasjon) {
-        OAuth2RestTemplate oauthTemplate = getOauthTemplate(konfigurasjon.getFiksIntegrasjonKonfigurasjon());
+        settDefaults(konfigurasjon);
 
-        ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
-        SvarInnKatalogApi katalogApi = Feign.builder()
-                .decoder(new JacksonDecoder(objectMapper))
-                .encoder(new JacksonEncoder(objectMapper))
-                .requestInterceptor(new IdPortenFeignRequestInterceptor(oauthTemplate))
-                .requestInterceptor(rt -> rt
-                        .header(INTEGRASJON_ID_HEADER, konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId().toString())
-                        .header(INTEGRASJON_PASSORD_HEADER, konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
-                .target(SvarInnKatalogApi.class, generateApiUri(konfigurasjon.getFiksHost(), konfigurasjon.getKatalogApiHost(), konfigurasjon.getSvarInnApiPort(), "katalogApi"));
-
-        SvarInnApi svarInnApi = Feign.builder()
-                .decoder(new JacksonDecoder(objectMapper))
-                .encoder(new FormEncoder())
-                .requestInterceptor(new IdPortenFeignRequestInterceptor(oauthTemplate))
-                .requestInterceptor(rt -> rt
-                        .header(INTEGRASJON_ID_HEADER, konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId().toString())
-                        .header(INTEGRASJON_PASSORD_HEADER, konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
-                .target(SvarInnApi.class, generateApiUri(konfigurasjon.getFiksHost(), konfigurasjon.getSvarInnApiHost(), konfigurasjon.getSvarInnApiPort(), "svarInnApi"));
+        Maskinportenklient maskinportenklient = getMaskinportenKlient(konfigurasjon);
+        DokumentlagerKlient dokumentlagerKlient = getDokumentlagerKlient(konfigurasjon, maskinportenklient);
+        SvarInnKatalogApi katalogApi = getSvarInnKatalogApi(konfigurasjon, maskinportenklient);
+        SvarInnApi svarInnApi = getSvarInnApi(konfigurasjon, maskinportenklient);
 
         kontoId = konfigurasjon.getKontoKonfigurasjon().getKontoId();
         katalogHandler = new KatalogHandler(katalogApi);
         AsicHandler asicHandler = new AsicHandler(katalogHandler.getPublicKey(kontoId), konfigurasjon.getKontoKonfigurasjon().getPrivatNokkel(), konfigurasjon.getSigneringKonfigurasjon());
         svarInnHandler = new SvarInnHandler(kontoId, svarInnApi, katalogHandler, asicHandler);
-        meldingHandler = new AmqpHandler(konfigurasjon.getAmqpKonfigurasjon(), konfigurasjon.getFiksIntegrasjonKonfigurasjon(), svarInnHandler, asicHandler, oauthTemplate, kontoId);
+        meldingHandler = new AmqpHandler(konfigurasjon.getAmqpKonfigurasjon(), konfigurasjon.getFiksIntegrasjonKonfigurasjon(), svarInnHandler, asicHandler, maskinportenklient, kontoId, dokumentlagerKlient);
     }
 
     public KontoId getKontoId() {
@@ -103,37 +83,79 @@ public class SvarInnKlient implements Closeable {
         //TODO close-it
     }
 
-    private static String generateApiUri(String fiksHost, String apiHost, Integer apiPort, String apiName) {
-        int port = apiPort != null ? apiPort : DEFAULT_API_PORT;
-        String host = apiHost != null ? apiHost : fiksHost;
-
-        if (host == null)
-            throw new RuntimeException(String.format("fiksHost er ikke satt, men host er heller ikke satt spesifikt for %s. Sett fiksHost eller host for det spesifikke api'et", apiName));
-
-        return host + ":" + port;
+    private SvarInnApi getSvarInnApi(@NonNull SvarInnKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
+        return Feign.builder()
+                .decoder(new JacksonDecoder(objectMapper))
+                .encoder(new FormEncoder())
+                .requestInterceptor(RequestInterceptors.settAccessToken(maskinportenklient, "ks"))
+                .requestInterceptor(RequestInterceptors.settIntegrasjon(konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(), konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
+                .target(SvarInnApi.class, konfigurasjon.getSendMeldingKonfigurasjon().getUrl());
     }
 
-    private static OAuth2RestTemplate getOauthTemplate(FiksIntegrasjonKonfigurasjon intKonf) {
-        JwtResourceDetails jwtResourceDetails = new JwtResourceDetails();
+    private SvarInnKatalogApi getSvarInnKatalogApi(@NonNull SvarInnKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
+        return Feign.builder()
+                .decoder(new JacksonDecoder(objectMapper))
+                .encoder(new JacksonEncoder(objectMapper))
+                .requestInterceptor(RequestInterceptors.settAccessToken(maskinportenklient, "ks"))
+                .requestInterceptor(RequestInterceptors.settIntegrasjon(konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(), konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
+                .target(SvarInnKatalogApi.class, konfigurasjon.getKatalogKonfigurasjon().getUrl());
+    }
 
-        jwtResourceDetails.setId("ID-porten");
-        jwtResourceDetails.setClientId(intKonf.getIdPortenKonfigurasjon().getKlientId());
-        jwtResourceDetails.setGrantType("urn:ietf:params:oauth:grant-type:jwt-bearer");
-        jwtResourceDetails.setAccessTokenUri(intKonf.getIdPortenKonfigurasjon().getAccessTokenUri().toString());
+    private DokumentlagerKlient getDokumentlagerKlient(@NonNull SvarInnKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
+        DokumentlagerUploadProperties dokumentlagerUploadProperties = new DokumentlagerUploadProperties();
+        dokumentlagerUploadProperties.setHost(konfigurasjon.getDokumentlagerKonfigurasjon().getHost());
+        dokumentlagerUploadProperties.setPort(konfigurasjon.getDokumentlagerKonfigurasjon().getPort());
+        dokumentlagerUploadProperties.setScheme(konfigurasjon.getDokumentlagerKonfigurasjon().getScheme());
 
-        OAuth2RestTemplate oAuth2RestTemplate = new OAuth2RestTemplate(jwtResourceDetails, new DefaultOAuth2ClientContext());
+        DokumentlagerDownloadProperties dokumentlagerDownloadProperties = new DokumentlagerDownloadProperties();
+        dokumentlagerDownloadProperties.setHost(konfigurasjon.getDokumentlagerKonfigurasjon().getHost());
+        dokumentlagerDownloadProperties.setPort(konfigurasjon.getDokumentlagerKonfigurasjon().getPort());
+        dokumentlagerDownloadProperties.setScheme(konfigurasjon.getDokumentlagerKonfigurasjon().getScheme());
+        return new DokumentlagerKlient(
+                dokumentlagerUploadProperties,
+                dokumentlagerDownloadProperties,
+                new IntegrasjonAuthenticationStrategy(
+                        maskinportenklient,
+                        konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
+                        konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()),
+                new DefaultPathHandler()
+        );
+    }
 
-        IdPortenJwtConfig config = new IdPortenJwtConfig();
-        config.setAudience(intKonf.getIdPortenKonfigurasjon().getIdPortenAudience());
-        config.setIssuer(intKonf.getIdPortenKonfigurasjon().getKlientId());
-        config.setScope("ks");
+    private Maskinportenklient getMaskinportenKlient(@NonNull SvarInnKonfigurasjon konfigurasjon) {
+        MaskinportenklientProperties maskinportenklientProperties = MaskinportenklientProperties.builder()
+                .audience(konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIdPortenKonfigurasjon().getIdPortenAudience())
+                .issuer(konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIdPortenKonfigurasjon().getKlientId())
+                .numberOfSecondsLeftBeforeExpire(10)
+                .tokenEndpoint(konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIdPortenKonfigurasjon().getAccessTokenUri())
+                .build();
 
         try {
-            oAuth2RestTemplate.setAccessTokenProvider(new JwtAccessTokenProvider(new IdPortenJwtCreater(intKonf.getIdPortenKonfigurasjon().getPrivatNokkel(), intKonf.getIdPortenKonfigurasjon().getVirksomhetsertifikat(), config)));
+            return new Maskinportenklient(
+                    konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIdPortenKonfigurasjon().getPrivatNokkel(),
+                    konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIdPortenKonfigurasjon().getVirksomhetsertifikat(),
+                    maskinportenklientProperties);
         } catch (CertificateEncodingException e) {
             throw new RuntimeException(e);
         }
-        return oAuth2RestTemplate;
     }
 
+    private static void settDefaults(SvarInnKonfigurasjon konf) {
+        FiksApiKonfigurasjon fiksKonf = konf.getFiksApiKonfigurasjon();
+        settDefaults(fiksKonf, konf.getDokumentlagerKonfigurasjon());
+        settDefaults(fiksKonf, konf.getKatalogKonfigurasjon());
+        settDefaults(fiksKonf, konf.getSendMeldingKonfigurasjon());
+
+        if (konf.getAmqpKonfigurasjon().getHost() == null)
+            konf.getAmqpKonfigurasjon().setHost(fiksKonf.getHost());
+    }
+
+    private static void settDefaults(FiksApiKonfigurasjon fiksKonf, HostKonfigurasjon hostKonf) {
+        if (hostKonf.getHost() == null)
+            hostKonf.setHost(fiksKonf.getHost());
+        if (hostKonf.getPort() == null)
+            hostKonf.setPort(fiksKonf.getPort());
+        if (hostKonf.getScheme() == null)
+            hostKonf.setScheme(fiksKonf.getScheme());
+    }
 }

@@ -12,10 +12,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -43,15 +47,16 @@ class KlientTest extends AutorisertServiceTest {
         bobKlient.newSubscription((m, k) -> futureMelding.complete(m));
 
         MottattMelding melding = futureMelding.get(10, TimeUnit.SECONDS);
-        assertEquals(payload, new String(melding.getDekryptertPayload().get(0).getBytes()));
-    }
+        ZipInputStream dekryptertPayload = melding.getDekryptertPayload();
 
+        assertEquals(payload, getPayloadAsString(dekryptertPayload, "payload.txt"));
+    }
     private SvarInnKlient getAliceKlient(@Autowired SvarInn2KlientGenerator generator) throws Exception {
-        return generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune1.p12"), "123456"), "123456", "kommune1keyalias", "kommune1keyalias", "123456");
+        return generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "alice-virksomhetssertifikat.p12"), "PASSWORD"), "PASSWORD", "et alias", "et alias", "PASSWORD");
     }
 
     private SvarInnKlient getBobKlient(@Autowired SvarInn2KlientGenerator generator) throws Exception {
-        return generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "kommune2.p12"), "123456"), "123456", "kommune2keyalias", "kommune2keyalias", "123456");
+        return generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "alice-virksomhetssertifikat.p12"), "PASSWORD"), "PASSWORD", "et alias", "et alias", "PASSWORD");
     }
 
     @Test
@@ -147,7 +152,7 @@ class KlientTest extends AutorisertServiceTest {
         assertEquals(sendtKvittering.getMeldingId(), mottattKvittering.getMeldingId());
         assertEquals(sendtMelding.getMeldingId(), mottattKvittering.getSvarPaMelding());
         assertEquals(MeldingsType.KVITTERING_AVVIST, mottattKvittering.getMeldingType());
-        assertEquals(kvitteringTekst, new String(mottattKvittering.getDekryptertPayload().get(0).getBytes()));
+        assertEquals(kvitteringTekst, getPayloadAsString(mottattKvittering.getDekryptertPayload(), "kvitteringTekst.txt"));
     }
 
     @Test
@@ -177,6 +182,24 @@ class KlientTest extends AutorisertServiceTest {
         assertEquals(sendtKvittering.getMeldingId(), mottattKvittering.getMeldingId());
         assertEquals(sendtMelding.getMeldingId(), mottattKvittering.getSvarPaMelding());
         assertEquals(MeldingsType.KVITTERING_FEILET, mottattKvittering.getMeldingType());
-        assertEquals(kvitteringTekst, new String(mottattKvittering.getDekryptertPayload().get(0).getBytes()));
+        assertEquals(kvitteringTekst, getPayloadAsString(mottattKvittering.getDekryptertPayload(), "kvitteringTekst.txt"));
     }
+
+    private String getPayloadAsString(ZipInputStream dekryptertPayload, String filename) throws IOException {
+        ZipEntry entry;
+        byte[] buffer = new byte[2048];
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        while((entry = dekryptertPayload.getNextEntry()) != null){
+            if (entry.getName().equals(filename)){
+                int len;
+                while ((len = dekryptertPayload.read(buffer)) > 0)
+                {
+                    output.write(buffer, 0, len);
+                }
+            }
+        }
+
+        return new String(output.toByteArray());
+    }
+
 }

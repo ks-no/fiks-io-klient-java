@@ -8,7 +8,6 @@ import no.difi.asic.SignatureHelper;
 import no.difi.asic.extras.CmsEncryptedAsicReader;
 import no.difi.asic.extras.CmsEncryptedAsicWriter;
 import no.ks.fiks.svarinn.client.konfigurasjon.SigneringKonfigurasjon;
-import no.ks.fiks.svarinn.client.model.MottattPayload;
 import no.ks.fiks.svarinn.client.model.Payload;
 import org.bouncycastle.cms.CMSAlgorithm;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -17,10 +16,11 @@ import java.io.*;
 import java.security.PrivateKey;
 import java.security.Security;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import static com.google.common.io.Closeables.closeQuietly;
 
@@ -36,13 +36,13 @@ class AsicHandler {
         this.signeringKonfigurasjon = signeringKonfigurasjon;
 
         try {
-        if (signeringKonfigurasjon.getKeyStore().getCertificateAlias(publisertOffentligNokkel) == null)
-            throw new RuntimeException("Offentlig nøkkel publisert for denne kontoen i Fiks Konfigurasjon finnes ikke i signering-jks. For at mottaker skal kunne validere avsender må meldingen signeres med den publiserte nøkkelen.");
+            if (signeringKonfigurasjon.getKeyStore().getCertificateAlias(publisertOffentligNokkel) == null)
+                throw new RuntimeException("Offentlig nøkkel publisert for denne kontoen i Fiks Konfigurasjon finnes ikke i signering-jks. For at mottaker skal kunne validere avsender må meldingen signeres med den publiserte nøkkelen.");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        try(ByteArrayOutputStream output = new ByteArrayOutputStream()){
+        try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             signeringKonfigurasjon.getKeyStore().store(output, signeringKonfigurasjon.getKeyStorePassword().toCharArray());
             keyStoreBytes = output.toByteArray();
         } catch (Exception e) {
@@ -72,28 +72,28 @@ class AsicHandler {
         }
     }
 
-    List<MottattPayload> decrypt(@NonNull byte[] body) {
-        if (body == null || body.length == 0)
-            return Collections.emptyList();
+    public ZipInputStream decrypt(@NonNull InputStream encryptedAsicData) {
+        try (AsicReader asicReader = asicReaderFactory.open(encryptedAsicData);
+             PipedOutputStream out = new PipedOutputStream()) {
 
-        try (AsicReader asicReader = asicReaderFactory.open(new ByteArrayInputStream(body))) {
+            PipedInputStream in = new PipedInputStream();
+            ZipInputStream zipInputStream = new ZipInputStream(in);
+            in.connect(out);
+            ZipOutputStream zipOutputStream = new ZipOutputStream(out);
+
             CmsEncryptedAsicReader reader = new CmsEncryptedAsicReader(asicReader, privatNokkel);
-
-
-            List<MottattPayload> mottattPayloads = new ArrayList<>();
-
             while (true) {
                 String filnavn = reader.getNextFile();
 
                 if (filnavn == null)
                     break;
 
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                reader.writeFile(out);
-                mottattPayloads.add(new MottattPayload(filnavn, out.toByteArray()));
+                zipOutputStream.putNextEntry(new ZipEntry(filnavn));
+                reader.writeFile(zipOutputStream);
+                zipOutputStream.closeEntry();
             }
 
-            return mottattPayloads;
+            return zipInputStream;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

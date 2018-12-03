@@ -15,7 +15,6 @@ import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 
 import java.io.File;
 import java.io.StringWriter;
-import java.net.URI;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
@@ -39,7 +38,7 @@ class SvarInn2KlientGenerator {
         String password = UUID.randomUUID().toString();
 
         X509Certificate cert = (X509Certificate) keyStore.getCertificate(certAlias);
-        PrivateKey privateKey =  (PrivateKey) keyStore.getKey(keyAlias, keyPassword.toCharArray());
+        PrivateKey privateKey = (PrivateKey) keyStore.getKey(keyAlias, keyPassword.toCharArray());
 
         konfigurasjonMock.setupIntegrasjonAuthenticateOk(integrasjonId);
 
@@ -58,12 +57,19 @@ class SvarInn2KlientGenerator {
 
         svarInnKontoApi.settOffentligNokkelPem(opprettetKonto.getKontoId(), certFile);
 
+        svarInnKontoApi.aktiver(opprettetKonto.getKontoId());
+
         return new SvarInnKlient(SvarInnKonfigurasjon.builder()
-                .fiksHost("asdfasdf")
-                .svarInnApiHost("http://" + DockerComposeIpResolver.getIp(properties.getProject(), "fiks-svarinn2-service").orElseThrow(() -> new RuntimeException("Could not find svarinn-service")))
-                .svarInnApiPort(8080)
-                .katalogApiHost("http://" + DockerComposeIpResolver.getIp(properties.getProject(), "fiks-svarinn2-katalog-service").orElseThrow(() -> new RuntimeException("Could not find svarinn-service")))
-                .katalogApiPort(8080)
+                .fiksApiKonfigurasjon(FiksApiKonfigurasjon.builder()
+                        .scheme("http")
+                        .port(8080)
+                        .build())
+                .sendMeldingKonfigurasjon(SendMeldingKonfigurasjon.builder()
+                        .host(DockerComposeIpResolver.getIp(properties.getProject(), "fiks-svarinn2-service").orElseThrow(() -> new RuntimeException("Could not find svarinn-service")))
+                        .build())
+                .katalogKonfigurasjon(KatalogKonfigurasjon.builder()
+                        .host(DockerComposeIpResolver.getIp(properties.getProject(), "fiks-svarinn2-katalog-service").orElseThrow(() -> new RuntimeException("Could not find svarinn-service")))
+                        .build())
                 .kontoKonfigurasjon(KontoKonfigurasjon.builder()
                         .kontoId(new KontoId(opprettetKonto.getKontoId()))
                         .privatNokkel(privateKey)
@@ -75,8 +81,8 @@ class SvarInn2KlientGenerator {
                         .keyStorePassword(keyStorePassword)
                         .build())
                 .amqpKonfigurasjon(AmqpKonfigurasjon.builder()
-                        .amqpHost(DockerComposeIpResolver.getIp(properties.getProject(), "rabbitmq").orElseThrow(() -> new RuntimeException("Could not find rabbitmq container")))
-                        .amqpPort(5672)
+                        .host(DockerComposeIpResolver.getIp(properties.getProject(), "rabbitmq").orElseThrow(() -> new RuntimeException("Could not find rabbitmq container")))
+                        .port(5672)
                         .build())
                 .fiksIntegrasjonKonfigurasjon(FiksIntegrasjonKonfigurasjon.builder()
                         .integrasjonId(integrasjonId)
@@ -85,7 +91,7 @@ class SvarInn2KlientGenerator {
                                 .virksomhetsertifikat(cert)
                                 .privatNokkel(privateKey)
                                 .klientId("asdf")
-                                .accessTokenUri(URI.create("http://" + DockerComposeIpResolver.getIp(properties.getProject(), "oidc-mock").orElseThrow(() -> new RuntimeException("Could not find oidc mock container")) + ":8080/oidc-provider-mock/token"))
+                                .accessTokenUri("http://" + DockerComposeIpResolver.getIp(properties.getProject(), "oidc-mock").orElseThrow(() -> new RuntimeException("Could not find oidc mock container")) + ":8080/oidc-provider-mock/token")
                                 .idPortenAudience("asdf")
                                 .build())
                         .build())

@@ -25,9 +25,14 @@
             <version>2.9.7</version>
         </dependency>
         <dependency>
-            <groupId>no.ks.fiks.security</groupId>
-            <artifactId>idporten-m2m-oauth-spring-boot</artifactId>
-            <version>1.0.2</version>
+            <groupId>no.ks.fiks</groupId>
+            <artifactId>maskinporten-client</artifactId>
+            <version>1.0.5-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>no.ks.fiks</groupId>
+            <artifactId>feign-interceptors</artifactId>
+            <version>1.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.security.oauth</groupId>
@@ -40,12 +45,22 @@
         </dependency>
         <dependency>
             <groupId>no.ks.fiks</groupId>
+            <artifactId>dokumentlager-fiks-client</artifactId>
+            <version>1.0.8-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>no.ks.fiks</groupId>
             <artifactId>svarinn2-commons</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>no.ks.fiks</groupId>
             <artifactId>svarinn2-katalog-api-v1</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>no.ks.fiks</groupId>
+            <artifactId>svarinn2-api-v1</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
