@@ -23,7 +23,7 @@ public class KatalogHandler {
 
     public Optional<Konto> lookup(@NonNull LookupRequest request) {
         try {
-            return Optional.of(Konto.fromKatalogModel(katalogApi.lookup(request.getIdentifikator().getIdentifikatorType().getValue(), request.getIdentifikator().getIdentifikator(), request.getDokumentType(), request.getSikkerhetsNiva())));
+            return Optional.of(Konto.fromKatalogModel(katalogApi.lookup(request.getIdentifikator().getIdentifikator() + "." + request.getIdentifikator().getIdentifikatorType(), request.getDokumentType(), request.getSikkerhetsNiva())));
         } catch (FeignException e) {
             if (e.status() == 404)
                 return Optional.empty();

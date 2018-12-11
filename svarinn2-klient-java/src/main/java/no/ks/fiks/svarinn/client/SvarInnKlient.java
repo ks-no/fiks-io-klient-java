@@ -87,8 +87,8 @@ public class SvarInnKlient implements Closeable {
         return Feign.builder()
                 .decoder(new JacksonDecoder(objectMapper))
                 .encoder(new FormEncoder())
-                .requestInterceptor(RequestInterceptors.settAccessToken(maskinportenklient, "ks"))
-                .requestInterceptor(RequestInterceptors.settIntegrasjon(konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(), konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
+                .requestInterceptor(RequestInterceptors.accessToken(maskinportenklient, "ks"))
+                .requestInterceptor(RequestInterceptors.integrasjon(konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(), konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
                 .target(SvarInnApi.class, konfigurasjon.getSendMeldingKonfigurasjon().getUrl());
     }
 
@@ -96,8 +96,8 @@ public class SvarInnKlient implements Closeable {
         return Feign.builder()
                 .decoder(new JacksonDecoder(objectMapper))
                 .encoder(new JacksonEncoder(objectMapper))
-                .requestInterceptor(RequestInterceptors.settAccessToken(maskinportenklient, "ks"))
-                .requestInterceptor(RequestInterceptors.settIntegrasjon(konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(), konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
+                .requestInterceptor(RequestInterceptors.accessToken(maskinportenklient, "ks"))
+                .requestInterceptor(RequestInterceptors.integrasjon(konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(), konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
                 .target(SvarInnKatalogApi.class, konfigurasjon.getKatalogKonfigurasjon().getUrl());
     }
 
