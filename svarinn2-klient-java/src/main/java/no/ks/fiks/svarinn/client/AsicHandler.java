@@ -17,7 +17,8 @@ import java.security.PrivateKey;
 import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.util.List;
-import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -50,26 +51,32 @@ class AsicHandler {
         }
     }
 
-    File encrypt(@NonNull X509Certificate mottakerCert, @NonNull List<Payload> payload) {
-        try {
-            File archiveOutputFile = File.createTempFile(UUID.randomUUID().toString(), ".asice");
-            Security.addProvider(new BouncyCastleProvider());
+    InputStream encrypt(@NonNull X509Certificate mottakerCert, @NonNull List<Payload> payload) {
+        if (payload.isEmpty())
+            throw new RuntimeException("Ingen payloads oppgitt, kan ikke kryptere melding");
 
-            CmsEncryptedAsicWriter writer = new CmsEncryptedAsicWriter(asicWriterFactory
-                    .newContainer(archiveOutputFile),
-                    mottakerCert,
-                    CMSAlgorithm.AES256_GCM);
-            payload.forEach(p -> write(writer, p));
-            writer.setRootEntryName(payload.get(0).getFilnavn());
+        PipedInputStream inputStream = new PipedInputStream();
 
-            try (InputStream inputStream = new ByteArrayInputStream(keyStoreBytes)) {
-                writer.sign(new SignatureHelper(inputStream, signeringKonfigurasjon.getKeyStorePassword(), signeringKonfigurasjon.getKeyAlias(), signeringKonfigurasjon.getKeyPassword()));
+        new Thread(() -> {
+            try (OutputStream outputStream = new PipedOutputStream(inputStream)) {
+                Security.addProvider(new BouncyCastleProvider());
+
+                CmsEncryptedAsicWriter writer = new CmsEncryptedAsicWriter(asicWriterFactory
+                        .newContainer(outputStream),
+                        mottakerCert,
+                        CMSAlgorithm.AES256_GCM);
+                payload.forEach(p -> write(writer, p));
+                writer.setRootEntryName(payload.get(0).getFilnavn());
+
+                try (InputStream keyStoreStream = new ByteArrayInputStream(keyStoreBytes)) {
+                    writer.sign(new SignatureHelper(keyStoreStream, signeringKonfigurasjon.getKeyStorePassword(), signeringKonfigurasjon.getKeyAlias(), signeringKonfigurasjon.getKeyPassword()));
+                }
+            } catch (Exception e){
+                throw new RuntimeException(e);
             }
+        }).start();
 
-            return archiveOutputFile;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return inputStream;
     }
 
     public ZipInputStream decrypt(@NonNull InputStream encryptedAsicData) {

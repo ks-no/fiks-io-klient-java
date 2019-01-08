@@ -5,6 +5,7 @@ import no.ks.fiks.autorisasjon.update.mock.AutorisasjonUpdateMock;
 import no.ks.fiks.commons.authorization.Privilegier;
 import no.ks.fiks.commons.authorization.RessursType;
 import no.ks.fiks.componenttest.support.spring.ServiceComponentTest;
+import no.ks.fiks.dokumentlager.upload.mock.DokumentlagerUploadMock;
 import no.ks.fiks.fullmakt.mock.fullmakt.FullmaktMock;
 import org.junit.jupiter.api.BeforeAll;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,13 +17,18 @@ public class AutorisertServiceTest extends ServiceComponentTest {
     }
 
     @BeforeAll
-    public void beforeAll(@Autowired AutorisasjonQueryMock autorisasjonQueryMock, @Autowired AutorisasjonUpdateMock autorisasjonUpdateMock, @Autowired FullmaktMock fullmaktMock) {
+    public void beforeAll(@Autowired AutorisasjonQueryMock autorisasjonQueryMock, @Autowired AutorisasjonUpdateMock autorisasjonUpdateMock, @Autowired FullmaktMock fullmaktMock, @Autowired DokumentlagerUploadMock dokumentlagerUploadMock) {
         autorisasjonQueryMock.setupAuthorizationQuery(null, Privilegier.ADMIN, null, RessursType.TJENESTE_SVARINN2.getId());
         autorisasjonQueryMock.setupAuthorizationSuccess();
         autorisasjonQueryMock.setupRessurs();
 
         autorisasjonUpdateMock.setupRessursCreation();
+        autorisasjonUpdateMock.setupRessursUpdate();
+        autorisasjonUpdateMock.setupGiTilgangSuccess();
 
         fullmaktMock.setupAuthorizedSuccess();
+
+        dokumentlagerUploadMock.setupOpprettKonto();
+        dokumentlagerUploadMock.setupMetadataAndDocumentResponseOkAllowAny();
     }
 }

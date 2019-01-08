@@ -16,10 +16,12 @@ import no.ks.fiks.maskinporten.MaskinportenklientProperties;
 import no.ks.fiks.svarinn.client.konfigurasjon.*;
 import no.ks.fiks.svarinn.client.model.*;
 import no.ks.fiks.svarinn2.katalog.swagger.api.v1.SvarInnKatalogApi;
+import no.ks.fiks.svarinn2.klient.SvarInnUtsendingKlient;
 import no.ks.fiks.svarinn2.swagger.api.v1.SvarInnApi;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.InputStream;
 import java.security.cert.CertificateEncodingException;
 import java.util.List;
 import java.util.Optional;
@@ -42,13 +44,16 @@ public class SvarInnKlient implements Closeable {
         Maskinportenklient maskinportenklient = getMaskinportenKlient(konfigurasjon);
         DokumentlagerKlient dokumentlagerKlient = getDokumentlagerKlient(konfigurasjon, maskinportenklient);
         SvarInnKatalogApi katalogApi = getSvarInnKatalogApi(konfigurasjon, maskinportenklient);
-        SvarInnApi svarInnApi = getSvarInnApi(konfigurasjon, maskinportenklient);
 
         kontoId = konfigurasjon.getKontoKonfigurasjon().getKontoId();
         katalogHandler = new KatalogHandler(katalogApi);
         AsicHandler asicHandler = new AsicHandler(katalogHandler.getPublicKey(kontoId), konfigurasjon.getKontoKonfigurasjon().getPrivatNokkel(), konfigurasjon.getSigneringKonfigurasjon());
-        svarInnHandler = new SvarInnHandler(kontoId, svarInnApi, katalogHandler, asicHandler);
+        svarInnHandler = new SvarInnHandler(kontoId, getSvarInnUtsendingKlient(konfigurasjon, maskinportenklient), katalogHandler, asicHandler);
         meldingHandler = new AmqpHandler(konfigurasjon.getAmqpKonfigurasjon(), konfigurasjon.getFiksIntegrasjonKonfigurasjon(), svarInnHandler, asicHandler, maskinportenklient, kontoId, dokumentlagerKlient);
+    }
+
+    private SvarInnUtsendingKlient getSvarInnUtsendingKlient(@NonNull SvarInnKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
+        return new SvarInnUtsendingKlient(konfigurasjon.getSendMeldingKonfigurasjon().getScheme(), konfigurasjon.getSendMeldingKonfigurasjon().getHost(), konfigurasjon.getSendMeldingKonfigurasjon().getPort(), new no.ks.fiks.svarinn2.klient.IntegrasjonAuthenticationStrategy(maskinportenklient, konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(), konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()));
     }
 
     public KontoId getKontoId() {
@@ -63,12 +68,16 @@ public class SvarInnKlient implements Closeable {
         return svarInnHandler.send(request, payload);
     }
 
-    public SendtMelding send(@NonNull MeldingRequest request, @NonNull String payload) {
-        return send(request, singletonList(new StringPayload(payload, "payload.txt")));
-    }
-
     public SendtMelding send(@NonNull MeldingRequest request, @NonNull File payload) {
         return send(request, singletonList(new FilePayload(payload)));
+    }
+
+    public SendtMelding send(@NonNull MeldingRequest request, @NonNull String payload, @NonNull String filnavn) {
+        return send(request, singletonList(new StringPayload(payload, filnavn)));
+    }
+
+    public SendtMelding send(@NonNull MeldingRequest request, @NonNull InputStream payload, @NonNull String filanvn) {
+        return send(request, singletonList(new StreamPayload(payload, filanvn)));
     }
 
     public void newSubscription(@NonNull BiConsumer<MottattMelding, KvitteringSender> onMelding) {
@@ -83,37 +92,18 @@ public class SvarInnKlient implements Closeable {
         //TODO close-it
     }
 
-    private SvarInnApi getSvarInnApi(@NonNull SvarInnKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
-        return Feign.builder()
-                .decoder(new JacksonDecoder(objectMapper))
-                .encoder(new FormEncoder())
-                .requestInterceptor(RequestInterceptors.accessToken(maskinportenklient, "ks"))
-                .requestInterceptor(RequestInterceptors.integrasjon(konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(), konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
-                .target(SvarInnApi.class, konfigurasjon.getSendMeldingKonfigurasjon().getUrl());
-    }
-
     private SvarInnKatalogApi getSvarInnKatalogApi(@NonNull SvarInnKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
         return Feign.builder()
                 .decoder(new JacksonDecoder(objectMapper))
                 .encoder(new JacksonEncoder(objectMapper))
-                .requestInterceptor(RequestInterceptors.accessToken(maskinportenklient, "ks"))
+                .requestInterceptor(RequestInterceptors.accessToken(() -> maskinportenklient.getAccessToken("ks")))
                 .requestInterceptor(RequestInterceptors.integrasjon(konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(), konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
                 .target(SvarInnKatalogApi.class, konfigurasjon.getKatalogKonfigurasjon().getUrl());
     }
 
     private DokumentlagerKlient getDokumentlagerKlient(@NonNull SvarInnKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
-        DokumentlagerUploadProperties dokumentlagerUploadProperties = new DokumentlagerUploadProperties();
-        dokumentlagerUploadProperties.setHost(konfigurasjon.getDokumentlagerKonfigurasjon().getHost());
-        dokumentlagerUploadProperties.setPort(konfigurasjon.getDokumentlagerKonfigurasjon().getPort());
-        dokumentlagerUploadProperties.setScheme(konfigurasjon.getDokumentlagerKonfigurasjon().getScheme());
-
-        DokumentlagerDownloadProperties dokumentlagerDownloadProperties = new DokumentlagerDownloadProperties();
-        dokumentlagerDownloadProperties.setHost(konfigurasjon.getDokumentlagerKonfigurasjon().getHost());
-        dokumentlagerDownloadProperties.setPort(konfigurasjon.getDokumentlagerKonfigurasjon().getPort());
-        dokumentlagerDownloadProperties.setScheme(konfigurasjon.getDokumentlagerKonfigurasjon().getScheme());
-        return new DokumentlagerKlient(
-                dokumentlagerUploadProperties,
-                dokumentlagerDownloadProperties,
+        return new DokumentlagerKlient(new DokumentlagerHost(konfigurasjon.getDokumentlagerKonfigurasjon().getHost(), konfigurasjon.getDokumentlagerKonfigurasjon().getPort(), konfigurasjon.getDokumentlagerKonfigurasjon().getScheme()),
+                new DokumentlagerHost(konfigurasjon.getDokumentlagerKonfigurasjon().getHost(), konfigurasjon.getDokumentlagerKonfigurasjon().getPort(), konfigurasjon.getDokumentlagerKonfigurasjon().getScheme()),
                 new IntegrasjonAuthenticationStrategy(
                         maskinportenklient,
                         konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),

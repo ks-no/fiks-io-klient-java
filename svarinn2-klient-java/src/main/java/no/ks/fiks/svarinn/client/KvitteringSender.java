@@ -1,20 +1,22 @@
 package no.ks.fiks.svarinn.client;
 
+import io.vavr.control.Option;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
-import no.ks.fiks.svarinn.client.model.MottattMelding;
-import no.ks.fiks.svarinn.client.model.Payload;
-import no.ks.fiks.svarinn.client.model.SendtMelding;
-import no.ks.fiks.svarinn.client.model.StringPayload;
-import no.ks.fiks.svarinn2.swagger.api.v1.SvarInnApi;
+import no.ks.fiks.svarinn.client.model.*;
+import no.ks.fiks.svarinn2.klient.MeldingSpesifikasjonApiModel;
+import no.ks.fiks.svarinn2.klient.SvarInnUtsendingKlient;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
+import static java.util.Collections.singletonList;
 import static lombok.AccessLevel.NONE;
 
 @Value
@@ -22,55 +24,38 @@ import static lombok.AccessLevel.NONE;
 @Builder
 public class KvitteringSender {
 
-    private static final String KVITTERING_FILNAVN = "kvitteringTekst.txt";
-
     @NonNull private MottattMelding meldingSomSkalKvitteres;
-    @NonNull private SvarInnApi svarInnApi;
+    @NonNull private SvarInnUtsendingKlient utsendingKlient;
     @NonNull private Runnable doQueueAck;
-    @NonNull private Function<List<Payload>, File> encrypt;
+    @NonNull private Function<List<Payload>, InputStream> encrypt;
 
-    public SendtMelding kvitterAkseptert() {
-        no.ks.fiks.svarinn2.swagger.model.v1.Melding respons = svarInnApi.kvitterAkseptert(
-                this.meldingSomSkalKvitteres.getMottakerKontoId().getUuid(),
-                this.meldingSomSkalKvitteres.getAvsenderKontoId().getUuid(),
-                this.meldingSomSkalKvitteres.getMeldingId().getUuid());
-        ack();
-        return SendtMelding.fromSendResponse(respons);
+    public SendtMelding svar(String meldingType, List<Payload> payloads) {
+        return SendtMelding.fromSendResponse(utsendingKlient.send(
+                MeldingSpesifikasjonApiModel.builder()
+                        .avsenderKontoId(meldingSomSkalKvitteres.getMottakerKontoId().getUuid())
+                        .mottakerKontoId(meldingSomSkalKvitteres.getAvsenderKontoId().getUuid())
+                        .svarPaMelding(meldingSomSkalKvitteres.getMeldingId().getUuid())
+                        .meldingType(meldingType)
+                        .build(), payloads.isEmpty() ? Option.none() : Option.of(encrypt.apply(payloads))));
     }
 
-    public SendtMelding kvitterFeilet() {
-        return kvitterAvvist(null);
+    public SendtMelding svar(String meldingType, InputStream melding, String filnavn) {
+        return svar(meldingType, singletonList(new StreamPayload(melding, filnavn)));
     }
 
-    public SendtMelding kvitterFeilet(String beskjed) {
-        no.ks.fiks.svarinn2.swagger.model.v1.Melding respons = svarInnApi.kvitterFeilet(
-                meldingSomSkalKvitteres.getMottakerKontoId().toString(),
-                meldingSomSkalKvitteres.getAvsenderKontoId().toString(),
-                meldingSomSkalKvitteres.getMeldingId().toString(),
-                beskjed == null ? null : encrypt.apply(Collections.singletonList(new StringPayload(beskjed, KVITTERING_FILNAVN))));
-        ack();
-        return SendtMelding.fromSendResponse(respons);
+    public SendtMelding svar(String meldingType, String melding, String filnavn) {
+        return svar(meldingType, singletonList(new StringPayload(melding, filnavn)));
     }
 
-    public SendtMelding kvitterAvvist() {
-        return kvitterAvvist(null);
+    public SendtMelding svar(String meldingType, File melding) {
+        return svar(meldingType, singletonList(new FilePayload(melding)));
     }
 
-    public SendtMelding kvitterAvvist(String beskjed) {
-        no.ks.fiks.svarinn2.swagger.model.v1.Melding respons = svarInnApi.kvitterAvvist(
-                meldingSomSkalKvitteres.getMottakerKontoId().toString(),
-                meldingSomSkalKvitteres.getAvsenderKontoId().toString(),
-                meldingSomSkalKvitteres.getMeldingId().toString(),
-                beskjed == null ? null : encrypt.apply(Collections.singletonList(new StringPayload(beskjed, KVITTERING_FILNAVN))));
-        ack();
-        return SendtMelding.fromSendResponse(respons);
+    public SendtMelding svar(String meldingType) {
+        return svar(meldingType, Collections.emptyList());
     }
 
-    public void kvitterUtenMelding() {
-        ack();
-    }
-
-    private void ack() {
+    public void ack() {
         doQueueAck.run();
     }
 }

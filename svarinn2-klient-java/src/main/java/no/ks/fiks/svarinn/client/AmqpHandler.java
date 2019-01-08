@@ -66,8 +66,8 @@ class AmqpHandler {
                 } else {
                     MottattMelding melding = MottattMelding.fromMottattMeldingMetadata(
                             parsed,
-                            () -> payloadInDokumentlager(m) ? dokumentlagerKlient.download(getDokumentlagerId(m)) : new ByteArrayInputStream(m.getBody()),
-                            () -> asic.decrypt(payloadInDokumentlager(m) ? dokumentlagerKlient.download(getDokumentlagerId(m)) : new ByteArrayInputStream(m.getBody())));
+                            () -> payloadInDokumentlager(m) ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()),
+                            () -> asic.decrypt(payloadInDokumentlager(m) ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody())));
                     onMelding.accept(melding, svarInnApi.buildKvitteringSender(() -> {
                         try {
                             channel.basicAck(m.getEnvelope().getDeliveryTag(), false);

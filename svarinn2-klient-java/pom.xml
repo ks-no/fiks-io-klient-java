@@ -27,12 +27,12 @@
         <dependency>
             <groupId>no.ks.fiks</groupId>
             <artifactId>maskinporten-client</artifactId>
-            <version>1.0.8-SNAPSHOT</version>
+            <version>1.0.8</version>
         </dependency>
         <dependency>
             <groupId>no.ks.fiks</groupId>
             <artifactId>feign-interceptors</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>1.0.2</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.security.oauth</groupId>
@@ -45,8 +45,8 @@
         </dependency>
         <dependency>
             <groupId>no.ks.fiks</groupId>
-            <artifactId>dokumentlager-fiks-client</artifactId>
-            <version>1.0.8-SNAPSHOT</version>
+            <artifactId>dokumentlager-klient</artifactId>
+            <version>1.0.8</version>
         </dependency>
         <dependency>
             <groupId>no.ks.fiks</groupId>
@@ -60,7 +60,7 @@
         </dependency>
         <dependency>
             <groupId>no.ks.fiks</groupId>
-            <artifactId>svarinn2-api-v1</artifactId>
+            <artifactId>svarinn2-utsending-klient</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>

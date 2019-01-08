@@ -22,6 +22,11 @@
     <dependencies>
         <dependency>
             <groupId>no.ks.fiks</groupId>
+            <artifactId>dokumentlager-upload-mock</artifactId>
+            <version>1.0.8-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>no.ks.fiks</groupId>
             <artifactId>autorisasjon-query-mock</artifactId>
             <version>${autorisasjon.version}</version>
         </dependency>

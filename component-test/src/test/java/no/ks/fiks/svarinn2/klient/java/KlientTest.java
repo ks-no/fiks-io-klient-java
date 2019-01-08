@@ -4,10 +4,10 @@ import no.ks.fiks.componenttest.support.feign.TestApiBuilder;
 import no.ks.fiks.componenttest.support.invoker.TestInvoker;
 import no.ks.fiks.svarinn.client.SvarInnKlient;
 import no.ks.fiks.svarinn.client.model.*;
+import no.ks.fiks.svarinn.client.model.Konto;
 import no.ks.fiks.svarinn2.commons.MeldingsType;
 import no.ks.fiks.svarinn2.katalog.swagger.api.v1.SvarInnKontoApi;
-import no.ks.fiks.svarinn2.katalog.swagger.model.v1.AdresseSpesifikasjon;
-import no.ks.fiks.svarinn2.katalog.swagger.model.v1.Identifikator;
+import no.ks.fiks.svarinn2.katalog.swagger.model.v1.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -40,7 +41,7 @@ class KlientTest extends AutorisertServiceTest {
         aliceKlient.send(MeldingRequest.builder()
                 .meldingType("no.ks.fiks.digisos")
                 .mottakerKontoId(bobKlient.getKontoId())
-                .build(), payload);
+                .build(), payload, "payload.txt");
 
         CompletableFuture<MottattMelding> futureMelding = new CompletableFuture<>();
 
@@ -69,10 +70,14 @@ class KlientTest extends AutorisertServiceTest {
         Identifikator identifikator = new Identifikator().identifikatorType(Identifikator.IdentifikatorTypeEnum.ORG_NO).identifikator("123456789");
         int sikkerhetsniva = 4;
 
-        kontoApi.asPerson(TestUtil.randomPerson()).build().leggTilAdresse(bobKlient.getKontoId().getUuid(), new AdresseSpesifikasjon()
-                .addSikkerhetsnivaerItem(sikkerhetsniva)
-                .addIdentifikatorItem(identifikator)
-                .addMeldingTypeItem(meldingType));
+        SvarInnKontoApi svarInnKontoApi = kontoApi.asPerson(TestUtil.randomPerson()).build();
+
+        Adresse adresse = svarInnKontoApi.opprettAdresse(bobKlient.getKontoId().getUuid(), new AdresseSpesifikasjon().beskrivelse(UUID.randomUUID().toString()));
+        svarInnKontoApi.leggTilIdentifikator(bobKlient.getKontoId().getUuid(), adresse.getAdresseId(), singletonList(identifikator));
+        svarInnKontoApi.leggTilSikkerhetsnivaer(bobKlient.getKontoId().getUuid(), adresse.getAdresseId(), singletonList(new SikkerhetsnivaSpesifikasjon().sikkerhetsniva(sikkerhetsniva)));
+        svarInnKontoApi.leggTilMeldingstyper(bobKlient.getKontoId().getUuid(), adresse.getAdresseId(), singletonList(new MeldingstypeSpesifikasjon().meldingstype(meldingType)));
+
+        svarInnKontoApi.aktiverAdresse(bobKlient.getKontoId().getUuid(), adresse.getAdresseId());
 
         Konto konto = new TestInvoker().invoke(() -> aliceKlient.lookup(LookupRequest.builder()
                 .dokumentType(meldingType)
@@ -98,7 +103,7 @@ class KlientTest extends AutorisertServiceTest {
     }
 
     @Test
-    @DisplayName("Test at Bob kan kvittere akseptert på en melding fra Alice")
+    @DisplayName("Test at Bob kan svare med en melding uten body")
     void testKvitteringAkseptert(@Autowired SvarInn2KlientGenerator generator) throws Exception {
         SvarInnKlient aliceKlient = getAliceKlient(generator);
         SvarInnKlient bobKlient = getBobKlient(generator);
@@ -107,10 +112,10 @@ class KlientTest extends AutorisertServiceTest {
         SendtMelding sendtMelding = aliceKlient.send(MeldingRequest.builder()
                 .meldingType("no.ks.fiks.digisos")
                 .mottakerKontoId(bobKlient.getKontoId())
-                .build(), payload);
+                .build(), payload, "payload.txt");
 
         CompletableFuture<Melding> futureSendtKvittering = new CompletableFuture<>();
-        bobKlient.newSubscription((m, k) -> futureSendtKvittering.complete(k.kvitterAkseptert()));
+        bobKlient.newSubscription((m, k) -> futureSendtKvittering.complete(k.svar(MeldingsType.KVITTERING_AKSEPTERT)));
 
         CompletableFuture<Melding> futureMottattKvittering = new CompletableFuture<>();
         aliceKlient.newSubscription((m, k) -> futureMottattKvittering.complete(m));
@@ -126,7 +131,7 @@ class KlientTest extends AutorisertServiceTest {
     }
 
     @Test
-    @DisplayName("Test at Bob kan kvittere avvist på en melding fra Alice")
+    @DisplayName("Test at Bob kan svare med en melding med body")
     void testKvitteringAvvist(@Autowired SvarInn2KlientGenerator generator) throws Exception {
         SvarInnKlient aliceKlient = getAliceKlient(generator);
         SvarInnKlient bobKlient = getBobKlient(generator);
@@ -135,11 +140,11 @@ class KlientTest extends AutorisertServiceTest {
         SendtMelding sendtMelding = aliceKlient.send(MeldingRequest.builder()
                 .meldingType("no.ks.fiks.digisos")
                 .mottakerKontoId(bobKlient.getKontoId())
-                .build(), payload);
+                .build(), payload, "payload.txt");
 
         String kvitteringTekst = UUID.randomUUID().toString();
         CompletableFuture<Melding> futureSendtKvittering = new CompletableFuture<>();
-        bobKlient.newSubscription((m, k) -> futureSendtKvittering.complete(k.kvitterAvvist(kvitteringTekst)));
+        bobKlient.newSubscription((m, k) -> futureSendtKvittering.complete(k.svar(MeldingsType.KVITTERING_AVVIST, kvitteringTekst, "payload.txt")));
 
         CompletableFuture<MottattMelding> futureMottattKvittering = new CompletableFuture<>();
         aliceKlient.newSubscription((m, k) -> futureMottattKvittering.complete(m));
@@ -152,37 +157,7 @@ class KlientTest extends AutorisertServiceTest {
         assertEquals(sendtKvittering.getMeldingId(), mottattKvittering.getMeldingId());
         assertEquals(sendtMelding.getMeldingId(), mottattKvittering.getSvarPaMelding());
         assertEquals(MeldingsType.KVITTERING_AVVIST, mottattKvittering.getMeldingType());
-        assertEquals(kvitteringTekst, getPayloadAsString(mottattKvittering.getDekryptertPayload(), "kvitteringTekst.txt"));
-    }
-
-    @Test
-    @DisplayName("Test at Bob kan kvittere feilet på en melding fra Alice")
-    void testKvitteringFeilet(@Autowired SvarInn2KlientGenerator generator) throws Exception {
-        SvarInnKlient aliceKlient = getAliceKlient(generator);
-        SvarInnKlient bobKlient = getBobKlient(generator);
-
-        String payload = "heisann bob";
-        SendtMelding sendtMelding = aliceKlient.send(MeldingRequest.builder()
-                .meldingType("no.ks.fiks.digisos")
-                .mottakerKontoId(bobKlient.getKontoId())
-                .build(), payload);
-
-        String kvitteringTekst = UUID.randomUUID().toString();
-        CompletableFuture<Melding> futureSendtKvittering = new CompletableFuture<>();
-        bobKlient.newSubscription( (m, k) -> futureSendtKvittering.complete(k.kvitterFeilet(kvitteringTekst)));
-
-        CompletableFuture<MottattMelding> futureMottattKvittering = new CompletableFuture<>();
-        aliceKlient.newSubscription((m, k) -> futureMottattKvittering.complete(m));
-
-        Melding sendtKvittering = futureSendtKvittering.get(10, TimeUnit.SECONDS);
-        MottattMelding mottattKvittering = futureMottattKvittering.get(10, TimeUnit.SECONDS);
-
-        assertEquals(aliceKlient.getKontoId(), mottattKvittering.getMottakerKontoId());
-        assertEquals(bobKlient.getKontoId(), mottattKvittering.getAvsenderKontoId());
-        assertEquals(sendtKvittering.getMeldingId(), mottattKvittering.getMeldingId());
-        assertEquals(sendtMelding.getMeldingId(), mottattKvittering.getSvarPaMelding());
-        assertEquals(MeldingsType.KVITTERING_FEILET, mottattKvittering.getMeldingType());
-        assertEquals(kvitteringTekst, getPayloadAsString(mottattKvittering.getDekryptertPayload(), "kvitteringTekst.txt"));
+        assertEquals(kvitteringTekst, getPayloadAsString(mottattKvittering.getDekryptertPayload(), "payload.txt"));
     }
 
     private String getPayloadAsString(ZipInputStream dekryptertPayload, String filename) throws IOException {

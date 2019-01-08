@@ -71,3 +71,7 @@ services:
   fiks-fullmakt-service:
     image: rodolpheche/wiremock
     command: java -cp /var/wiremock/lib/*:/var/wiremock/extensions/* com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --global-response-templating
+
+  fiks-dokumentlager-upload-service:
+    image: rodolpheche/wiremock
+    command: java -cp /var/wiremock/lib/*:/var/wiremock/extensions/* com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --global-response-templating
