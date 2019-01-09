@@ -3,8 +3,8 @@ package no.ks.fiks.svarinn2.klient.java;
 import no.ks.fiks.componenttest.support.feign.TestApiBuilder;
 import no.ks.fiks.componenttest.support.invoker.TestInvoker;
 import no.ks.fiks.svarinn.client.SvarInnKlient;
-import no.ks.fiks.svarinn.client.model.*;
 import no.ks.fiks.svarinn.client.model.Konto;
+import no.ks.fiks.svarinn.client.model.*;
 import no.ks.fiks.svarinn2.commons.MeldingsType;
 import no.ks.fiks.svarinn2.katalog.swagger.api.v1.SvarInnKontoApi;
 import no.ks.fiks.svarinn2.katalog.swagger.model.v1.*;
@@ -12,7 +12,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,8 +24,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static java.util.Collections.singletonList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 class KlientTest extends AutorisertServiceTest {
 
@@ -32,7 +33,7 @@ class KlientTest extends AutorisertServiceTest {
     }
 
     @Test
-    @DisplayName("Test at alice kan finne bobs konto, og sende han en melding")
+    @DisplayName("Test at alice kan sende bob en melding som string")
     void testSendString(@Autowired SvarInn2KlientGenerator generator) throws Exception {
         SvarInnKlient aliceKlient = getAliceKlient(generator);
         SvarInnKlient bobKlient = getBobKlient(generator);
@@ -52,12 +53,49 @@ class KlientTest extends AutorisertServiceTest {
 
         assertEquals(payload, getPayloadAsString(dekryptertPayload, "payload.txt"));
     }
-    private SvarInnKlient getAliceKlient(@Autowired SvarInn2KlientGenerator generator) throws Exception {
-        return generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "alice-virksomhetssertifikat.p12"), "PASSWORD"), "PASSWORD", "et alias", "et alias", "PASSWORD");
+
+    @Test
+    @DisplayName("Test at alice kan sende bob en melding som fil")
+    void testSendFil(@Autowired SvarInn2KlientGenerator generator) throws Exception {
+        SvarInnKlient aliceKlient = getAliceKlient(generator);
+        SvarInnKlient bobKlient = getBobKlient(generator);
+
+        File file = new File("src/test/resources/small.pdf");
+        aliceKlient.send(MeldingRequest.builder()
+                .meldingType("no.ks.fiks.digisos")
+                .mottakerKontoId(bobKlient.getKontoId())
+                .build(), file);
+
+        CompletableFuture<MottattMelding> futureMelding = new CompletableFuture<>();
+
+        bobKlient.newSubscription((m, k) -> futureMelding.complete(m));
+
+        MottattMelding melding = futureMelding.get(10, TimeUnit.SECONDS);
+        ZipInputStream dekryptertPayload = melding.getDekryptertPayload();
+
+        assertEquals(file.length(), getPayload(dekryptertPayload, "small.pdf").length);
     }
 
-    private SvarInnKlient getBobKlient(@Autowired SvarInn2KlientGenerator generator) throws Exception {
-        return generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "alice-virksomhetssertifikat.p12"), "PASSWORD"), "PASSWORD", "et alias", "et alias", "PASSWORD");
+    @Test
+    @DisplayName("Test at alice kan sende bob en melding som stream")
+    void testSendStream(@Autowired SvarInn2KlientGenerator generator) throws Exception {
+        SvarInnKlient aliceKlient = getAliceKlient(generator);
+        SvarInnKlient bobKlient = getBobKlient(generator);
+
+        byte[] bytes = TestUtil.randomBytes();
+        aliceKlient.send(MeldingRequest.builder()
+                .meldingType("no.ks.fiks.digisos")
+                .mottakerKontoId(bobKlient.getKontoId())
+                .build(), new ByteArrayInputStream(bytes), "payload.txt");
+
+        CompletableFuture<MottattMelding> futureMelding = new CompletableFuture<>();
+
+        bobKlient.newSubscription((m, k) -> futureMelding.complete(m));
+
+        MottattMelding melding = futureMelding.get(10, TimeUnit.SECONDS);
+        ZipInputStream dekryptertPayload = melding.getDekryptertPayload();
+
+        assertArrayEquals(bytes, getPayload(dekryptertPayload, "payload.txt"));
     }
 
     @Test
@@ -103,7 +141,7 @@ class KlientTest extends AutorisertServiceTest {
     }
 
     @Test
-    @DisplayName("Test at Bob kan svare med en melding uten body")
+    @DisplayName("Test at Bob kan svare Alice med en melding uten body")
     void testKvitteringAkseptert(@Autowired SvarInn2KlientGenerator generator) throws Exception {
         SvarInnKlient aliceKlient = getAliceKlient(generator);
         SvarInnKlient bobKlient = getBobKlient(generator);
@@ -131,7 +169,7 @@ class KlientTest extends AutorisertServiceTest {
     }
 
     @Test
-    @DisplayName("Test at Bob kan svare med en melding med body")
+    @DisplayName("Test at Bob kan svare Alice med en melding med body")
     void testKvitteringAvvist(@Autowired SvarInn2KlientGenerator generator) throws Exception {
         SvarInnKlient aliceKlient = getAliceKlient(generator);
         SvarInnKlient bobKlient = getBobKlient(generator);
@@ -160,7 +198,7 @@ class KlientTest extends AutorisertServiceTest {
         assertEquals(kvitteringTekst, getPayloadAsString(mottattKvittering.getDekryptertPayload(), "payload.txt"));
     }
 
-    private String getPayloadAsString(ZipInputStream dekryptertPayload, String filename) throws IOException {
+    private byte[] getPayload(ZipInputStream dekryptertPayload, String filename) throws IOException {
         ZipEntry entry;
         byte[] buffer = new byte[2048];
         ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -173,8 +211,18 @@ class KlientTest extends AutorisertServiceTest {
                 }
             }
         }
-
-        return new String(output.toByteArray());
+        return output.toByteArray();
     }
 
+    private String getPayloadAsString(ZipInputStream dekryptertPayload, String filename) throws IOException {
+        return new String(getPayload(dekryptertPayload, filename));
+    }
+
+    private SvarInnKlient getAliceKlient(@Autowired SvarInn2KlientGenerator generator) throws Exception {
+        return generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "alice-virksomhetssertifikat.p12"), "PASSWORD"), "PASSWORD", "et alias", "et alias", "PASSWORD");
+    }
+
+    private SvarInnKlient getBobKlient(@Autowired SvarInn2KlientGenerator generator) throws Exception {
+        return generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "alice-virksomhetssertifikat.p12"), "PASSWORD"), "PASSWORD", "et alias", "et alias", "PASSWORD");
+    }
 }

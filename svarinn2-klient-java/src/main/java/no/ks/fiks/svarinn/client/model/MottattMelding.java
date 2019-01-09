@@ -5,7 +5,6 @@ import no.ks.fiks.svarinn2.commons.MottattMeldingMetadata;
 
 import java.io.InputStream;
 import java.time.Duration;
-import java.util.List;
 import java.util.function.Supplier;
 import java.util.zip.ZipInputStream;
 

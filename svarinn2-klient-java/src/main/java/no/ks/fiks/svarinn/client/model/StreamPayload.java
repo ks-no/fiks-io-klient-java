@@ -2,7 +2,6 @@ package no.ks.fiks.svarinn.client.model;
 
 import lombok.NonNull;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 public class StreamPayload implements Payload {

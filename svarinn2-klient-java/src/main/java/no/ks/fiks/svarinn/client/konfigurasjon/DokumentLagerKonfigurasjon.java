@@ -2,7 +2,6 @@ package no.ks.fiks.svarinn.client.konfigurasjon;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.Value;
 
 @Data
 @Builder()

@@ -1,6 +1,7 @@
 package no.ks.fiks.svarinn.client;
 
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import no.difi.asic.AsicReader;
 import no.difi.asic.AsicReaderFactory;
 import no.difi.asic.AsicWriterFactory;
@@ -17,14 +18,13 @@ import java.security.PrivateKey;
 import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import static com.google.common.io.Closeables.closeQuietly;
 
+@Slf4j
 class AsicHandler {
     private final PrivateKey privatNokkel;
     private final SigneringKonfigurasjon signeringKonfigurasjon;
@@ -71,7 +71,7 @@ class AsicHandler {
                 try (InputStream keyStoreStream = new ByteArrayInputStream(keyStoreBytes)) {
                     writer.sign(new SignatureHelper(keyStoreStream, signeringKonfigurasjon.getKeyStorePassword(), signeringKonfigurasjon.getKeyAlias(), signeringKonfigurasjon.getKeyPassword()));
                 }
-            } catch (Exception e){
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }).start();
@@ -80,27 +80,36 @@ class AsicHandler {
     }
 
     public ZipInputStream decrypt(@NonNull InputStream encryptedAsicData) {
-        try (AsicReader asicReader = asicReaderFactory.open(encryptedAsicData);
-             PipedOutputStream out = new PipedOutputStream()) {
+        try {
+            PipedOutputStream out = new PipedOutputStream();
 
-            PipedInputStream in = new PipedInputStream();
-            ZipInputStream zipInputStream = new ZipInputStream(in);
-            in.connect(out);
-            ZipOutputStream zipOutputStream = new ZipOutputStream(out);
+            new Thread(() -> {
+                try(AsicReader asicReader = asicReaderFactory.open(encryptedAsicData);
+                    ZipOutputStream zipOutputStream = new ZipOutputStream(out)) {
 
-            CmsEncryptedAsicReader reader = new CmsEncryptedAsicReader(asicReader, privatNokkel);
-            while (true) {
-                String filnavn = reader.getNextFile();
+                    CmsEncryptedAsicReader reader = new CmsEncryptedAsicReader(asicReader, privatNokkel);
+                    while (true) {
+                        String filnavn = reader.getNextFile();
 
-                if (filnavn == null)
-                    break;
+                        if (filnavn == null)
+                            break;
 
-                zipOutputStream.putNextEntry(new ZipEntry(filnavn));
-                reader.writeFile(zipOutputStream);
-                zipOutputStream.closeEntry();
-            }
+                        zipOutputStream.putNextEntry(new ZipEntry(filnavn));
+                        reader.writeFile(zipOutputStream);
+                        zipOutputStream.closeEntry();
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException();
+                } finally {
+                    try {
+                        out.close();
+                    } catch (IOException e) {
+                        log.error("", e);
+                    }
+                }
+            }).start();
 
-            return zipInputStream;
+            return new ZipInputStream(new PipedInputStream(out));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

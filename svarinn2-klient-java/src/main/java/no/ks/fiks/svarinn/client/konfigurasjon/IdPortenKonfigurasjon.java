@@ -4,7 +4,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.net.URI;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
