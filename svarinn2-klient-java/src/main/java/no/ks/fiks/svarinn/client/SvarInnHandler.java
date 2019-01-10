@@ -37,8 +37,8 @@ class SvarInnHandler {
                 payload.isEmpty() ? Option.none() : Option.some(asic.encrypt(katalogHandler.getPublicKey(request.getMottakerKontoId()), payload))));
     }
 
-    KvitteringSender buildKvitteringSender(@NonNull Runnable acknowledge, @NonNull MottattMelding melding) {
-        return KvitteringSender.builder()
+    SvarSender buildKvitteringSender(@NonNull Runnable acknowledge, @NonNull MottattMelding melding) {
+        return SvarSender.builder()
                 .doQueueAck(acknowledge)
                 .utsendingKlient(utsendingKlient)
                 .meldingSomSkalKvitteres(melding)

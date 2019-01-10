@@ -3,8 +3,11 @@ package no.ks.fiks.svarinn.client.model;
 import lombok.*;
 import no.ks.fiks.svarinn2.commons.MottattMeldingMetadata;
 
+import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.time.Duration;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.zip.ZipInputStream;
 
@@ -16,12 +19,20 @@ public class MottattMelding implements Melding {
     @NonNull private KontoId avsenderKontoId;
     @NonNull private KontoId mottakerKontoId;
     @NonNull private Duration ttl;
-    @NonNull @Getter(AccessLevel.NONE) private Supplier<InputStream> getKryptertPayload;
-    @NonNull @Getter(AccessLevel.NONE) private Supplier<ZipInputStream> getDekryptertPayload;
+
+    @NonNull @Getter(AccessLevel.NONE) private Consumer<Path> writeKryptertZip;
+    @NonNull @Getter(AccessLevel.NONE) private Consumer<Path> writeDekryptertZip;
+    @NonNull @Getter(AccessLevel.NONE) private Supplier<InputStream> getKryptertStream;
+    @NonNull @Getter(AccessLevel.NONE) private Supplier<ZipInputStream> getDekryptertZipStream;
 
     private MeldingId svarPaMelding;
 
-    public static MottattMelding fromMottattMeldingMetadata(MottattMeldingMetadata melding, Supplier<InputStream> getKryptertPayload, Supplier<ZipInputStream> getDekryptertPayload) {
+    public static MottattMelding fromMottattMeldingMetadata(
+            MottattMeldingMetadata melding,
+            Consumer<Path> writeDekryptertZip,
+            Consumer<Path> writeKryptertZip,
+            Supplier<InputStream> getKryptertStream,
+            Supplier<ZipInputStream> getDekryptertZipStream) {
         return MottattMelding.builder()
                 .meldingId(new MeldingId(melding.getMeldingId()))
                 .meldingType(melding.getMeldingType())
@@ -29,16 +40,27 @@ public class MottattMelding implements Melding {
                 .mottakerKontoId(new KontoId(melding.getMottakerKontoId()))
                 .ttl(Duration.ofMillis(melding.getTtl()))
                 .svarPaMelding(melding.getSvarPaMelding() != null ? new MeldingId(melding.getSvarPaMelding()) : null)
-                .getKryptertPayload(getKryptertPayload)
-                .getDekryptertPayload(getDekryptertPayload)
+                .writeKryptertZip(writeKryptertZip)
+                .writeDekryptertZip(writeDekryptertZip)
+                .getKryptertStream(getKryptertStream)
+                .getDekryptertZipStream(getDekryptertZipStream)
                 .build();
     }
 
-    public InputStream getKryptertPayload(){
-        return getKryptertPayload.get();
+    public InputStream getKryptertStream(){
+        return getKryptertStream.get();
     }
 
-    public ZipInputStream getDekryptertPayload(){
-        return getDekryptertPayload.get();
+    public ZipInputStream getDekryptertZipStream(){
+        return getDekryptertZipStream.get();
     }
+
+    public void writeKryptertZip(Path path){
+        writeKryptertZip.accept(path);
+    }
+
+    public void writeDekryptertZip(Path path){
+        writeDekryptertZip.accept(path);
+    }
+
 }

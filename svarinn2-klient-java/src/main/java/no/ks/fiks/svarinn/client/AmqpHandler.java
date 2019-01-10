@@ -15,9 +15,15 @@ import no.ks.fiks.svarinn.client.model.MeldingId;
 import no.ks.fiks.svarinn.client.model.MottattMelding;
 import no.ks.fiks.svarinn2.commons.MottattMeldingMetadata;
 import no.ks.fiks.svarinn2.commons.SvarInnMeldingParser;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
@@ -56,7 +62,7 @@ class AmqpHandler {
         }
     }
 
-    void newConsume(@NonNull BiConsumer<MottattMelding, KvitteringSender> onMelding, @NonNull Consumer<ShutdownSignalException> onClose) {
+    void newConsume(@NonNull BiConsumer<MottattMelding, SvarSender> onMelding, @NonNull Consumer<ShutdownSignalException> onClose) {
         try {
             channel.basicConsume(kontoId.toString(), (ct, m) -> {
                 MottattMeldingMetadata parsed = SvarInnMeldingParser.parse(m.getEnvelope(), m.getProperties());
@@ -66,6 +72,8 @@ class AmqpHandler {
                 } else {
                     MottattMelding melding = MottattMelding.fromMottattMeldingMetadata(
                             parsed,
+                            f -> asic.writeDecrypted(payloadInDokumentlager(m) ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()), f),
+                            f -> writeFile(payloadInDokumentlager(m) ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()), f),
                             () -> payloadInDokumentlager(m) ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()),
                             () -> asic.decrypt(payloadInDokumentlager(m) ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody())));
                     onMelding.accept(melding, svarInnApi.buildKvitteringSender(() -> {
@@ -77,6 +85,14 @@ class AmqpHandler {
                     }, melding));
                 }
             }, (consumerTag, sig) -> onClose.accept(sig));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void writeFile(InputStream encryptedAsicData, Path targetPath) {
+        try {
+            IOUtils.copy(encryptedAsicData, Files.newOutputStream(targetPath));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

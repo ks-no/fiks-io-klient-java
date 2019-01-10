@@ -11,6 +11,7 @@ import no.ks.fiks.svarinn2.klient.SvarInnUtsendingKlient;
 
 import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -21,7 +22,7 @@ import static lombok.AccessLevel.NONE;
 @Value
 @Getter(NONE)
 @Builder
-public class KvitteringSender {
+public class SvarSender {
 
     @NonNull private MottattMelding meldingSomSkalKvitteres;
     @NonNull private SvarInnUtsendingKlient utsendingKlient;
@@ -46,7 +47,7 @@ public class KvitteringSender {
         return svar(meldingType, singletonList(new StringPayload(melding, filnavn)));
     }
 
-    public SendtMelding svar(String meldingType, File melding) {
+    public SendtMelding svar(String meldingType, Path melding) {
         return svar(meldingType, singletonList(new FilePayload(melding)));
     }
 

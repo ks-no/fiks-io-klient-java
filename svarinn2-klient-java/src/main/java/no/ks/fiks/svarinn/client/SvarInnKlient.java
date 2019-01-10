@@ -24,6 +24,7 @@ import no.ks.fiks.svarinn2.klient.SvarInnUtsendingKlient;
 import java.io.Closeable;
 import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.security.cert.CertificateEncodingException;
 import java.util.List;
 import java.util.Optional;
@@ -70,7 +71,7 @@ public class SvarInnKlient implements Closeable {
         return svarInnHandler.send(request, payload);
     }
 
-    public SendtMelding send(@NonNull MeldingRequest request, @NonNull File payload) {
+    public SendtMelding send(@NonNull MeldingRequest request, @NonNull Path payload) {
         return send(request, singletonList(new FilePayload(payload)));
     }
 
@@ -82,11 +83,11 @@ public class SvarInnKlient implements Closeable {
         return send(request, singletonList(new StreamPayload(payload, filanvn)));
     }
 
-    public void newSubscription(@NonNull BiConsumer<MottattMelding, KvitteringSender> onMelding) {
+    public void newSubscription(@NonNull BiConsumer<MottattMelding, SvarSender> onMelding) {
         newSubscription(onMelding, p -> {});
     }
 
-    public void newSubscription(@NonNull BiConsumer<MottattMelding, KvitteringSender> onMelding, @NonNull Consumer<ShutdownSignalException> onClose) {
+    public void newSubscription(@NonNull BiConsumer<MottattMelding, SvarSender> onMelding, @NonNull Consumer<ShutdownSignalException> onClose) {
         meldingHandler.newConsume(onMelding, onClose);
     }
 

@@ -1,5 +1,6 @@
 package no.ks.fiks.svarinn2.klient.java;
 
+import com.google.common.base.Stopwatch;
 import no.ks.fiks.componenttest.support.feign.TestApiBuilder;
 import no.ks.fiks.componenttest.support.invoker.TestInvoker;
 import no.ks.fiks.svarinn.client.SvarInnKlient;
@@ -16,6 +17,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -39,17 +43,24 @@ class KlientTest extends AutorisertServiceTest {
         SvarInnKlient bobKlient = getBobKlient(generator);
 
         String payload = UUID.randomUUID().toString();
+
+        Stopwatch started = Stopwatch.createUnstarted();
+        CompletableFuture<MottattMelding> futureMelding = new CompletableFuture<>();
+
+        bobKlient.newSubscription((m, k) -> {
+            futureMelding.complete(m);
+            System.out.println("motatt: " + started.elapsed().toMillis());
+        });
+
+        started.start();
         aliceKlient.send(MeldingRequest.builder()
                 .meldingType("no.ks.fiks.digisos")
                 .mottakerKontoId(bobKlient.getKontoId())
                 .build(), payload, "payload.txt");
 
-        CompletableFuture<MottattMelding> futureMelding = new CompletableFuture<>();
-
-        bobKlient.newSubscription((m, k) -> futureMelding.complete(m));
 
         MottattMelding melding = futureMelding.get(10, TimeUnit.SECONDS);
-        ZipInputStream dekryptertPayload = melding.getDekryptertPayload();
+        ZipInputStream dekryptertPayload = melding.getDekryptertZipStream();
 
         assertEquals(payload, getPayloadAsString(dekryptertPayload, "payload.txt"));
     }
@@ -60,7 +71,7 @@ class KlientTest extends AutorisertServiceTest {
         SvarInnKlient aliceKlient = getAliceKlient(generator);
         SvarInnKlient bobKlient = getBobKlient(generator);
 
-        File file = new File("src/test/resources/small.pdf");
+        Path file = Paths.get("src/test/resources/small.pdf");
         aliceKlient.send(MeldingRequest.builder()
                 .meldingType("no.ks.fiks.digisos")
                 .mottakerKontoId(bobKlient.getKontoId())
@@ -71,9 +82,9 @@ class KlientTest extends AutorisertServiceTest {
         bobKlient.newSubscription((m, k) -> futureMelding.complete(m));
 
         MottattMelding melding = futureMelding.get(10, TimeUnit.SECONDS);
-        ZipInputStream dekryptertPayload = melding.getDekryptertPayload();
+        ZipInputStream dekryptertPayload = melding.getDekryptertZipStream();
 
-        assertEquals(file.length(), getPayload(dekryptertPayload, "small.pdf").length);
+        assertEquals(file.toFile().length(), getPayload(dekryptertPayload, "small.pdf").length);
     }
 
     @Test
@@ -93,7 +104,7 @@ class KlientTest extends AutorisertServiceTest {
         bobKlient.newSubscription((m, k) -> futureMelding.complete(m));
 
         MottattMelding melding = futureMelding.get(10, TimeUnit.SECONDS);
-        ZipInputStream dekryptertPayload = melding.getDekryptertPayload();
+        ZipInputStream dekryptertPayload = melding.getDekryptertZipStream();
 
         assertArrayEquals(bytes, getPayload(dekryptertPayload, "payload.txt"));
     }
@@ -195,7 +206,7 @@ class KlientTest extends AutorisertServiceTest {
         assertEquals(sendtKvittering.getMeldingId(), mottattKvittering.getMeldingId());
         assertEquals(sendtMelding.getMeldingId(), mottattKvittering.getSvarPaMelding());
         assertEquals(MeldingsType.KVITTERING_AVVIST, mottattKvittering.getMeldingType());
-        assertEquals(kvitteringTekst, getPayloadAsString(mottattKvittering.getDekryptertPayload(), "payload.txt"));
+        assertEquals(kvitteringTekst, getPayloadAsString(mottattKvittering.getDekryptertZipStream(), "payload.txt"));
     }
 
     private byte[] getPayload(ZipInputStream dekryptertPayload, String filename) throws IOException {

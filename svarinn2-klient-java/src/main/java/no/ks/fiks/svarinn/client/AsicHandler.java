@@ -14,6 +14,8 @@ import org.bouncycastle.cms.CMSAlgorithm;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.PrivateKey;
 import java.security.Security;
 import java.security.cert.X509Certificate;
@@ -52,31 +54,43 @@ class AsicHandler {
     }
 
     InputStream encrypt(@NonNull X509Certificate mottakerCert, @NonNull List<Payload> payload) {
-        if (payload.isEmpty())
-            throw new RuntimeException("Ingen payloads oppgitt, kan ikke kryptere melding");
 
-        PipedInputStream inputStream = new PipedInputStream();
+        try {
+            if (payload.isEmpty())
+                throw new RuntimeException("Ingen payloads oppgitt, kan ikke kryptere melding");
 
-        new Thread(() -> {
-            try (OutputStream outputStream = new PipedOutputStream(inputStream)) {
-                Security.addProvider(new BouncyCastleProvider());
+            PipedInputStream inputStream = new PipedInputStream();
+            final OutputStream outputStream = new PipedOutputStream(inputStream);
 
-                CmsEncryptedAsicWriter writer = new CmsEncryptedAsicWriter(asicWriterFactory
-                        .newContainer(outputStream),
-                        mottakerCert,
-                        CMSAlgorithm.AES256_GCM);
-                payload.forEach(p -> write(writer, p));
-                writer.setRootEntryName(payload.get(0).getFilnavn());
+            new Thread(() -> {
+                try {
+                    Security.addProvider(new BouncyCastleProvider());
 
-                try (InputStream keyStoreStream = new ByteArrayInputStream(keyStoreBytes)) {
-                    writer.sign(new SignatureHelper(keyStoreStream, signeringKonfigurasjon.getKeyStorePassword(), signeringKonfigurasjon.getKeyAlias(), signeringKonfigurasjon.getKeyPassword()));
+                    CmsEncryptedAsicWriter writer = new CmsEncryptedAsicWriter(
+                            asicWriterFactory.newContainer(outputStream),
+                            mottakerCert,
+                            CMSAlgorithm.AES256_GCM);
+                    payload.forEach(p -> write(writer, p));
+                    writer.setRootEntryName(payload.get(0).getFilnavn());
+
+                    try (InputStream keyStoreStream = new ByteArrayInputStream(keyStoreBytes)) {
+                        writer.sign(new SignatureHelper(keyStoreStream, signeringKonfigurasjon.getKeyStorePassword(), signeringKonfigurasjon.getKeyAlias(), signeringKonfigurasjon.getKeyPassword()));
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    try {
+                        outputStream.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }).start();
+            }).start();
 
-        return inputStream;
+            return inputStream;
+        } catch (IOException e) {
+            throw  new RuntimeException();
+        }
     }
 
     public ZipInputStream decrypt(@NonNull InputStream encryptedAsicData) {
@@ -84,20 +98,8 @@ class AsicHandler {
             PipedOutputStream out = new PipedOutputStream();
 
             new Thread(() -> {
-                try(AsicReader asicReader = asicReaderFactory.open(encryptedAsicData);
-                    ZipOutputStream zipOutputStream = new ZipOutputStream(out)) {
-
-                    CmsEncryptedAsicReader reader = new CmsEncryptedAsicReader(asicReader, privatNokkel);
-                    while (true) {
-                        String filnavn = reader.getNextFile();
-
-                        if (filnavn == null)
-                            break;
-
-                        zipOutputStream.putNextEntry(new ZipEntry(filnavn));
-                        reader.writeFile(zipOutputStream);
-                        zipOutputStream.closeEntry();
-                    }
+                try (AsicReader asicReader = asicReaderFactory.open(encryptedAsicData)) {
+                    decrypt(asicReader, new ZipOutputStream(out));
                 } catch (Exception e) {
                     throw new RuntimeException();
                 } finally {
@@ -115,9 +117,34 @@ class AsicHandler {
         }
     }
 
+    public void writeDecrypted(@NonNull InputStream encryptedAsicData, @NonNull Path targetPath) {
+        try (AsicReader asicReader = asicReaderFactory.open(encryptedAsicData);
+             OutputStream out1 = Files.newOutputStream(targetPath);
+             ZipOutputStream out = new ZipOutputStream(out1)) {
+            decrypt(asicReader, out);
+        } catch (Exception e) {
+            throw new RuntimeException();
+        }
+    }
+
+    private void decrypt(AsicReader asicReader, ZipOutputStream zipOutputStream) throws IOException {
+        CmsEncryptedAsicReader reader = new CmsEncryptedAsicReader(asicReader, privatNokkel);
+        while (true) {
+            String filnavn = reader.getNextFile();
+
+            if (filnavn == null)
+                break;
+
+            zipOutputStream.putNextEntry(new ZipEntry(filnavn));
+            reader.writeFile(zipOutputStream);
+            zipOutputStream.closeEntry();
+            zipOutputStream.finish();
+        }
+    }
+
     private void write(@NonNull CmsEncryptedAsicWriter writer, @NonNull Payload p) {
         try {
-            writer.add(p.getPayload(), p.getFilnavn());
+            writer.addEncrypted(p.getPayload(), p.getFilnavn());
         } catch (IOException e) {
             e.printStackTrace();
         } finally {

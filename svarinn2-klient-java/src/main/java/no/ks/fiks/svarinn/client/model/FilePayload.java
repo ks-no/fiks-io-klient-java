@@ -2,31 +2,35 @@ package no.ks.fiks.svarinn.client.model;
 
 import lombok.NonNull;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+
+import static java.nio.file.Files.*;
 
 public class FilePayload implements Payload {
-    private File payload;
+    private Path payloadPath;
 
-    public FilePayload(@NonNull File payload) {
-        if (!payload.canRead())
-            throw new RuntimeException(String.format("Filen \"%s\" er ikke lesbar, kan ikke konstruere file-payload for svarinn2", payload.getAbsolutePath()));
-        this.payload = payload;
+    public FilePayload(@NonNull Path path) {
+        if (!isRegularFile(path))
+            throw new RuntimeException(String.format("Path \"%s\" representerer ikke en fil, kan ikke konstruere file-payload for svarinn2", path.toString()));
+        if (!isReadable(path))
+            throw new RuntimeException(String.format("Filen \"%s\" er ikke lesbar, kan ikke konstruere file-payload for svarinn2", path.toString()));
+
+        this.payloadPath = path;
     }
 
     @Override
     public String getFilnavn() {
-        return payload.getName();
+        return payloadPath.getFileName().toString();
     }
 
     @Override
     public InputStream getPayload() {
         try {
-            return new FileInputStream(payload);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(String.format("Kunne ikke finne filen \"%s\"", payload.getAbsolutePath()), e);
+            return newInputStream(payloadPath);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }
