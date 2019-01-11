@@ -74,7 +74,6 @@ public class AsicHandlerTest {
         assertArrayEquals(payload, readBytes(asicHandler.decrypt(encrypted)).get("payload.txt"));
     }
 
-
     @Test
     @ExtendWith(TempDirectory.class)
     @DisplayName("Test at vi kan dekryptere en payload til en fil")
@@ -107,7 +106,7 @@ public class AsicHandlerTest {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         while ((entry = dekryptertPayload.getNextEntry()) != null) {
             int len;
-            while ((len = dekryptertPayload.read(buffer)) > 0) {
+            while ((len = dekryptertPayload.read(buffer)) != -1) {
                 output.write(buffer, 0, len);
             }
             files.put(entry.getName(), output.toByteArray());

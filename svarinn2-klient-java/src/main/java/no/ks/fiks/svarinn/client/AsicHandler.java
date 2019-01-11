@@ -98,17 +98,21 @@ class AsicHandler {
             PipedOutputStream out = new PipedOutputStream();
 
             new Thread(() -> {
+                System.out.println("start decrypting");
                 try (AsicReader asicReader = asicReaderFactory.open(encryptedAsicData)) {
+                    asicReader.getAsicManifest()
                     decrypt(asicReader, new ZipOutputStream(out));
                 } catch (Exception e) {
-                    throw new RuntimeException();
+                    log.error("", e);
                 } finally {
                     try {
                         out.close();
                     } catch (IOException e) {
                         log.error("", e);
                     }
+                    System.out.println("done decrypting");
                 }
+
             }).start();
 
             return new ZipInputStream(new PipedInputStream(out));
@@ -128,17 +132,18 @@ class AsicHandler {
     }
 
     private void decrypt(AsicReader asicReader, ZipOutputStream zipOutputStream) throws IOException {
-        CmsEncryptedAsicReader reader = new CmsEncryptedAsicReader(asicReader, privatNokkel);
+        try (CmsEncryptedAsicReader reader = new CmsEncryptedAsicReader(asicReader, privatNokkel)) {
         while (true) {
-            String filnavn = reader.getNextFile();
+                String filnavn = reader.getNextFile();
 
-            if (filnavn == null)
-                break;
+                if (filnavn == null)
+                    break;
 
-            zipOutputStream.putNextEntry(new ZipEntry(filnavn));
-            reader.writeFile(zipOutputStream);
-            zipOutputStream.closeEntry();
-            zipOutputStream.finish();
+                zipOutputStream.putNextEntry(new ZipEntry(filnavn));
+                reader.writeFile(zipOutputStream);
+                zipOutputStream.closeEntry();
+                zipOutputStream.finish();
+            }
         }
     }
 
