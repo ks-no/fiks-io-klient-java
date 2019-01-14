@@ -100,7 +100,6 @@ class AsicHandler {
             new Thread(() -> {
                 System.out.println("start decrypting");
                 try (AsicReader asicReader = asicReaderFactory.open(encryptedAsicData)) {
-                    asicReader.getAsicManifest()
                     decrypt(asicReader, new ZipOutputStream(out));
                 } catch (Exception e) {
                     log.error("", e);
