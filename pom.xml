@@ -10,7 +10,7 @@
     </parent>
     <artifactId>fiks-svarinn2-klient-java</artifactId>
     <groupId>no.ks.fiks</groupId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
         <module>svarinn2-klient-java</module>
