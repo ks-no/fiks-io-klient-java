@@ -3,7 +3,7 @@ package no.ks.fiks.svarinn2.klient.java;
 import com.google.common.base.Stopwatch;
 import no.ks.fiks.componenttest.support.feign.TestApiBuilder;
 import no.ks.fiks.componenttest.support.invoker.TestInvoker;
-import no.ks.fiks.svarinn.client.SvarInnKlient;
+import no.ks.fiks.svarinn.client.SvarInnKlientImpl;
 import no.ks.fiks.svarinn.client.model.Konto;
 import no.ks.fiks.svarinn.client.model.*;
 import no.ks.fiks.svarinn2.commons.MeldingsType;
@@ -15,11 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -39,8 +37,8 @@ class KlientTest extends AutorisertServiceTest {
     @Test
     @DisplayName("Test at alice kan sende bob en melding som string")
     void testSendString(@Autowired SvarInn2KlientGenerator generator) throws Exception {
-        SvarInnKlient aliceKlient = getAliceKlient(generator);
-        SvarInnKlient bobKlient = getBobKlient(generator);
+        SvarInnKlientImpl aliceKlient = getAliceKlient(generator);
+        SvarInnKlientImpl bobKlient = getBobKlient(generator);
 
         String payload = UUID.randomUUID().toString();
 
@@ -68,8 +66,8 @@ class KlientTest extends AutorisertServiceTest {
     @Test
     @DisplayName("Test at alice kan sende bob en melding som fil")
     void testSendFil(@Autowired SvarInn2KlientGenerator generator) throws Exception {
-        SvarInnKlient aliceKlient = getAliceKlient(generator);
-        SvarInnKlient bobKlient = getBobKlient(generator);
+        SvarInnKlientImpl aliceKlient = getAliceKlient(generator);
+        SvarInnKlientImpl bobKlient = getBobKlient(generator);
 
         Path file = Paths.get("src/test/resources/small.pdf");
         aliceKlient.send(MeldingRequest.builder()
@@ -90,8 +88,8 @@ class KlientTest extends AutorisertServiceTest {
     @Test
     @DisplayName("Test at alice kan sende bob en melding som stream")
     void testSendStream(@Autowired SvarInn2KlientGenerator generator) throws Exception {
-        SvarInnKlient aliceKlient = getAliceKlient(generator);
-        SvarInnKlient bobKlient = getBobKlient(generator);
+        SvarInnKlientImpl aliceKlient = getAliceKlient(generator);
+        SvarInnKlientImpl bobKlient = getBobKlient(generator);
 
         byte[] bytes = TestUtil.randomBytes();
         aliceKlient.send(MeldingRequest.builder()
@@ -112,8 +110,8 @@ class KlientTest extends AutorisertServiceTest {
     @Test
     @DisplayName("Test at alice kan finne bobs konto på lookup")
     void testLookup(@Autowired SvarInn2KlientGenerator generator, @Autowired TestApiBuilder<SvarInnKontoApi> kontoApi) throws Exception {
-        SvarInnKlient aliceKlient = getAliceKlient(generator);
-        SvarInnKlient bobKlient = getBobKlient(generator);
+        SvarInnKlientImpl aliceKlient = getAliceKlient(generator);
+        SvarInnKlientImpl bobKlient = getBobKlient(generator);
 
         String meldingType = UUID.randomUUID().toString();
         Identifikator identifikator = new Identifikator().identifikatorType(Identifikator.IdentifikatorTypeEnum.ORG_NO).identifikator("123456789");
@@ -140,7 +138,7 @@ class KlientTest extends AutorisertServiceTest {
     @Test
     @DisplayName("Test at alice får en optional-empty for en lookup på en ikke-eksisterende adresse")
     void testEmptyLookup(@Autowired SvarInn2KlientGenerator generator) throws Exception {
-        SvarInnKlient aliceKlient = getAliceKlient(generator);
+        SvarInnKlientImpl aliceKlient = getAliceKlient(generator);
 
         Optional<Konto> konto = aliceKlient.lookup(LookupRequest.builder()
                 .dokumentType(UUID.randomUUID().toString())
@@ -154,8 +152,8 @@ class KlientTest extends AutorisertServiceTest {
     @Test
     @DisplayName("Test at Bob kan svare Alice med en melding uten body")
     void testKvitteringAkseptert(@Autowired SvarInn2KlientGenerator generator) throws Exception {
-        SvarInnKlient aliceKlient = getAliceKlient(generator);
-        SvarInnKlient bobKlient = getBobKlient(generator);
+        SvarInnKlientImpl aliceKlient = getAliceKlient(generator);
+        SvarInnKlientImpl bobKlient = getBobKlient(generator);
 
         String payload = "heisann bob";
         SendtMelding sendtMelding = aliceKlient.send(MeldingRequest.builder()
@@ -182,8 +180,8 @@ class KlientTest extends AutorisertServiceTest {
     @Test
     @DisplayName("Test at Bob kan svare Alice med en melding med body")
     void testKvitteringAvvist(@Autowired SvarInn2KlientGenerator generator) throws Exception {
-        SvarInnKlient aliceKlient = getAliceKlient(generator);
-        SvarInnKlient bobKlient = getBobKlient(generator);
+        SvarInnKlientImpl aliceKlient = getAliceKlient(generator);
+        SvarInnKlientImpl bobKlient = getBobKlient(generator);
 
         String payload = "heisann bob";
         SendtMelding sendtMelding = aliceKlient.send(MeldingRequest.builder()
@@ -229,11 +227,11 @@ class KlientTest extends AutorisertServiceTest {
         return new String(getPayload(dekryptertPayload, filename));
     }
 
-    private SvarInnKlient getAliceKlient(@Autowired SvarInn2KlientGenerator generator) throws Exception {
+    private SvarInnKlientImpl getAliceKlient(@Autowired SvarInn2KlientGenerator generator) throws Exception {
         return generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "alice-virksomhetssertifikat.p12"), "PASSWORD"), "PASSWORD", "et alias", "et alias", "PASSWORD");
     }
 
-    private SvarInnKlient getBobKlient(@Autowired SvarInn2KlientGenerator generator) throws Exception {
+    private SvarInnKlientImpl getBobKlient(@Autowired SvarInn2KlientGenerator generator) throws Exception {
         return generator.opprettKontoOgKlient(TestUtil.readP12(getClass().getResourceAsStream("/" + "alice-virksomhetssertifikat.p12"), "PASSWORD"), "PASSWORD", "et alias", "et alias", "PASSWORD");
     }
 }

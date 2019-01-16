@@ -3,7 +3,7 @@ package no.ks.fiks.svarinn2.klient.java;
 import no.ks.fiks.componenttest.support.ComponentTestConfigurationProperties;
 import no.ks.fiks.componenttest.support.feign.TestApiBuilder;
 import no.ks.fiks.konfigurasjon.mock.KonfigurasjonMock;
-import no.ks.fiks.svarinn.client.SvarInnKlient;
+import no.ks.fiks.svarinn.client.SvarInnKlientImpl;
 import no.ks.fiks.svarinn.client.konfigurasjon.*;
 import no.ks.fiks.svarinn.client.model.KontoId;
 import no.ks.fiks.svarinn2.katalog.swagger.api.v1.SvarInnKontoApi;
@@ -33,7 +33,7 @@ class SvarInn2KlientGenerator {
         this.svarInnKontoApi = kontoApiBuilder.asPerson(TestUtil.randomPerson()).build();
     }
 
-    SvarInnKlient opprettKontoOgKlient(KeyStore keyStore, String keyStorePassword, String certAlias, String keyAlias, String keyPassword) throws Exception {
+    SvarInnKlientImpl opprettKontoOgKlient(KeyStore keyStore, String keyStorePassword, String certAlias, String keyAlias, String keyPassword) throws Exception {
         UUID integrasjonId = UUID.randomUUID();
         String password = UUID.randomUUID().toString();
 
@@ -59,7 +59,7 @@ class SvarInn2KlientGenerator {
 
         svarInnKontoApi.aktiver(opprettetKonto.getKontoId());
 
-        return new SvarInnKlient(SvarInnKonfigurasjon.builder()
+        return new SvarInnKlientImpl(SvarInnKonfigurasjon.builder()
                 .fiksApiKonfigurasjon(FiksApiKonfigurasjon.builder()
                         .scheme("http")
                         .port(8080)

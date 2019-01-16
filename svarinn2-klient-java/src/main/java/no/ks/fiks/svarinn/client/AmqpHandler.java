@@ -15,11 +15,9 @@ import no.ks.fiks.svarinn.client.model.MeldingId;
 import no.ks.fiks.svarinn.client.model.MottattMelding;
 import no.ks.fiks.svarinn2.commons.MottattMeldingMetadata;
 import no.ks.fiks.svarinn2.commons.SvarInnMeldingParser;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;

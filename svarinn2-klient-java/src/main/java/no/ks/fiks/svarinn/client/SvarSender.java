@@ -9,7 +9,6 @@ import no.ks.fiks.svarinn.client.model.*;
 import no.ks.fiks.svarinn2.klient.MeldingSpesifikasjonApiModel;
 import no.ks.fiks.svarinn2.klient.SvarInnUtsendingKlient;
 
-import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Collections;

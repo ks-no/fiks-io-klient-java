@@ -98,7 +98,6 @@ class AsicHandler {
             PipedOutputStream out = new PipedOutputStream();
 
             new Thread(() -> {
-                System.out.println("start decrypting");
                 try (AsicReader asicReader = asicReaderFactory.open(encryptedAsicData)) {
                     decrypt(asicReader, new ZipOutputStream(out));
                 } catch (Exception e) {
@@ -109,9 +108,7 @@ class AsicHandler {
                     } catch (IOException e) {
                         log.error("", e);
                     }
-                    System.out.println("done decrypting");
                 }
-
             }).start();
 
             return new ZipInputStream(new PipedInputStream(out));

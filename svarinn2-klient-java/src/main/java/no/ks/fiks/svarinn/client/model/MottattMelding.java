@@ -3,7 +3,6 @@ package no.ks.fiks.svarinn.client.model;
 import lombok.*;
 import no.ks.fiks.svarinn2.commons.MottattMeldingMetadata;
 
-import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.time.Duration;
