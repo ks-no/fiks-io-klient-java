@@ -29,7 +29,26 @@
                         <attach>true</attach>
                     </configuration>
                 </plugin>
-
+                <plugin>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.0.1</version>
+                    <configuration>
+                        <attach>true</attach>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                        <header>
+                            <![CDATA[<b><a href="https://github.com/ks-no/fiks-svarinn2-klient-java">KS FIKS Svarinn2 Klient</a>, v. ${project.version}</b>]]>
+                        </header>
+                        <windowtitle>KS FIKS Innsyn2 Java klient</windowtitle>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
