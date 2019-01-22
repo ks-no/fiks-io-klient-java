@@ -3,10 +3,6 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <properties>
-        <junit-platform-commons.version>1.4.0-M1</junit-platform-commons.version>
-    </properties>
-
     <parent>
         <groupId>no.ks.fiks</groupId>
         <artifactId>fiks-svarinn2-klient-java</artifactId>
@@ -20,22 +16,22 @@
         <dependency>
             <groupId>no.difi.commons</groupId>
             <artifactId>commons-asic</artifactId>
-            <version>0.9.3</version>
+            <version>${difi-commons-asic.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jdk8</artifactId>
-            <version>2.9.7</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>no.ks.fiks</groupId>
             <artifactId>maskinporten-client</artifactId>
-            <version>1.0.8</version>
+            <version>${fiks-maskinporten-client.version}</version>
         </dependency>
         <dependency>
             <groupId>no.ks.fiks</groupId>
             <artifactId>feign-interceptors</artifactId>
-            <version>1.0.2</version>
+            <version>${fiks-feign-interceptors.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.security.oauth</groupId>
@@ -44,37 +40,36 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.0</version>
+            <version>${lombok.version}</version>
         </dependency>
         <dependency>
             <groupId>no.ks.fiks</groupId>
             <artifactId>dokumentlager-klient</artifactId>
-            <version>1.0.8</version>
+            <version>${fiks-dokumentlager-klient.version}</version>
         </dependency>
         <dependency>
             <groupId>no.ks.fiks</groupId>
             <artifactId>svarinn2-commons</artifactId>
-            <version>1.0.0</version>
+            <version>${fiks-svarinn2-commons.version}</version>
         </dependency>
         <dependency>
             <groupId>no.ks.fiks</groupId>
             <artifactId>svarinn2-katalog-api-v1</artifactId>
-            <version>1.0.0</version>
+            <version>${fiks-svarinn2.version}</version>
         </dependency>
         <dependency>
             <groupId>no.ks.fiks</groupId>
             <artifactId>svarinn2-utsending-klient</artifactId>
-            <version>1.0.0</version>
+            <version>${fiks-svarinn2.version}</version>
         </dependency>
         <dependency>
             <groupId>com.rabbitmq</groupId>
             <artifactId>amqp-client</artifactId>
-            <version>5.4.3</version>
+            <version>${rabbitmq-amqp-client.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.6</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
