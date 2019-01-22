@@ -9,6 +9,8 @@ import no.ks.fiks.svarinn2.katalog.swagger.model.v1.Identifikator;
 @Builder
 public class LookupRequest {
     @NonNull private Identifikator identifikator;
-    @NonNull private String dokumentType;
+
+    @NonNull
+    private String meldingType;
     @NonNull private Integer sikkerhetsNiva;
 }
