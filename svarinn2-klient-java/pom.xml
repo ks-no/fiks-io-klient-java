@@ -6,11 +6,11 @@
     <parent>
         <groupId>no.ks.fiks</groupId>
         <artifactId>fiks-svarinn2-klient-java</artifactId>
-        <version>1.0.4</version>
+        <version>1.0.5-SNAPSHOT</version>
     </parent>
 
     <artifactId>svarinn2-klient-java</artifactId>
-    <version>1.0.4</version>
+    <version>1.0.5-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
