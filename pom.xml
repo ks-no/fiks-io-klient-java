@@ -54,7 +54,6 @@
         <feign-version>9.4.0</feign-version>
         <feign-form-version>2.1.0</feign-form-version>
         <jackson-version>2.8.9</jackson-version>
-        <!--<jackson-threetenbp-version>2.6.4</jackson-threetenbp-version>-->
 
         <oltu-version>1.0.1</oltu-version>
         <svarinn2-send-klient.version>1.0.0-SNAPSHOT</svarinn2-send-klient.version>
@@ -177,11 +176,6 @@
             <artifactId>jackson-databind</artifactId>
             <version>${jackson-version}</version>
         </dependency>
-     <!--   <dependency>
-            <groupId>com.github.joschi.jackson</groupId>
-            <artifactId>jackson-datatype-threetenbp</artifactId>
-            <version>${jackson-threetenbp-version}</version>
-        </dependency>-->
         <dependency>
             <groupId>org.apache.oltu.oauth2</groupId>
             <artifactId>org.apache.oltu.oauth2.client</artifactId>
