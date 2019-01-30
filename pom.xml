@@ -3,15 +3,17 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>no.ks.fiks.pom</groupId>
-        <artifactId>fiks-service-pom</artifactId>
-        <version>1.0.16</version>
+        <artifactId>fiks-ekstern-super-pom</artifactId>
+        <version>0.0.3</version>
     </parent>
-    <artifactId>fiks-svarinn2-klient-java</artifactId>
+
     <groupId>no.ks.fiks</groupId>
-    <version>1.0.5-SNAPSHOT</version>
-    <packaging>pom</packaging>
+    <artifactId>svarinn2-klient-java</artifactId>
+    <version>1.0.1-SNAPSHOT</version>
+
     <properties>
         <fiks-dokumentlager-klient.version>1.0.11</fiks-dokumentlager-klient.version>
         <fiks-feign-interceptors.version>1.0.2</fiks-feign-interceptors.version>
@@ -25,42 +27,273 @@
         <junit-platform-commons.version>1.4.0-M1</junit-platform-commons.version>
         <junit-jupiter.version>5.4.0-M1</junit-jupiter.version>
         <maven-surefire-plugin.version>3.0.0-M3</maven-surefire-plugin.version>
-    </properties>
-    <modules>
-        <module>svarinn2-klient-java</module>
-    </modules>
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>3.0.1</version>
-                    <configuration>
-                        <attach>true</attach>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.0.1</version>
-                    <configuration>
-                        <attach>true</attach>
-                        <encoding>${project.build.sourceEncoding}</encoding>
-                        <header>
-                            <![CDATA[<b><a href="https://github.com/ks-no/fiks-svarinn2-klient-java">KS FIKS Svarinn2 Klient</a>, v. ${project.version}</b>]]>
-                        </header>
-                        <windowtitle>KS FIKS Innsyn2 Java klient</windowtitle>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>attach-javadocs</id>
-                            <goals>
-                                <goal>jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
+        <junit-platform-commons.version>1.4.0-M1</junit-platform-commons.version>
+        <spec.name>svarinn2-katalog-api-v1</spec.name>
+        <spec.postfix>json</spec.postfix>
+        <spec.location>https://ks-no.github.io/api/</spec.location>
 
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>1.7</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <swagger-core-version>1.5.18</swagger-core-version>
+        <feign-version>9.4.0</feign-version>
+        <feign-form-version>2.1.0</feign-form-version>
+        <jackson-version>2.8.9</jackson-version>
+        <jackson-threetenbp-version>2.6.4</jackson-threetenbp-version>
+        <junit-version>4.12</junit-version>
+        <maven-plugin-version>1.0.0</maven-plugin-version>
+        <oltu-version>1.0.1</oltu-version>
+    </properties>
+
+    <profiles>
+        <profile>
+            <id>useLocalSpec</id>
+            <activation>
+                <property>
+                    <name>useLocalSpec</name>
+                </property>
+            </activation>
+            <properties>
+                <spec.location>/tmp/api-specs/</spec.location>
+            </properties>
+        </profile>
+    </profiles>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>no.ks.fiks</groupId>
+                <artifactId>svarinn2-katalog-api-v1-generator</artifactId>
+                <type>pom</type>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>no.ks.fiks</groupId>
+                <artifactId>fiks-svarinn2-klient-java-svarinn2-katalog-api-v1</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>no.ks.fiks</groupId>
+                <artifactId>dokumentlager-klient</artifactId>
+                <version>1.0.8</version>
+            </dependency>
+            <dependency>
+                <groupId>no.ks.fiks</groupId>
+                <artifactId>svarinn2-commons</artifactId>
+                <version>1.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>no.ks.fiks</groupId>
+                <artifactId>svarinn2-send-klient</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <groupId>no.ks.fiks</groupId>
+                <artifactId>feign-interceptors</artifactId>
+                <version>1.0.2</version>
+            </dependency>
+            <!--<dependency>
+                <groupId>org.springframework.security.oauth</groupId>
+                <artifactId>spring-security-oauth2</artifactId>
+            </dependency>-->
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>1.18.0</version>
+            </dependency>
+            <dependency>
+                <groupId>no.difi.commons</groupId>
+                <artifactId>commons-asic</artifactId>
+                <version>0.9.3</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jdk8</artifactId>
+                <version>2.9.7</version>
+            </dependency>
+            <dependency>
+                <groupId>no.ks.fiks</groupId>
+                <artifactId>maskinporten-client</artifactId>
+                <version>1.0.8</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>com.rabbitmq</groupId>
+                <artifactId>amqp-client</artifactId>
+                <version>5.4.3</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>2.6</version>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>${junit-jupiter.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-api</artifactId>
+                <version>${junit-jupiter.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-commons</artifactId>
+                <version>${junit-platform-commons.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>${swagger-core-version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-core</artifactId>
+            <version>${feign-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-jackson</artifactId>
+            <version>${feign-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-slf4j</artifactId>
+            <version>${feign-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.openfeign.form</groupId>
+            <artifactId>feign-form</artifactId>
+            <version>${feign-form-version}</version>
+        </dependency>
+
+        <!-- JSON processing: jackson -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.joschi.jackson</groupId>
+            <artifactId>jackson-datatype-threetenbp</artifactId>
+            <version>${jackson-threetenbp-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.oltu.oauth2</groupId>
+            <artifactId>org.apache.oltu.oauth2.client</artifactId>
+            <version>${oltu-version}</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>no.difi.commons</groupId>
+            <artifactId>commons-asic</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jdk8</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.ks.fiks</groupId>
+            <artifactId>maskinporten-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.ks.fiks</groupId>
+            <artifactId>feign-interceptors</artifactId>
+        </dependency>
+        <!--<dependency>
+            <groupId>org.springframework.security.oauth</groupId>
+            <artifactId>spring-security-oauth2</artifactId>
+        </dependency>-->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.ks.fiks</groupId>
+            <artifactId>dokumentlager-klient</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.ks.fiks</groupId>
+            <artifactId>svarinn2-commons</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.ks.fiks</groupId>
+            <artifactId>svarinn2-send-klient</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-codegen-maven-plugin</artifactId>
+                <version>2.4.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${spec.location}${spec.name}.${spec.postfix}</inputSpec>
+                            <language>java</language>
+                            <library>feign</library>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>${project.parent.artifactId}-${spec.name}</artifactId>
+                            <artifactVersion>${project.version}</artifactVersion>
+                            <generateApiTests>false</generateApiTests>
+                            <generateModelTests>false</generateModelTests>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

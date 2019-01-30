@@ -1,4 +1,4 @@
 *.iml
 .idea
 target
-svarinn2-api-client/*
+.flattened-pom.xml
