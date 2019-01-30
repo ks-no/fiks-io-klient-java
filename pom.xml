@@ -14,6 +14,8 @@
     <artifactId>svarinn2-klient-java</artifactId>
     <version>${revision}${changelist}</version>
 
+    <name>Svarinn2 Java-klient</name>
+    <description>Klient for integrasjoner mot KS-Fiks Svarinn2. Håndterer sending, mottak, kryptering, dekryptering og signering</description>
     <url>https://github.com/ks-no/fiks-svarinn2</url>
 
     <scm>
