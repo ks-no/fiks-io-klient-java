@@ -15,7 +15,10 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Map;
 import java.util.TreeMap;
@@ -31,11 +34,9 @@ public class AsicHandlerTest {
     @Test
     @DisplayName("Verifiser at payload blir kryptert")
     void testKrypterStream() throws Exception {
-        KeyStore keyStore = KeyStore.getInstance("JKS");
-        keyStore.load(getClass().getResourceAsStream("/" + "src/test/resources/alice-virksomhetssertifikat.p12"), "PASSWORD".toCharArray());
-        X509Certificate cert = (X509Certificate) keyStore.getCertificate("et alias");
+        KeyStore keyStore = getKeyStore();
 
-        AsicHandler asicHandler = new AsicHandler(cert, (PrivateKey) keyStore.getKey("et alias", "PASSWORD".toCharArray()), SigneringKonfigurasjon.builder()
+        AsicHandler asicHandler = new AsicHandler((X509Certificate) keyStore.getCertificate("et alias"), (PrivateKey) keyStore.getKey("et alias", "PASSWORD".toCharArray()), SigneringKonfigurasjon.builder()
                 .keyAlias("et alias")
                 .keyPassword("PASSWORD")
                 .keyStorePassword("PASSWORD")
@@ -44,7 +45,7 @@ public class AsicHandlerTest {
 
         byte[] plaintext = UUID.randomUUID().toString().getBytes();
         byte[] encrypted = readBytes(new ZipInputStream(asicHandler.encrypt(
-                cert,
+            (X509Certificate) keyStore.getCertificate("et alias"),
                 singletonList(new StreamPayload(new ByteArrayInputStream(plaintext), "payload.bin")))
         )).get("payload.bin.p7m");
 
@@ -58,19 +59,18 @@ public class AsicHandlerTest {
     @Test
     @DisplayName("Test at vi kan dekryptere en payload til en zip stream")
     void testDekrypterStream() throws Exception {
-        KeyStore keyStore = KeyStore.getInstance("JKS");
-        keyStore.load(getClass().getResourceAsStream("/" + "src/test/resources/alice-virksomhetssertifikat.p12"), "PASSWORD".toCharArray());
-        X509Certificate cert = (X509Certificate) keyStore.getCertificate("et alias");
+        KeyStore keyStore = getKeyStore();
 
-        AsicHandler asicHandler = new AsicHandler(cert, (PrivateKey) keyStore.getKey("et alias", "PASSWORD".toCharArray()), SigneringKonfigurasjon.builder()
+        AsicHandler asicHandler = new AsicHandler((X509Certificate) keyStore.getCertificate("et alias"), (PrivateKey) keyStore.getKey("et alias", "PASSWORD".toCharArray()), SigneringKonfigurasjon.builder()
                 .keyAlias("et alias")
                 .keyPassword("PASSWORD")
                 .keyStorePassword("PASSWORD")
+
                 .keyStore(keyStore)
                 .build());
 
         byte[] payload = UUID.randomUUID().toString().getBytes();
-        InputStream encrypted = asicHandler.encrypt(cert, singletonList(new StreamPayload(new ByteArrayInputStream(payload), "payload.txt")));
+        InputStream encrypted = asicHandler.encrypt((X509Certificate) keyStore.getCertificate("et alias"), singletonList(new StreamPayload(new ByteArrayInputStream(payload), "payload.txt")));
         assertArrayEquals(payload, readBytes(asicHandler.decrypt(encrypted)).get("payload.txt"));
     }
 
@@ -78,11 +78,9 @@ public class AsicHandlerTest {
     @ExtendWith(TempDirectory.class)
     @DisplayName("Test at vi kan dekryptere en payload til en fil")
     void testDekrypterFil(@TempDirectory.TempDir Path tempDir) throws Exception {
-        KeyStore keyStore = KeyStore.getInstance("JKS");
-        keyStore.load(getClass().getResourceAsStream("/" + "src/test/resources/alice-virksomhetssertifikat.p12"), "PASSWORD".toCharArray());
-        X509Certificate cert = (X509Certificate) keyStore.getCertificate("et alias");
+        KeyStore keyStore = getKeyStore();
 
-        AsicHandler asicHandler = new AsicHandler(cert, (PrivateKey) keyStore.getKey("et alias", "PASSWORD".toCharArray()), SigneringKonfigurasjon.builder()
+        AsicHandler asicHandler = new AsicHandler((X509Certificate) keyStore.getCertificate("et alias"), (PrivateKey) keyStore.getKey("et alias", "PASSWORD".toCharArray()), SigneringKonfigurasjon.builder()
                 .keyAlias("et alias")
                 .keyPassword("PASSWORD")
                 .keyStorePassword("PASSWORD")
@@ -90,13 +88,19 @@ public class AsicHandlerTest {
                 .build());
 
         byte[] payload = UUID.randomUUID().toString().getBytes();
-        InputStream encrypted = asicHandler.encrypt(cert, singletonList(new StreamPayload(new ByteArrayInputStream(payload), "payload.txt")));
+        InputStream encrypted = asicHandler.encrypt((X509Certificate) keyStore.getCertificate("et alias"), singletonList(new StreamPayload(new ByteArrayInputStream(payload), "payload.txt")));
 
         Path path = tempDir.resolve(UUID.randomUUID().toString());
 
         asicHandler.writeDecrypted(encrypted, path);
         assertTrue(Files.exists(path));
         assertArrayEquals(payload, readBytes(new ZipInputStream(Files.newInputStream(path))).get("payload.txt"));
+    }
+
+    private KeyStore getKeyStore() throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
+        KeyStore keyStore = KeyStore.getInstance("JKS");
+        keyStore.load(this.getClass().getClassLoader().getResourceAsStream("alice-virksomhetssertifikat.p12"), "PASSWORD".toCharArray());
+        return keyStore;
     }
 
     private Map<String, byte[]> readBytes(ZipInputStream dekryptertPayload) throws IOException {
