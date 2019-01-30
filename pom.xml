@@ -12,16 +12,26 @@
 
     <groupId>no.ks.fiks</groupId>
     <artifactId>svarinn2-klient-java</artifactId>
-    <version>1.0.5-SNAPSHOT</version>
+    <version>${revision}${changelist}</version>
+
+    <url>https://github.com/ks-no/fiks-svarinn2</url>
+
+    <scm>
+        <connection>scm:git:git@github.com:ks-no/fiks-svarinn2-klient-java.git</connection>
+        <developerConnection>scm:git:git@github.com:ks-no/fiks-svarinn2-klient-java.git</developerConnection>
+        <url>https://github.com/ks-no/fiks-svarinn2-klient-java</url>
+    </scm>
 
     <properties>
+        <changelist>-SNAPSHOT</changelist>
+        <revision>1.0.5</revision>
+
         <fiks-dokumentlager-klient.version>1.0.12</fiks-dokumentlager-klient.version>
         <fiks-feign-interceptors.version>1.0.2</fiks-feign-interceptors.version>
         <fiks-maskinporten-client.version>1.0.8</fiks-maskinporten-client.version>
         <fiks-svarinn2-commons.version>1.0.0</fiks-svarinn2-commons.version>
         <fiks-svarinn2.version>1.0.0</fiks-svarinn2.version>
         <fiks-svarinn2-send-klient.version>1.0.0-SNAPSHOT</fiks-svarinn2-send-klient.version>
-
 
         <rabbitmq-amqp-client.version>5.4.3</rabbitmq-amqp-client.version>
         <lombok.version>1.18.0</lombok.version>
