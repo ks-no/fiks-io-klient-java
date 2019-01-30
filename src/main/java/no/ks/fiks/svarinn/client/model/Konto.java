@@ -1,9 +1,9 @@
 package no.ks.fiks.svarinn.client.model;
 
-import io.swagger.client.model.KatalogKonto;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import no.ks.fiks.svarinn.client.api.katalog.model.KatalogKonto;
 
 @Builder
 @Value

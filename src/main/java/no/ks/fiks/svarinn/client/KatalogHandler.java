@@ -1,8 +1,8 @@
 package no.ks.fiks.svarinn.client;
 
 import feign.FeignException;
-import io.swagger.client.api.SvarInnKatalogApi;
 import lombok.NonNull;
+import no.ks.fiks.svarinn.client.api.katalog.api.SvarInnKatalogApi;
 import no.ks.fiks.svarinn.client.model.Konto;
 import no.ks.fiks.svarinn.client.model.KontoId;
 import no.ks.fiks.svarinn.client.model.LookupRequest;
@@ -24,7 +24,7 @@ public class KatalogHandler {
     public Optional<Konto> lookup(@NonNull LookupRequest request) {
         try {
             return Optional.of(Konto.fromKatalogModel(katalogApi.lookup(
-                request.getIdentifikator().getIdentifikatorType().getValue() + "." + request.getIdentifikator()
+                request.getIdentifikator().getIdentifikatorType().name() + "." + request.getIdentifikator()
                                                                                             .getIdentifikator(),
                 request.getMeldingType(), request.getSikkerhetsNiva())));
         } catch (FeignException e) {

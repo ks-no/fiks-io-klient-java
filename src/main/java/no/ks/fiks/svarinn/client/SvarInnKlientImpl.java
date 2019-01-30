@@ -6,7 +6,6 @@ import com.rabbitmq.client.ShutdownSignalException;
 import feign.Feign;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
-import io.swagger.client.api.SvarInnKatalogApi;
 import lombok.NonNull;
 import no.ks.fiks.dokumentlager.klient.DokumentlagerKlient;
 import no.ks.fiks.dokumentlager.klient.authentication.IntegrasjonAuthenticationStrategy;
@@ -14,6 +13,7 @@ import no.ks.fiks.dokumentlager.klient.path.DefaultPathHandler;
 import no.ks.fiks.feign.RequestInterceptors;
 import no.ks.fiks.maskinporten.Maskinportenklient;
 import no.ks.fiks.maskinporten.MaskinportenklientProperties;
+import no.ks.fiks.svarinn.client.api.katalog.api.SvarInnKatalogApi;
 import no.ks.fiks.svarinn.client.konfigurasjon.FiksApiKonfigurasjon;
 import no.ks.fiks.svarinn.client.konfigurasjon.HostKonfigurasjon;
 import no.ks.fiks.svarinn.client.konfigurasjon.SvarInnKonfigurasjon;
@@ -118,8 +118,7 @@ public class SvarInnKlientImpl implements SvarInnKlient {
         //TODO close-it
     }
 
-    private SvarInnKatalogApi getSvarInnKatalogApi(@NonNull SvarInnKonfigurasjon konfigurasjon,
-                                                   Maskinportenklient maskinportenklient) {
+    private SvarInnKatalogApi getSvarInnKatalogApi(@NonNull SvarInnKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
         return Feign.builder()
             .decoder(new JacksonDecoder(objectMapper))
             .encoder(new JacksonEncoder(objectMapper))

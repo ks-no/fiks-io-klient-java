@@ -1,13 +1,7 @@
 package no.ks.fiks.svarinn.client;
 
 import com.rabbitmq.client.ShutdownSignalException;
-import no.ks.fiks.svarinn.client.model.Konto;
-import no.ks.fiks.svarinn.client.model.KontoId;
-import no.ks.fiks.svarinn.client.model.LookupRequest;
-import no.ks.fiks.svarinn.client.model.MeldingRequest;
-import no.ks.fiks.svarinn.client.model.MottattMelding;
-import no.ks.fiks.svarinn.client.model.Payload;
-import no.ks.fiks.svarinn.client.model.SendtMelding;
+import no.ks.fiks.svarinn.client.model.*;
 
 import java.io.Closeable;
 import java.io.InputStream;
