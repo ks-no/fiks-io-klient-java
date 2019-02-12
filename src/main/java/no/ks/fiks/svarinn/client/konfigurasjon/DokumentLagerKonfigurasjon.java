@@ -21,4 +21,8 @@ public class DokumentLagerKonfigurasjon implements HostKonfigurasjon{
      * Ikke påkrevd felt. Om feltet ikke er oppgitt benyttes fiksApi.sheme
      */
     private String scheme;
+
+    public String getUrl() {
+        return String.format("%s://%s:%s", getScheme(), getHost(), getPort());
+    }
 }

@@ -7,7 +7,10 @@ import feign.Feign;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import lombok.NonNull;
+import no.ks.fiks.dokumentlager.klient.DokumentlagerApi;
+import no.ks.fiks.dokumentlager.klient.DokumentlagerApiImpl;
 import no.ks.fiks.dokumentlager.klient.DokumentlagerKlient;
+import no.ks.fiks.dokumentlager.klient.authentication.AuthenticationStrategy;
 import no.ks.fiks.dokumentlager.klient.authentication.IntegrasjonAuthenticationStrategy;
 import no.ks.fiks.dokumentlager.klient.path.DefaultPathHandler;
 import no.ks.fiks.feign.RequestInterceptors;
@@ -15,6 +18,7 @@ import no.ks.fiks.maskinporten.Maskinportenklient;
 import no.ks.fiks.maskinporten.MaskinportenklientProperties;
 import no.ks.fiks.svarinn.client.api.katalog.api.SvarInnKatalogApi;
 import no.ks.fiks.svarinn.client.konfigurasjon.FiksApiKonfigurasjon;
+import no.ks.fiks.svarinn.client.konfigurasjon.FiksIntegrasjonKonfigurasjon;
 import no.ks.fiks.svarinn.client.konfigurasjon.HostKonfigurasjon;
 import no.ks.fiks.svarinn.client.konfigurasjon.SvarInnKonfigurasjon;
 import no.ks.fiks.svarinn.client.model.*;
@@ -49,27 +53,34 @@ public class SvarInnKlientImpl implements SvarInnKlient {
         DokumentlagerKlient dokumentlagerKlient = getDokumentlagerKlient(konfigurasjon, maskinportenklient);
         SvarInnKatalogApi katalogApi = getSvarInnKatalogApi(konfigurasjon, maskinportenklient);
 
-        kontoId = konfigurasjon.getKontoKonfigurasjon().getKontoId();
+        kontoId = konfigurasjon.getKontoKonfigurasjon()
+                               .getKontoId();
         katalogHandler = new KatalogHandler(katalogApi);
         AsicHandler asicHandler = new AsicHandler(katalogHandler.getPublicKey(kontoId),
-            konfigurasjon.getKontoKonfigurasjon().getPrivatNokkel(),
-            konfigurasjon.getSigneringKonfigurasjon());
+                                                  konfigurasjon.getKontoKonfigurasjon()
+                                                               .getPrivatNokkel(),
+                                                  konfigurasjon.getSigneringKonfigurasjon());
         svarInnHandler = new SvarInnHandler(kontoId, getSvarInnUtsendingKlient(konfigurasjon, maskinportenklient),
-            katalogHandler, asicHandler);
+                                            katalogHandler, asicHandler);
         meldingHandler = new AmqpHandler(konfigurasjon.getAmqpKonfigurasjon(),
-            konfigurasjon.getFiksIntegrasjonKonfigurasjon(), svarInnHandler, asicHandler,
-            maskinportenklient, kontoId, dokumentlagerKlient);
+                                         konfigurasjon.getFiksIntegrasjonKonfigurasjon(), svarInnHandler, asicHandler,
+                                         maskinportenklient, kontoId, dokumentlagerKlient);
     }
 
     private SvarInnUtsendingKlient getSvarInnUtsendingKlient(@NonNull SvarInnKonfigurasjon konfigurasjon,
                                                              Maskinportenklient maskinportenklient) {
-        return new SvarInnUtsendingKlient(konfigurasjon.getSendMeldingKonfigurasjon().getScheme(),
-            konfigurasjon.getSendMeldingKonfigurasjon().getHost(),
-            konfigurasjon.getSendMeldingKonfigurasjon().getPort(),
-            new no.ks.fiks.svarinn2.klient.IntegrasjonAuthenticationStrategy(
-                maskinportenklient,
-                konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
-                konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()));
+        return new SvarInnUtsendingKlient(konfigurasjon.getSendMeldingKonfigurasjon()
+                                                       .getScheme(),
+                                          konfigurasjon.getSendMeldingKonfigurasjon()
+                                                       .getHost(),
+                                          konfigurasjon.getSendMeldingKonfigurasjon()
+                                                       .getPort(),
+                                          new no.ks.fiks.svarinn2.klient.IntegrasjonAuthenticationStrategy(
+                                              maskinportenklient,
+                                              konfigurasjon.getFiksIntegrasjonKonfigurasjon()
+                                                           .getIntegrasjonId(),
+                                              konfigurasjon.getFiksIntegrasjonKonfigurasjon()
+                                                           .getIntegrasjonPassord()));
     }
 
     @Override
@@ -120,49 +131,66 @@ public class SvarInnKlientImpl implements SvarInnKlient {
 
     private SvarInnKatalogApi getSvarInnKatalogApi(@NonNull SvarInnKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
         return Feign.builder()
-            .decoder(new JacksonDecoder(objectMapper))
-            .encoder(new JacksonEncoder(objectMapper))
-            .requestInterceptor(RequestInterceptors.accessToken(() -> maskinportenklient.getAccessToken("ks")))
-            .requestInterceptor(RequestInterceptors.integrasjon(
-                konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
-                konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
-            .target(SvarInnKatalogApi.class, konfigurasjon.getKatalogKonfigurasjon().getUrl());
+                    .decoder(new JacksonDecoder(objectMapper))
+                    .encoder(new JacksonEncoder(objectMapper))
+                    .requestInterceptor(RequestInterceptors.accessToken(() -> maskinportenklient.getAccessToken("ks")))
+                    .requestInterceptor(RequestInterceptors.integrasjon(
+                        konfigurasjon.getFiksIntegrasjonKonfigurasjon()
+                                     .getIntegrasjonId(),
+                        konfigurasjon.getFiksIntegrasjonKonfigurasjon()
+                                     .getIntegrasjonPassord()))
+                    .target(SvarInnKatalogApi.class, konfigurasjon.getKatalogKonfigurasjon()
+                                                                  .getUrl());
+    }
+
+    private AuthenticationStrategy authenticationStrategy(final Maskinportenklient maskinportenklient,
+                                                          final FiksIntegrasjonKonfigurasjon integrasjonKonfigurasjon) {
+        return new IntegrasjonAuthenticationStrategy(maskinportenklient, integrasjonKonfigurasjon.getIntegrasjonId(),
+                                                     integrasjonKonfigurasjon.getIntegrasjonPassord());
+    }
+
+    private DokumentlagerApi dokumentlagerApi(final SvarInnKonfigurasjon svarInnKonfigurasjon,
+                                              final AuthenticationStrategy authenticationStrategy) {
+        return new DokumentlagerApiImpl(svarInnKonfigurasjon.getDokumentlagerKonfigurasjon()
+                                                            .getUrl(),
+                                        svarInnKonfigurasjon.getDokumentlagerKonfigurasjon()
+                                                            .getUrl(),
+                                        authenticationStrategy);
     }
 
     private DokumentlagerKlient getDokumentlagerKlient(@NonNull SvarInnKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
-        return new DokumentlagerKlient(
-            konfigurasjon.getDokumentlagerKonfigurasjon().getUrl(),
-            konfigurasjon.getDokumentlagerKonfigurasjon().getUrl(),
-            new IntegrasjonAuthenticationStrategy(
-                maskinportenklient,
-                konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
-                konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()),
-            new DefaultPathHandler()
-        );
+        return DokumentlagerKlient.builder()
+                                  .api(dokumentlagerApi(konfigurasjon,
+                                                        authenticationStrategy(maskinportenklient, konfigurasjon.getFiksIntegrasjonKonfigurasjon())))
+                                  .build();
     }
 
     private Maskinportenklient getMaskinportenKlient(@NonNull SvarInnKonfigurasjon konfigurasjon) {
         MaskinportenklientProperties maskinportenklientProperties = MaskinportenklientProperties.builder()
-            .audience(
-                konfigurasjon.getFiksIntegrasjonKonfigurasjon()
-                    .getIdPortenKonfigurasjon()
-                    .getIdPortenAudience())
-            .issuer(
-                konfigurasjon.getFiksIntegrasjonKonfigurasjon()
-                    .getIdPortenKonfigurasjon()
-                    .getKlientId())
-            .numberOfSecondsLeftBeforeExpire(
-                10)
-            .tokenEndpoint(
-                konfigurasjon.getFiksIntegrasjonKonfigurasjon()
-                    .getIdPortenKonfigurasjon()
-                    .getAccessTokenUri())
-            .build();
+                                                                                                .audience(
+                                                                                                    konfigurasjon.getFiksIntegrasjonKonfigurasjon()
+                                                                                                                 .getIdPortenKonfigurasjon()
+                                                                                                                 .getIdPortenAudience())
+                                                                                                .issuer(
+                                                                                                    konfigurasjon.getFiksIntegrasjonKonfigurasjon()
+                                                                                                                 .getIdPortenKonfigurasjon()
+                                                                                                                 .getKlientId())
+                                                                                                .numberOfSecondsLeftBeforeExpire(
+                                                                                                    10)
+                                                                                                .tokenEndpoint(
+                                                                                                    konfigurasjon.getFiksIntegrasjonKonfigurasjon()
+                                                                                                                 .getIdPortenKonfigurasjon()
+                                                                                                                 .getAccessTokenUri())
+                                                                                                .build();
 
         try {
             return new Maskinportenklient(
-                konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIdPortenKonfigurasjon().getPrivatNokkel(),
-                konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIdPortenKonfigurasjon().getVirksomhetsertifikat(),
+                konfigurasjon.getFiksIntegrasjonKonfigurasjon()
+                             .getIdPortenKonfigurasjon()
+                             .getPrivatNokkel(),
+                konfigurasjon.getFiksIntegrasjonKonfigurasjon()
+                             .getIdPortenKonfigurasjon()
+                             .getVirksomhetsertifikat(),
                 maskinportenklientProperties);
         } catch (CertificateEncodingException e) {
             throw new RuntimeException(e);
@@ -175,8 +203,10 @@ public class SvarInnKlientImpl implements SvarInnKlient {
         settDefaults(fiksKonf, konf.getKatalogKonfigurasjon());
         settDefaults(fiksKonf, konf.getSendMeldingKonfigurasjon());
 
-        if (konf.getAmqpKonfigurasjon().getHost() == null) {
-            konf.getAmqpKonfigurasjon().setHost(fiksKonf.getHost());
+        if (konf.getAmqpKonfigurasjon()
+                .getHost() == null) {
+            konf.getAmqpKonfigurasjon()
+                .setHost(fiksKonf.getHost());
         }
     }
 
