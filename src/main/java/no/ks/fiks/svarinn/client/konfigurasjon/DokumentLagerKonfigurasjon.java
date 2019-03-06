@@ -3,6 +3,9 @@ package no.ks.fiks.svarinn.client.konfigurasjon;
 import lombok.Builder;
 import lombok.Data;
 
+/**
+ * Konfigurer klienten som benyttes for å lagre og hente dokumenter fra fiks-dokumentlager. Dokumentlager benyttes for å lagre meldinger som er større enn maks-størrelse for amqp meldinger.
+ */
 @Data
 @Builder()
 public class DokumentLagerKonfigurasjon implements HostKonfigurasjon{
