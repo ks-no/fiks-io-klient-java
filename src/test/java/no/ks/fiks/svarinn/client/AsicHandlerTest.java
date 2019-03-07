@@ -5,8 +5,7 @@ import no.ks.fiks.svarinn.client.konfigurasjon.SigneringKonfigurasjon;
 import no.ks.fiks.svarinn.client.model.StreamPayload;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.support.io.TempDirectory;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -75,9 +74,8 @@ public class AsicHandlerTest {
     }
 
     @Test
-    @ExtendWith(TempDirectory.class)
     @DisplayName("Test at vi kan dekryptere en payload til en fil")
-    void testDekrypterFil(@TempDirectory.TempDir Path tempDir) throws Exception {
+    void testDekrypterFil(@TempDir Path tempDir) throws Exception {
         KeyStore keyStore = getKeyStore();
 
         AsicHandler asicHandler = new AsicHandler((X509Certificate) keyStore.getCertificate("et alias"), (PrivateKey) keyStore.getKey("et alias", "PASSWORD".toCharArray()), SigneringKonfigurasjon.builder()

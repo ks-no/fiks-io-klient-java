@@ -12,7 +12,6 @@ import no.ks.fiks.dokumentlager.klient.DokumentlagerApiImpl;
 import no.ks.fiks.dokumentlager.klient.DokumentlagerKlient;
 import no.ks.fiks.dokumentlager.klient.authentication.AuthenticationStrategy;
 import no.ks.fiks.dokumentlager.klient.authentication.IntegrasjonAuthenticationStrategy;
-import no.ks.fiks.dokumentlager.klient.path.DefaultPathHandler;
 import no.ks.fiks.feign.RequestInterceptors;
 import no.ks.fiks.maskinporten.Maskinportenklient;
 import no.ks.fiks.maskinporten.MaskinportenklientProperties;
@@ -67,22 +66,6 @@ public class SvarInnKlientImpl implements SvarInnKlient {
                                          maskinportenklient, kontoId, dokumentlagerKlient);
     }
 
-    private SvarInnUtsendingKlient getSvarInnUtsendingKlient(@NonNull SvarInnKonfigurasjon konfigurasjon,
-                                                             Maskinportenklient maskinportenklient) {
-        return new SvarInnUtsendingKlient(konfigurasjon.getSendMeldingKonfigurasjon()
-                                                       .getScheme(),
-                                          konfigurasjon.getSendMeldingKonfigurasjon()
-                                                       .getHost(),
-                                          konfigurasjon.getSendMeldingKonfigurasjon()
-                                                       .getPort(),
-                                          new no.ks.fiks.svarinn2.klient.IntegrasjonAuthenticationStrategy(
-                                              maskinportenklient,
-                                              konfigurasjon.getFiksIntegrasjonKonfigurasjon()
-                                                           .getIntegrasjonId(),
-                                              konfigurasjon.getFiksIntegrasjonKonfigurasjon()
-                                                           .getIntegrasjonPassord()));
-    }
-
     @Override
     public KontoId getKontoId() {
         return kontoId;
@@ -115,8 +98,7 @@ public class SvarInnKlientImpl implements SvarInnKlient {
 
     @Override
     public void newSubscription(@NonNull BiConsumer<MottattMelding, SvarSender> onMelding) {
-        newSubscription(onMelding, p -> {
-        });
+        newSubscription(onMelding, p -> {});
     }
 
     @Override
@@ -129,40 +111,41 @@ public class SvarInnKlientImpl implements SvarInnKlient {
         //TODO close-it
     }
 
+    private SvarInnUtsendingKlient getSvarInnUtsendingKlient(@NonNull SvarInnKonfigurasjon konfigurasjon,
+                                                             Maskinportenklient maskinportenklient) {
+        return new SvarInnUtsendingKlient(konfigurasjon.getSendMeldingKonfigurasjon().getScheme(),
+            konfigurasjon.getSendMeldingKonfigurasjon().getHost(),
+            konfigurasjon.getSendMeldingKonfigurasjon().getPort(),
+            new no.ks.fiks.svarinn2.klient.IntegrasjonAuthenticationStrategy(
+                maskinportenklient,
+                konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
+                konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()),
+            konfigurasjon.getSendMeldingKonfigurasjon().getRequestInterceptor() == null ? r -> r : konfigurasjon.getSendMeldingKonfigurasjon().getRequestInterceptor());
+    }
+
     private SvarInnKatalogApi getSvarInnKatalogApi(@NonNull SvarInnKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
         return Feign.builder()
-                    .decoder(new JacksonDecoder(objectMapper))
-                    .encoder(new JacksonEncoder(objectMapper))
-                    .requestInterceptor(RequestInterceptors.accessToken(() -> maskinportenklient.getAccessToken("ks")))
-                    .requestInterceptor(RequestInterceptors.integrasjon(
-                        konfigurasjon.getFiksIntegrasjonKonfigurasjon()
-                                     .getIntegrasjonId(),
-                        konfigurasjon.getFiksIntegrasjonKonfigurasjon()
-                                     .getIntegrasjonPassord()))
-                    .target(SvarInnKatalogApi.class, konfigurasjon.getKatalogKonfigurasjon()
-                                                                  .getUrl());
-    }
-
-    private AuthenticationStrategy authenticationStrategy(final Maskinportenklient maskinportenklient,
-                                                          final FiksIntegrasjonKonfigurasjon integrasjonKonfigurasjon) {
-        return new IntegrasjonAuthenticationStrategy(maskinportenklient, integrasjonKonfigurasjon.getIntegrasjonId(),
-                                                     integrasjonKonfigurasjon.getIntegrasjonPassord());
-    }
-
-    private DokumentlagerApi dokumentlagerApi(final SvarInnKonfigurasjon svarInnKonfigurasjon,
-                                              final AuthenticationStrategy authenticationStrategy) {
-        return new DokumentlagerApiImpl(svarInnKonfigurasjon.getDokumentlagerKonfigurasjon()
-                                                            .getUrl(),
-                                        svarInnKonfigurasjon.getDokumentlagerKonfigurasjon()
-                                                            .getUrl(),
-                                        authenticationStrategy);
+            .decoder(new JacksonDecoder(objectMapper))
+            .encoder(new JacksonEncoder(objectMapper))
+            .requestInterceptor(RequestInterceptors.accessToken(() -> maskinportenklient.getAccessToken("ks")))
+            .requestInterceptor(RequestInterceptors.integrasjon(
+                konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
+                konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
+            .requestInterceptor(konfigurasjon.getKatalogKonfigurasjon().getRequestInterceptor() == null ? r -> {} : konfigurasjon.getKatalogKonfigurasjon().getRequestInterceptor())
+            .target(SvarInnKatalogApi.class, konfigurasjon.getKatalogKonfigurasjon().getUrl());
     }
 
     private DokumentlagerKlient getDokumentlagerKlient(@NonNull SvarInnKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
         return DokumentlagerKlient.builder()
-                                  .api(dokumentlagerApi(konfigurasjon,
-                                                        authenticationStrategy(maskinportenklient, konfigurasjon.getFiksIntegrasjonKonfigurasjon())))
-                                  .build();
+            .api(new DokumentlagerApiImpl(
+                konfigurasjon.getDokumentlagerKonfigurasjon().getUrl(),
+                konfigurasjon.getDokumentlagerKonfigurasjon().getUrl(),
+                new IntegrasjonAuthenticationStrategy(
+                    maskinportenklient,
+                    konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
+                    konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()),
+                konfigurasjon.getDokumentlagerKonfigurasjon().getRequestInterceptor() == null ? r -> r : konfigurasjon.getDokumentlagerKonfigurasjon().getRequestInterceptor()))
+            .build();
     }
 
     private Maskinportenklient getMaskinportenKlient(@NonNull SvarInnKonfigurasjon konfigurasjon) {

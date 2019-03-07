@@ -17,11 +17,13 @@ import no.ks.fiks.svarinn2.commons.MottattMeldingMetadata;
 import no.ks.fiks.svarinn2.commons.SvarInnMeldingParser;
 import org.apache.commons.io.IOUtils;
 
+import javax.net.ssl.SSLContext;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
@@ -110,6 +112,12 @@ class AmqpHandler {
         factory.setPort(amqpKonf.getPort());
         factory.setUsername(intKonf.getIntegrasjonId().toString());
         factory.setAutomaticRecoveryEnabled(true);
+
+        try {
+            factory.useSslProtocol(SSLContext.getDefault());
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
 
         factory.setCredentialsProvider(new CredentialsProvider() {
             @Override
