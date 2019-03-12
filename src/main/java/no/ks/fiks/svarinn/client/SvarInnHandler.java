@@ -3,11 +3,7 @@ package no.ks.fiks.svarinn.client;
 import io.vavr.control.Option;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import no.ks.fiks.svarinn.client.model.KontoId;
-import no.ks.fiks.svarinn.client.model.MeldingRequest;
-import no.ks.fiks.svarinn.client.model.MottattMelding;
-import no.ks.fiks.svarinn.client.model.Payload;
-import no.ks.fiks.svarinn.client.model.SendtMelding;
+import no.ks.fiks.svarinn.client.model.*;
 import no.ks.fiks.svarinn2.klient.MeldingSpesifikasjonApiModel;
 import no.ks.fiks.svarinn2.klient.SendtMeldingApiModel;
 import no.ks.fiks.svarinn2.klient.SvarInnUtsendingKlient;
@@ -20,11 +16,8 @@ import java.util.UUID;
 @Slf4j
 class SvarInnHandler {
     private KontoId kontoId;
-
     private SvarInnUtsendingKlient utsendingKlient;
-
     private final KatalogHandler katalogHandler;
-
     private final AsicHandler asic;
 
     SvarInnHandler(@NonNull KontoId kontoId,
@@ -44,27 +37,27 @@ class SvarInnHandler {
 
     SvarSender buildKvitteringSender(@NonNull Runnable acknowledge, @NonNull MottattMelding melding) {
         return SvarSender.builder()
-                         .doQueueAck(acknowledge)
-                         .utsendingKlient(utsendingKlient)
-                         .meldingSomSkalKvitteres(melding)
-                         .encrypt(payload -> encrypt(payload, melding.getAvsenderKontoId()))
-                         .build();
+            .doQueueAck(acknowledge)
+            .utsendingKlient(utsendingKlient)
+            .meldingSomSkalKvitteres(melding)
+            .encrypt(payload -> encrypt(payload, melding.getAvsenderKontoId()))
+            .build();
     }
 
     private SendtMeldingApiModel getSend(@NonNull final MeldingRequest request, @NonNull final List<Payload> payload) {
         final UUID mottagerKontoId = request.getMottakerKontoId()
-                                            .getUuid();
+            .getUuid();
         log.debug("Sender melding til \"{}\"", mottagerKontoId);
         return utsendingKlient.send(
             MeldingSpesifikasjonApiModel.builder()
-                                        .avsenderKontoId(kontoId.getUuid())
-                                        .mottakerKontoId(mottagerKontoId)
-                                        .meldingType(request.getMeldingType())
-                                        .svarPaMelding(request.getSvarPaMelding() == null ? null : request.getSvarPaMelding()
-                                                                                                          .getUuid())
-                                        .ttl(request.getTtl()
-                                                    .getSeconds())
-                                        .build(),
+                .avsenderKontoId(kontoId.getUuid())
+                .mottakerKontoId(mottagerKontoId)
+                .meldingType(request.getMeldingType())
+                .svarPaMelding(request.getSvarPaMelding() == null ? null : request.getSvarPaMelding()
+                    .getUuid())
+                .ttl(request.getTtl()
+                    .getSeconds())
+                .build(),
             payload.isEmpty() ? Option.none() : Option.some(encrypt(payload, request.getMottakerKontoId())));
     }
 

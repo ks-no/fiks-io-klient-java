@@ -7,17 +7,14 @@ import feign.Feign;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import lombok.NonNull;
-import no.ks.fiks.dokumentlager.klient.DokumentlagerApi;
 import no.ks.fiks.dokumentlager.klient.DokumentlagerApiImpl;
 import no.ks.fiks.dokumentlager.klient.DokumentlagerKlient;
-import no.ks.fiks.dokumentlager.klient.authentication.AuthenticationStrategy;
 import no.ks.fiks.dokumentlager.klient.authentication.IntegrasjonAuthenticationStrategy;
 import no.ks.fiks.feign.RequestInterceptors;
 import no.ks.fiks.maskinporten.Maskinportenklient;
 import no.ks.fiks.maskinporten.MaskinportenklientProperties;
 import no.ks.fiks.svarinn.client.api.katalog.api.SvarInnKatalogApi;
 import no.ks.fiks.svarinn.client.konfigurasjon.FiksApiKonfigurasjon;
-import no.ks.fiks.svarinn.client.konfigurasjon.FiksIntegrasjonKonfigurasjon;
 import no.ks.fiks.svarinn.client.konfigurasjon.HostKonfigurasjon;
 import no.ks.fiks.svarinn.client.konfigurasjon.SvarInnKonfigurasjon;
 import no.ks.fiks.svarinn.client.model.*;
@@ -25,6 +22,9 @@ import no.ks.fiks.svarinn2.klient.SvarInnUtsendingKlient;
 
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateEncodingException;
 import java.util.List;
 import java.util.Optional;
@@ -53,16 +53,17 @@ public class SvarInnKlientImpl implements SvarInnKlient {
         SvarInnKatalogApi katalogApi = getSvarInnKatalogApi(konfigurasjon, maskinportenklient);
 
         kontoId = konfigurasjon.getKontoKonfigurasjon()
-                               .getKontoId();
+            .getKontoId();
         katalogHandler = new KatalogHandler(katalogApi);
-        AsicHandler asicHandler = new AsicHandler(konfigurasjon.getKontoKonfigurasjon()
-                                                               .getPrivatNokkel(),
-                                                  konfigurasjon.getSigneringKonfigurasjon());
+        AsicHandler asicHandler = new AsicHandler(
+            konfigurasjon.getKontoKonfigurasjon()
+                .getPrivatNokkel(),
+            konfigurasjon.getVirksomhetssertifikatKonfigurasjon());
         svarInnHandler = new SvarInnHandler(kontoId, getSvarInnUtsendingKlient(konfigurasjon, maskinportenklient),
-                                            katalogHandler, asicHandler);
+            katalogHandler, asicHandler);
         meldingHandler = new AmqpHandler(konfigurasjon.getAmqpKonfigurasjon(),
-                                         konfigurasjon.getFiksIntegrasjonKonfigurasjon(), svarInnHandler, asicHandler,
-                                         maskinportenklient, kontoId, dokumentlagerKlient);
+            konfigurasjon.getFiksIntegrasjonKonfigurasjon(), svarInnHandler, asicHandler,
+            maskinportenklient, kontoId, dokumentlagerKlient);
     }
 
     @Override
@@ -97,7 +98,8 @@ public class SvarInnKlientImpl implements SvarInnKlient {
 
     @Override
     public void newSubscription(@NonNull BiConsumer<MottattMelding, SvarSender> onMelding) {
-        newSubscription(onMelding, p -> {});
+        newSubscription(onMelding, p -> {
+        });
     }
 
     @Override
@@ -130,7 +132,8 @@ public class SvarInnKlientImpl implements SvarInnKlient {
             .requestInterceptor(RequestInterceptors.integrasjon(
                 konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
                 konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
-            .requestInterceptor(konfigurasjon.getKatalogKonfigurasjon().getRequestInterceptor() == null ? r -> {} : konfigurasjon.getKatalogKonfigurasjon().getRequestInterceptor())
+            .requestInterceptor(konfigurasjon.getKatalogKonfigurasjon().getRequestInterceptor() == null ? r -> {
+            } : konfigurasjon.getKatalogKonfigurasjon().getRequestInterceptor())
             .target(SvarInnKatalogApi.class, konfigurasjon.getKatalogKonfigurasjon().getUrl());
     }
 
@@ -149,32 +152,29 @@ public class SvarInnKlientImpl implements SvarInnKlient {
 
     private Maskinportenklient getMaskinportenKlient(@NonNull SvarInnKonfigurasjon konfigurasjon) {
         MaskinportenklientProperties maskinportenklientProperties = MaskinportenklientProperties.builder()
-                                                                                                .audience(
-                                                                                                    konfigurasjon.getFiksIntegrasjonKonfigurasjon()
-                                                                                                                 .getIdPortenKonfigurasjon()
-                                                                                                                 .getIdPortenAudience())
-                                                                                                .issuer(
-                                                                                                    konfigurasjon.getFiksIntegrasjonKonfigurasjon()
-                                                                                                                 .getIdPortenKonfigurasjon()
-                                                                                                                 .getKlientId())
-                                                                                                .numberOfSecondsLeftBeforeExpire(
-                                                                                                    10)
-                                                                                                .tokenEndpoint(
-                                                                                                    konfigurasjon.getFiksIntegrasjonKonfigurasjon()
-                                                                                                                 .getIdPortenKonfigurasjon()
-                                                                                                                 .getAccessTokenUri())
-                                                                                                .build();
+            .audience(
+                konfigurasjon.getFiksIntegrasjonKonfigurasjon()
+                    .getIdPortenKonfigurasjon()
+                    .getIdPortenAudience())
+            .issuer(
+                konfigurasjon.getFiksIntegrasjonKonfigurasjon()
+                    .getIdPortenKonfigurasjon()
+                    .getKlientId())
+            .numberOfSecondsLeftBeforeExpire(
+                10)
+            .tokenEndpoint(
+                konfigurasjon.getFiksIntegrasjonKonfigurasjon()
+                    .getIdPortenKonfigurasjon()
+                    .getAccessTokenUri())
+            .build();
 
         try {
             return new Maskinportenklient(
-                konfigurasjon.getFiksIntegrasjonKonfigurasjon()
-                             .getIdPortenKonfigurasjon()
-                             .getPrivatNokkel(),
-                konfigurasjon.getFiksIntegrasjonKonfigurasjon()
-                             .getIdPortenKonfigurasjon()
-                             .getVirksomhetsertifikat(),
+                konfigurasjon.getVirksomhetssertifikatKonfigurasjon().getKeyStore(),
+                konfigurasjon.getVirksomhetssertifikatKonfigurasjon().getKeyAlias(),
+                konfigurasjon.getVirksomhetssertifikatKonfigurasjon().getKeyPassword().toCharArray(),
                 maskinportenklientProperties);
-        } catch (CertificateEncodingException e) {
+        } catch (CertificateEncodingException | KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
             throw new RuntimeException(e);
         }
     }
@@ -186,7 +186,7 @@ public class SvarInnKlientImpl implements SvarInnKlient {
         settDefaults(fiksKonf, konf.getSendMeldingKonfigurasjon());
 
         if (konf.getAmqpKonfigurasjon()
-                .getHost() == null) {
+            .getHost() == null) {
             konf.getAmqpKonfigurasjon()
                 .setHost(fiksKonf.getHost());
         }

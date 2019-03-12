@@ -25,5 +25,5 @@ public class AmqpKonfigurasjon {
     /**
      * Ikke påkrevd. Det er her mulig å konfigurere et predikat som forteller om en spesifikk melding har blitt behandlet tidligere, slik at man unngår duplikat meldinger som ellers kan oppstå gjennom en amqp kobling, pga. nettverksbrudd eller lignende.
      */
-    @Builder.Default private Predicate<MeldingId> meldingErBehandlet = m -> true;
+    @Builder.Default private Predicate<MeldingId> meldingErBehandlet = m -> false;
 }

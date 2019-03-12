@@ -15,14 +15,14 @@ public class Konto {
     private boolean isGyldigAvsender;
     private boolean isGyldigMottaker;
 
-    public static Konto fromKatalogModel(@NonNull KatalogKonto konto){
+    public static Konto fromKatalogModel(@NonNull KatalogKonto konto) {
         return Konto.builder()
-                .kontoId(new KontoId(konto.getKontoId()))
-                .kontoNavn(konto.getKontoNavn())
-                .fiksOrgId(new FiksOrgId(konto.getFiksOrgId()))
-                .fiksOrgNavn(konto.getFiksOrgNavn())
-                .isGyldigAvsender(konto.getStatus().isGyldigAvsender())
-                .isGyldigMottaker(konto.getStatus().isGyldigMottaker())
-                .build();
+            .kontoId(new KontoId(konto.getKontoId()))
+            .kontoNavn(konto.getKontoNavn())
+            .fiksOrgId(new FiksOrgId(konto.getFiksOrgId()))
+            .fiksOrgNavn(konto.getFiksOrgNavn())
+            .isGyldigAvsender(konto.getStatus().isGyldigAvsender())
+            .isGyldigMottaker(konto.getStatus().isGyldigMottaker())
+            .build();
     }
 }

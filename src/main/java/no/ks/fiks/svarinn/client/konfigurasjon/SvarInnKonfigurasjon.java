@@ -14,9 +14,9 @@ public class SvarInnKonfigurasjon {
     @NonNull private KontoKonfigurasjon kontoKonfigurasjon;
 
     /**
-     * Påkrevd felt. Se {@link SigneringKonfigurasjon}
+     * Påkrevd felt. Se {@link VirksomhetssertifikatKonfigurasjon}
      */
-    @NonNull private SigneringKonfigurasjon signeringKonfigurasjon;
+    @NonNull private VirksomhetssertifikatKonfigurasjon virksomhetssertifikatKonfigurasjon;
 
     /**
      * Påkrevd felt. Se {@link FiksIntegrasjonKonfigurasjon}
