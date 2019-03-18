@@ -20,9 +20,9 @@ public class Konto {
                 .kontoId(new KontoId(konto.getKontoId()))
                 .kontoNavn(konto.getKontoNavn())
                 .fiksOrgId(new FiksOrgId(konto.getFiksOrgId()))
-                .fiksOrgNavn(konto.getKontoNavn())
+                .fiksOrgNavn(konto.getFiksOrgNavn())
                 .isGyldigAvsender(konto.getStatus().isGyldigAvsender())
-                .isGyldigMottaker(konto.getStatus().isGyldigAvsender())
+                .isGyldigMottaker(konto.getStatus().isGyldigMottaker())
                 .build();
     }
 }
