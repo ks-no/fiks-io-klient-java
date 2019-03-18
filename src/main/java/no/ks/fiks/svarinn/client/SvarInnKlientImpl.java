@@ -55,8 +55,7 @@ public class SvarInnKlientImpl implements SvarInnKlient {
         kontoId = konfigurasjon.getKontoKonfigurasjon()
                                .getKontoId();
         katalogHandler = new KatalogHandler(katalogApi);
-        AsicHandler asicHandler = new AsicHandler(katalogHandler.getPublicKey(kontoId),
-                                                  konfigurasjon.getKontoKonfigurasjon()
+        AsicHandler asicHandler = new AsicHandler(konfigurasjon.getKontoKonfigurasjon()
                                                                .getPrivatNokkel(),
                                                   konfigurasjon.getSigneringKonfigurasjon());
         svarInnHandler = new SvarInnHandler(kontoId, getSvarInnUtsendingKlient(konfigurasjon, maskinportenklient),

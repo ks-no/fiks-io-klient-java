@@ -34,16 +34,12 @@ class AsicHandler {
     private final AsicWriterFactory asicWriterFactory = AsicWriterFactory.newFactory();
     private final byte[] keyStoreBytes;
 
-    AsicHandler(@NonNull X509Certificate publisertOffentligNokkel, @NonNull PrivateKey privatNokkel, @NonNull SigneringKonfigurasjon signeringKonfigurasjon) {
+    AsicHandler(@NonNull PrivateKey privatNokkel,
+                @NonNull SigneringKonfigurasjon signeringKonfigurasjon) {
         this.privatNokkel = privatNokkel;
         this.signeringKonfigurasjon = signeringKonfigurasjon;
 
-        try {
-            if (signeringKonfigurasjon.getKeyStore().getCertificateAlias(publisertOffentligNokkel) == null)
-                throw new RuntimeException("Offentlig nøkkel publisert for denne kontoen i Fiks Konfigurasjon finnes ikke i signering-jks. For at mottaker skal kunne validere avsender må meldingen signeres med den publiserte nøkkelen.");
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+
 
         try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             signeringKonfigurasjon.getKeyStore().store(output, signeringKonfigurasjon.getKeyStorePassword().toCharArray());

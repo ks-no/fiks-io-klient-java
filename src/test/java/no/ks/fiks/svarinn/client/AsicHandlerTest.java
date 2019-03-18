@@ -35,7 +35,7 @@ public class AsicHandlerTest {
     void testKrypterStream() throws Exception {
         KeyStore keyStore = getKeyStore();
 
-        AsicHandler asicHandler = new AsicHandler((X509Certificate) keyStore.getCertificate("et alias"), (PrivateKey) keyStore.getKey("et alias", "PASSWORD".toCharArray()), SigneringKonfigurasjon.builder()
+        AsicHandler asicHandler = new AsicHandler((PrivateKey) keyStore.getKey("et alias", "PASSWORD".toCharArray()), SigneringKonfigurasjon.builder()
                 .keyAlias("et alias")
                 .keyPassword("PASSWORD")
                 .keyStorePassword("PASSWORD")
@@ -60,7 +60,7 @@ public class AsicHandlerTest {
     void testDekrypterStream() throws Exception {
         KeyStore keyStore = getKeyStore();
 
-        AsicHandler asicHandler = new AsicHandler((X509Certificate) keyStore.getCertificate("et alias"), (PrivateKey) keyStore.getKey("et alias", "PASSWORD".toCharArray()), SigneringKonfigurasjon.builder()
+        AsicHandler asicHandler = new AsicHandler((PrivateKey) keyStore.getKey("et alias", "PASSWORD".toCharArray()), SigneringKonfigurasjon.builder()
                 .keyAlias("et alias")
                 .keyPassword("PASSWORD")
                 .keyStorePassword("PASSWORD")
@@ -78,7 +78,7 @@ public class AsicHandlerTest {
     void testDekrypterFil(@TempDir Path tempDir) throws Exception {
         KeyStore keyStore = getKeyStore();
 
-        AsicHandler asicHandler = new AsicHandler((X509Certificate) keyStore.getCertificate("et alias"), (PrivateKey) keyStore.getKey("et alias", "PASSWORD".toCharArray()), SigneringKonfigurasjon.builder()
+        AsicHandler asicHandler = new AsicHandler((PrivateKey) keyStore.getKey("et alias", "PASSWORD".toCharArray()), SigneringKonfigurasjon.builder()
                 .keyAlias("et alias")
                 .keyPassword("PASSWORD")
                 .keyStorePassword("PASSWORD")
