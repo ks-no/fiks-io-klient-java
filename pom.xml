@@ -43,7 +43,7 @@
         <fiks-maskinporten-client.version>1.0.10</fiks-maskinporten-client.version>
         <fiks-svarinn2-commons.version>1.0.12</fiks-svarinn2-commons.version>
         <fiks-svarinn2.version>1.0.0</fiks-svarinn2.version>
-        <fiks-svarinn2-send-klient.version>1.0.4-SNAPSHOT</fiks-svarinn2-send-klient.version>
+        <fiks-svarinn2-send-klient.version>1.0.4</fiks-svarinn2-send-klient.version>
 
         <rabbitmq-amqp-client.version>5.6.0</rabbitmq-amqp-client.version>
         <lombok.version>1.18.0</lombok.version>
