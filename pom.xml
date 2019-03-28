@@ -58,6 +58,7 @@
         <oltu-version>1.0.1</oltu-version>
         <commons-io.version>2.6</commons-io.version>
         <swagger-codegen-maven-plugin.version>2.4.1</swagger-codegen-maven-plugin.version>
+        <guava.version>27.0.1-jre</guava.version>
 
         <junit-platform-commons.version>1.4.0</junit-platform-commons.version>
         <junit-jupiter.version>5.4.0</junit-jupiter.version>
@@ -234,6 +235,15 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <plugins>
