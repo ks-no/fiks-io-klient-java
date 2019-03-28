@@ -40,6 +40,7 @@
 
         <fiks-dokumentlager-klient.version>1.2.0</fiks-dokumentlager-klient.version>
         <fiks-feign-interceptors.version>1.0.2</fiks-feign-interceptors.version>
+        <fiks-kryptering.version>1.0.5</fiks-kryptering.version>
         <fiks-maskinporten-client.version>1.0.10</fiks-maskinporten-client.version>
         <fiks-svarinn2-commons.version>1.0.12</fiks-svarinn2-commons.version>
         <fiks-svarinn2.version>1.0.0</fiks-svarinn2.version>
@@ -109,7 +110,7 @@
         <dependency>
             <groupId>no.ks.fiks</groupId>
             <artifactId>kryptering</artifactId>
-            <version>1.0.5-SNAPSHOT</version>
+            <version>${fiks-kryptering.version}</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
