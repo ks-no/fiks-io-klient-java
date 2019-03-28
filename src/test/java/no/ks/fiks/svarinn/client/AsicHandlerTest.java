@@ -79,7 +79,7 @@ public class AsicHandlerTest {
 
         byte[] payload = UUID.randomUUID().toString().getBytes();
         InputStream encrypted = asicHandler.encrypt(getPublicCertResource("bob.cert"),  singletonList(new StreamPayload(new ByteArrayInputStream(payload), "payload.txt")));
-        ZipInputStream decrypt = asicHandler.decrypt(encrypted);
+        ZipInputStream decrypt = asicHandler.decrypt(new ByteArrayInputStream(IOUtils.toByteArray(encrypted)));
         assertArrayEquals(payload, readBytes(decrypt).get("payload.txt"));
         decrypt.close();
         encrypted.close();

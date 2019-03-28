@@ -32,18 +32,24 @@ public class SvarInnKlientFactory {
         settDefaults(konfigurasjon);
 
         Maskinportenklient maskinportenklient = getMaskinportenKlient(konfigurasjon);
+
         DokumentlagerKlient dokumentlagerKlient = getDokumentlagerKlient(konfigurasjon, maskinportenklient);
+
         SvarInnKatalogApi katalogApi = getSvarInnKatalogApi(konfigurasjon, maskinportenklient);
+
         AsicHandler asicHandler = new AsicHandler(
-            konfigurasjon.getKontoKonfigurasjon()
-                .getPrivatNokkel(),
+            konfigurasjon.getKontoKonfigurasjon().getPrivatNokkel(),
             konfigurasjon.getVirksomhetssertifikatKonfigurasjon());
 
         KatalogHandler katalogHandler = new KatalogHandler(katalogApi);
-        KontoId kontoId = konfigurasjon.getKontoKonfigurasjon()
-            .getKontoId();
-        SvarInnHandler svarInnHandler = new SvarInnHandler(kontoId, getSvarInnSender(getSvarInnUtsendingKlient(konfigurasjon, maskinportenklient)),
+
+        KontoId kontoId = konfigurasjon.getKontoKonfigurasjon().getKontoId();
+
+        SvarInnHandler svarInnHandler = new SvarInnHandler(
+            kontoId,
+            getSvarInnSender(getSvarInnUtsendingKlient(konfigurasjon, maskinportenklient)),
             katalogHandler, asicHandler);
+
         return new SvarInnKlientImpl(
             kontoId,
             new AmqpHandler(konfigurasjon.getAmqpKonfigurasjon(),
@@ -54,8 +60,7 @@ public class SvarInnKlientFactory {
         );
     }
 
-    private static SvarInnUtsendingKlient getSvarInnUtsendingKlient(@NonNull SvarInnKonfigurasjon konfigurasjon,
-                                                                    Maskinportenklient maskinportenklient) {
+    private static SvarInnUtsendingKlient getSvarInnUtsendingKlient(@NonNull SvarInnKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
         return new SvarInnUtsendingKlient(konfigurasjon.getSendMeldingKonfigurasjon().getScheme(),
             konfigurasjon.getSendMeldingKonfigurasjon().getHost(),
             konfigurasjon.getSendMeldingKonfigurasjon().getPort(),
@@ -95,18 +100,14 @@ public class SvarInnKlientFactory {
 
     private static Maskinportenklient getMaskinportenKlient(@NonNull SvarInnKonfigurasjon konfigurasjon) {
         MaskinportenklientProperties maskinportenklientProperties = MaskinportenklientProperties.builder()
-            .audience(
-                konfigurasjon.getFiksIntegrasjonKonfigurasjon()
+            .audience(konfigurasjon.getFiksIntegrasjonKonfigurasjon()
                     .getIdPortenKonfigurasjon()
                     .getIdPortenAudience())
-            .issuer(
-                konfigurasjon.getFiksIntegrasjonKonfigurasjon()
+            .issuer(konfigurasjon.getFiksIntegrasjonKonfigurasjon()
                     .getIdPortenKonfigurasjon()
                     .getKlientId())
-            .numberOfSecondsLeftBeforeExpire(
-                10)
-            .tokenEndpoint(
-                konfigurasjon.getFiksIntegrasjonKonfigurasjon()
+            .numberOfSecondsLeftBeforeExpire(10)
+            .tokenEndpoint(konfigurasjon.getFiksIntegrasjonKonfigurasjon()
                     .getIdPortenKonfigurasjon()
                     .getAccessTokenUri())
             .build();
