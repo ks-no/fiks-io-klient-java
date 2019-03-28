@@ -17,7 +17,18 @@ import no.ks.fiks.svarinn.client.api.katalog.api.SvarInnKatalogApi;
 import no.ks.fiks.svarinn.client.konfigurasjon.FiksApiKonfigurasjon;
 import no.ks.fiks.svarinn.client.konfigurasjon.HostKonfigurasjon;
 import no.ks.fiks.svarinn.client.konfigurasjon.SvarInnKonfigurasjon;
-import no.ks.fiks.svarinn.client.model.*;
+import no.ks.fiks.svarinn.client.model.FilePayload;
+import no.ks.fiks.svarinn.client.model.Konto;
+import no.ks.fiks.svarinn.client.model.KontoId;
+import no.ks.fiks.svarinn.client.model.LookupRequest;
+import no.ks.fiks.svarinn.client.model.MeldingRequest;
+import no.ks.fiks.svarinn.client.model.MottattMelding;
+import no.ks.fiks.svarinn.client.model.Payload;
+import no.ks.fiks.svarinn.client.model.SendtMelding;
+import no.ks.fiks.svarinn.client.model.StreamPayload;
+import no.ks.fiks.svarinn.client.model.StringPayload;
+import no.ks.fiks.svarinn.client.send.SvarInnSender;
+import no.ks.fiks.svarinn.client.send.SvarInnSenderClientWrapper;
 import no.ks.fiks.svarinn2.klient.SvarInnUtsendingKlient;
 
 import java.io.InputStream;
@@ -45,6 +56,7 @@ public class SvarInnKlientImpl implements SvarInnKlient {
 
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
+    // TODO: Refaktorer til en statisk factory metode og ha en konstruktur som tar inn alle final fields. Dette vil gjøre testing enklere
     public SvarInnKlientImpl(@NonNull SvarInnKonfigurasjon konfigurasjon) {
         settDefaults(konfigurasjon);
 
@@ -59,7 +71,7 @@ public class SvarInnKlientImpl implements SvarInnKlient {
             konfigurasjon.getKontoKonfigurasjon()
                 .getPrivatNokkel(),
             konfigurasjon.getVirksomhetssertifikatKonfigurasjon());
-        svarInnHandler = new SvarInnHandler(kontoId, getSvarInnUtsendingKlient(konfigurasjon, maskinportenklient),
+        svarInnHandler = new SvarInnHandler(kontoId, getSvarInnSender(getSvarInnUtsendingKlient(konfigurasjon, maskinportenklient)),
             katalogHandler, asicHandler);
         meldingHandler = new AmqpHandler(konfigurasjon.getAmqpKonfigurasjon(),
             konfigurasjon.getFiksIntegrasjonKonfigurasjon(), svarInnHandler, asicHandler,
@@ -177,6 +189,10 @@ public class SvarInnKlientImpl implements SvarInnKlient {
         } catch (CertificateEncodingException | KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private SvarInnSender getSvarInnSender(final SvarInnUtsendingKlient svarInnUtsendingKlient) {
+        return new SvarInnSenderClientWrapper(svarInnUtsendingKlient);
     }
 
     private static void settDefaults(SvarInnKonfigurasjon konf) {

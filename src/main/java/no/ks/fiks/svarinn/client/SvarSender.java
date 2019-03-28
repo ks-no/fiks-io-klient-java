@@ -5,9 +5,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
-import no.ks.fiks.svarinn.client.model.*;
+import no.ks.fiks.svarinn.client.model.FilePayload;
+import no.ks.fiks.svarinn.client.model.MottattMelding;
+import no.ks.fiks.svarinn.client.model.Payload;
+import no.ks.fiks.svarinn.client.model.SendtMelding;
+import no.ks.fiks.svarinn.client.model.StreamPayload;
+import no.ks.fiks.svarinn.client.model.StringPayload;
+import no.ks.fiks.svarinn.client.send.SvarInnSender;
 import no.ks.fiks.svarinn2.klient.MeldingSpesifikasjonApiModel;
-import no.ks.fiks.svarinn2.klient.SvarInnUtsendingKlient;
 
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -24,7 +29,7 @@ import static lombok.AccessLevel.NONE;
 public class SvarSender {
 
     @NonNull private MottattMelding meldingSomSkalKvitteres;
-    @NonNull private SvarInnUtsendingKlient utsendingKlient;
+    @NonNull private SvarInnSender utsendingKlient;
     @NonNull private Runnable doQueueAck;
     @NonNull private Function<List<Payload>, InputStream> encrypt;
 

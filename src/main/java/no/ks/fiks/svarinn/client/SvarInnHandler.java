@@ -3,10 +3,14 @@ package no.ks.fiks.svarinn.client;
 import io.vavr.control.Option;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import no.ks.fiks.svarinn.client.model.*;
+import no.ks.fiks.svarinn.client.model.KontoId;
+import no.ks.fiks.svarinn.client.model.MeldingRequest;
+import no.ks.fiks.svarinn.client.model.MottattMelding;
+import no.ks.fiks.svarinn.client.model.Payload;
+import no.ks.fiks.svarinn.client.model.SendtMelding;
+import no.ks.fiks.svarinn.client.send.SvarInnSender;
 import no.ks.fiks.svarinn2.klient.MeldingSpesifikasjonApiModel;
 import no.ks.fiks.svarinn2.klient.SendtMeldingApiModel;
-import no.ks.fiks.svarinn2.klient.SvarInnUtsendingKlient;
 
 import java.io.InputStream;
 import java.security.cert.X509Certificate;
@@ -16,12 +20,12 @@ import java.util.UUID;
 @Slf4j
 class SvarInnHandler {
     private KontoId kontoId;
-    private SvarInnUtsendingKlient utsendingKlient;
+    private SvarInnSender utsendingKlient;
     private final KatalogHandler katalogHandler;
     private final AsicHandler asic;
 
     SvarInnHandler(@NonNull KontoId kontoId,
-                   @NonNull SvarInnUtsendingKlient utsendingKlient,
+                   @NonNull SvarInnSender utsendingKlient,
                    @NonNull KatalogHandler katalogHandler,
                    @NonNull AsicHandler asicHandler) {
         this.kontoId = kontoId;

@@ -7,9 +7,9 @@ import no.ks.fiks.svarinn.client.model.MeldingRequest;
 import no.ks.fiks.svarinn.client.model.MottattMelding;
 import no.ks.fiks.svarinn.client.model.SendtMelding;
 import no.ks.fiks.svarinn.client.model.StringPayload;
+import no.ks.fiks.svarinn.client.send.SvarInnSender;
 import no.ks.fiks.svarinn2.klient.MeldingSpesifikasjonApiModel;
 import no.ks.fiks.svarinn2.klient.SendtMeldingApiModel;
-import no.ks.fiks.svarinn2.klient.SvarInnUtsendingKlient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -36,7 +36,7 @@ import static org.mockito.Mockito.*;
 class SvarInnHandlerTest {
 
     @Mock
-    private SvarInnUtsendingKlient utsendingKlient;
+    private SvarInnSender utsendingKlient;
 
     @Mock
     private KatalogHandler katalogHandler;
