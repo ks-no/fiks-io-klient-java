@@ -143,7 +143,7 @@ public class AsicHandlerTest {
 
                     try {
                         InputStream encrypt = asicHandler.encrypt(getPublicCertResource("bob.cert"), singletonList(new StreamPayload(new ByteArrayInputStream(payload), "payload.txt")));
-                        ZipInputStream decrypt = asicHandler.decrypt(encrypt);
+                        ZipInputStream decrypt = asicHandler.decrypt(new ByteArrayInputStream(IOUtils.toByteArray(encrypt)));
                         log.info("test thread done");
                         boolean arrayEquals = Arrays.equals(payload, readBytes(decrypt).get("payload.txt"));
                         running.set(false);

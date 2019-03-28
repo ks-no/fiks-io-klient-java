@@ -53,14 +53,12 @@ class AsicHandler {
             final OutputStream asicOutputStream = new PipedOutputStream(asicInputStream);
             new Thread(() -> {
                 try {
-
                     AsicWriter writer = asicWriterFactory.newContainer(asicOutputStream);
                     payload.forEach(p -> write(writer, p));
                     writer.setRootEntryName(payload.get(0).getFilnavn());
                     try (InputStream keyStoreStream = new ByteArrayInputStream(keyStoreBytes)) {
                         writer.sign(new SignatureHelper(keyStoreStream, signeringKonfigurasjon.getKeyStorePassword(), signeringKonfigurasjon.getKeyAlias(), signeringKonfigurasjon.getKeyPassword()));
                     }
-
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 } finally {
@@ -134,12 +132,8 @@ class AsicHandler {
         }
         boolean entryAdded = false;
         try  {
-            while (true) {
-                String filnavn = reader.getNextFile();
-
-                if (filnavn == null)
-                    break;
-
+            String filnavn;
+            while ((filnavn = reader.getNextFile()) != null) {
                 entryAdded = true;
                 zipOutputStream.putNextEntry(new ZipEntry(filnavn));
                 reader.writeFile(zipOutputStream);
@@ -154,8 +148,6 @@ class AsicHandler {
             throw new RuntimeException(e);
         } finally {
             try {
-                //TODO: i noen tilfeller leses ikke hele encryptedAsic streamen før decrypt sier seg ferdig, resulterer i closed pipe exception.
-                //IOUtils.toByteArray(encryptedAsic);
                 closeQuietly(encryptedAsic);
                 zipOutputStream.close();
             } catch (IOException e) {
