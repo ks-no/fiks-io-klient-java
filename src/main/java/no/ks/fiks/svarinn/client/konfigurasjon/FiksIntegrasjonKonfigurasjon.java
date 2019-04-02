@@ -28,4 +28,12 @@ public class FiksIntegrasjonKonfigurasjon {
      */
     @NonNull private IdPortenKonfigurasjon idPortenKonfigurasjon;
 
+    @Override
+    public String toString() {
+        return "FiksIntegrasjonKonfigurasjon{" +
+            "integrasjonId=" + integrasjonId +
+            ", integrasjonPassord='*****'" +
+            ", idPortenKonfigurasjon=" + idPortenKonfigurasjon +
+            '}';
+    }
 }

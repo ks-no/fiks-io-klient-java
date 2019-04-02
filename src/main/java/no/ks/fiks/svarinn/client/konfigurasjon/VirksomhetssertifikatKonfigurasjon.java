@@ -31,4 +31,14 @@ public class VirksomhetssertifikatKonfigurasjon {
      * Påkrevd felt. Passord for privat nøkkel i keyStore over.
      */
     @NonNull String keyPassword;
+
+    @Override
+    public String toString() {
+        return "VirksomhetssertifikatKonfigurasjon{" +
+            "keyStore=" + keyStore +
+            ", keyStorePassword='*****'" +
+            ", keyAlias='" + keyAlias + '\'' +
+            ", keyPassword='*****'" +
+            '}';
+    }
 }

@@ -6,6 +6,7 @@ import feign.Feign;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import no.ks.fiks.dokumentlager.klient.DokumentlagerApiImpl;
 import no.ks.fiks.dokumentlager.klient.DokumentlagerKlient;
 import no.ks.fiks.dokumentlager.klient.authentication.IntegrasjonAuthenticationStrategy;
@@ -26,10 +27,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateEncodingException;
 
+@Slf4j
 public class SvarInnKlientFactory {
 
     public static SvarInnKlient build(@NonNull SvarInnKonfigurasjon konfigurasjon) {
         settDefaults(konfigurasjon);
+        log.info("Setter opp FIKS-IO klient med følgende konfigurasjon: {}", konfigurasjon);
 
         Maskinportenklient maskinportenklient = getMaskinportenKlient(konfigurasjon);
 
