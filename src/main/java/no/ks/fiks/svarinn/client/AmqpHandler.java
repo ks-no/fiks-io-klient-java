@@ -14,6 +14,7 @@ import no.ks.fiks.svarinn.client.model.KontoId;
 import no.ks.fiks.svarinn.client.model.MeldingId;
 import no.ks.fiks.svarinn.client.model.MottattMelding;
 import no.ks.fiks.svarinn2.commons.MottattMeldingMetadata;
+import no.ks.fiks.svarinn2.commons.SvarInn2Headers;
 import no.ks.fiks.svarinn2.commons.SvarInnMeldingParser;
 import org.apache.commons.io.IOUtils;
 
@@ -64,7 +65,7 @@ class AmqpHandler {
 
     void newConsume(@NonNull BiConsumer<MottattMelding, SvarSender> onMelding, @NonNull Consumer<ShutdownSignalException> onClose) {
         try {
-            channel.basicConsume(kontoId.toString(), (ct, m) -> {
+            channel.basicConsume(SvarInn2Headers.getKontoQueueName(kontoId.getUuid()), (ct, m) -> {
                 MottattMeldingMetadata parsed = SvarInnMeldingParser.parse(m.getEnvelope(), m.getProperties());
 
                 if (m.getEnvelope().isRedeliver() && meldingErBehandlet.test(new MeldingId(parsed.getMeldingId()))) {
