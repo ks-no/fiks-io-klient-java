@@ -52,8 +52,8 @@
         <fiks-dokumentlager-klient.version>1.2.0</fiks-dokumentlager-klient.version>
         <fiks-feign-interceptors.version>1.0.2</fiks-feign-interceptors.version>
         <fiks-maskinporten-client.version>1.0.10</fiks-maskinporten-client.version>
-        <fiks-svarinn2-commons.version>1.0.13-SNAPSHOT</fiks-svarinn2-commons.version>
-        <fiks-svarinn2-send-klient.version>1.0.4</fiks-svarinn2-send-klient.version>
+        <fiks-svarinn2-commons.version>1.0.15</fiks-svarinn2-commons.version>
+        <fiks-svarinn2-send-klient.version>1.0.5</fiks-svarinn2-send-klient.version>
 
         <rabbitmq-amqp-client.version>5.6.0</rabbitmq-amqp-client.version>
         <lombok.version>1.18.0</lombok.version>
