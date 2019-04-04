@@ -20,6 +20,16 @@
     </description>
     <url>https://github.com/ks-no/fiks-svarinn2</url>
 
+    <distributionManagement>
+        <repository>
+            <id>oss.sonatype.org</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+        <snapshotRepository>
+            <id>oss.sonatype.org</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
     <scm>
         <connection>scm:git:git@github.com:ks-no/fiks-svarinn2-klient-java.git</connection>
         <developerConnection>scm:git:git@github.com:ks-no/fiks-svarinn2-klient-java.git</developerConnection>
