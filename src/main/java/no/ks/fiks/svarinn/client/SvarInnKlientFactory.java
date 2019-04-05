@@ -30,6 +30,8 @@ import java.security.cert.CertificateEncodingException;
 @Slf4j
 public class SvarInnKlientFactory {
 
+    public static final String MASKINPORTEN_KS_SCOPE = "ks:fiks";
+
     public static SvarInnKlient build(@NonNull SvarInnKonfigurasjon konfigurasjon) {
         settDefaults(konfigurasjon);
         log.info("Setter opp FIKS-IO klient med følgende konfigurasjon: {}", konfigurasjon);
@@ -79,7 +81,7 @@ public class SvarInnKlientFactory {
         return Feign.builder()
             .decoder(new JacksonDecoder(objectMapper))
             .encoder(new JacksonEncoder(objectMapper))
-            .requestInterceptor(RequestInterceptors.accessToken(() -> maskinportenklient.getAccessToken("ks")))
+            .requestInterceptor(RequestInterceptors.accessToken(() -> maskinportenklient.getAccessToken(MASKINPORTEN_KS_SCOPE)))
             .requestInterceptor(RequestInterceptors.integrasjon(
                 konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
                 konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
