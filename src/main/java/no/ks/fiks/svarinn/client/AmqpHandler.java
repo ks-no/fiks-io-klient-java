@@ -128,7 +128,7 @@ class AmqpHandler {
 
             @Override
             public String getPassword() {
-                return String.format("%s %s", intKonf.getIntegrasjonPassord(), maskinportenklient.getAccessToken());
+                return String.format("%s %s", intKonf.getIntegrasjonPassord(), maskinportenklient.getAccessToken(SvarInnKlientFactory.MASKINPORTEN_KS_SCOPE));
             }
         });
         return factory;
