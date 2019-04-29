@@ -8,17 +8,26 @@ import lombok.Data;
 public class FiksApiKonfigurasjon implements HostKonfigurasjon{
 
     /**
-     * Ikke påkrevd felt. Om feltet ikke er oppgitt benyttes "api.fiks.ks.no"
+     * Påkrevd felt.
      */
-    @Builder.Default private String host = "api.fiks.ks.no";
+    @Builder.Default private String host;
 
     /**
-     * Ikke påkrevd felt. Om feltet ikke er oppgitt benyttes "443"
+     * Påkrevd felt.
      */
-    @Builder.Default private Integer port = 443;
+    @Builder.Default private Integer port;
 
     /**
-     * Ikke påkrevd felt. Om feltet ikke er oppgitt benyttes "https"
+     * Påkrevd felt.
      */
-    @Builder.Default private String scheme = "https";
+    @Builder.Default private String scheme;
+
+    /**
+     * Konfigurasjon for prod.
+     */
+    public static FiksApiKonfigurasjon PROD = FiksApiKonfigurasjon.builder().build();
+    /**
+     * Konfigurasjon for test.
+     */
+    public static FiksApiKonfigurasjon TEST = FiksApiKonfigurasjon.builder().host("api.fiks.test.ks.no").port(443).scheme("https").build();
 }
