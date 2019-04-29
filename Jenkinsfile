@@ -1,3 +1,3 @@
 ciFriendlyLibBuild{
-    componentTestProject = "fiks-svarinn2-klient-java-komponent-test"
+    componentTestProject = "fiks-io-klient-java-komponent-test"
 }
