@@ -26,4 +26,13 @@ public class IdPortenKonfigurasjon {
      */
     @NonNull private String klientId;
 
+    /**
+     * Builder med ferdig prod config. Trenger klientId.
+     */
+    public static IdPortenKonfigurasjonBuilder PROD = IdPortenKonfigurasjon.builder().accessTokenUri("https://oidc.difi.no/idporten-oidc-provider/token").idPortenAudience("https://oidc.difi.no/idporten-oidc-provider/");
+
+    /**
+     * Builder med ferdig ver2 config. Trenger klientId. Brukes mot Fiks IO i test.
+     */
+    public static IdPortenKonfigurasjonBuilder VER2 = IdPortenKonfigurasjon.builder().accessTokenUri("https://oidc-ver2.difi.no/idporten-oidc-provider/token").idPortenAudience("https://oidc-ver2.difi.no/idporten-oidc-provider/");
 }
