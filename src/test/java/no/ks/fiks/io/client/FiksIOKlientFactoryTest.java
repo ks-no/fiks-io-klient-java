@@ -2,10 +2,10 @@ package no.ks.fiks.io.client;
 
 import lombok.NonNull;
 import no.ks.fiks.io.client.konfigurasjon.FiksApiKonfigurasjon;
+import no.ks.fiks.io.client.konfigurasjon.FiksIOKonfigurasjon;
 import no.ks.fiks.io.client.konfigurasjon.FiksIntegrasjonKonfigurasjon;
 import no.ks.fiks.io.client.konfigurasjon.IdPortenKonfigurasjon;
 import no.ks.fiks.io.client.konfigurasjon.KontoKonfigurasjon;
-import no.ks.fiks.io.client.konfigurasjon.SvarInnKonfigurasjon;
 import no.ks.fiks.io.client.konfigurasjon.VirksomhetssertifikatKonfigurasjon;
 import no.ks.fiks.io.client.model.KontoId;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
@@ -58,14 +58,14 @@ class FiksIOKlientFactoryTest {
                                                                               .host("localhost")
                                                                               .port(9190)
                                                                               .build();
-        final SvarInnKonfigurasjon svarInnKonfigurasjon = SvarInnKonfigurasjon.builder()
-                                                                              .kontoKonfigurasjon(kontoKonfigurasjon)
-                                                                              .virksomhetssertifikatKonfigurasjon(
+        final FiksIOKonfigurasjon fiksIOKonfigurasjon = FiksIOKonfigurasjon.builder()
+                                                                           .kontoKonfigurasjon(kontoKonfigurasjon)
+                                                                           .virksomhetssertifikatKonfigurasjon(
                                                                                   virksomhetssertifikatKonfigurasjon)
-                                                                              .fiksIntegrasjonKonfigurasjon(fiksIntegrasjonKonfigurasjon)
-                                                                              .fiksApiKonfigurasjon(fiksApiKonfigurasjon)
-                                                                              .build();
-        assertThrows(RuntimeException.class, () -> FiksIOKlientFactory.build(svarInnKonfigurasjon));
+                                                                           .fiksIntegrasjonKonfigurasjon(fiksIntegrasjonKonfigurasjon)
+                                                                           .fiksApiKonfigurasjon(fiksApiKonfigurasjon)
+                                                                           .build();
+        assertThrows(RuntimeException.class, () -> FiksIOKlientFactory.build(fiksIOKonfigurasjon));
 
     }
 

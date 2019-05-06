@@ -8,8 +8,8 @@ import no.ks.fiks.io.client.model.MottattMelding;
 import no.ks.fiks.io.client.model.SendtMelding;
 import no.ks.fiks.io.client.model.StringPayload;
 import no.ks.fiks.io.client.send.FiksIOSender;
-import no.ks.fiks.svarinn2.klient.MeldingSpesifikasjonApiModel;
-import no.ks.fiks.svarinn2.klient.SendtMeldingApiModel;
+import no.ks.fiks.io.klient.MeldingSpesifikasjonApiModel;
+import no.ks.fiks.io.klient.SendtMeldingApiModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -71,7 +71,6 @@ class FiksIOHandlerTest {
                                                                 .build();
             final SendtMeldingApiModel sendtMeldingApiModel = SendtMeldingApiModel.builder()
                                                                                   .meldingId(UUID.randomUUID())
-                                                                                  .meldingType(meldingRequest.getMeldingType())
                                                                                   .avsenderKontoId(UUID.randomUUID())
                                                                                   .mottakerKontoId(mottakerKontoId)
                                                                                   .ttl(meldingRequest.getTtl()
@@ -84,7 +83,6 @@ class FiksIOHandlerTest {
                 () -> assertEquals(meldingRequest.getMottakerKontoId()
                                                  .getUuid(), sendtMelding.getMottakerKontoId()
                                                                          .getUuid()),
-                () -> assertEquals(meldingRequest.getMeldingType(), sendtMelding.getMeldingType()),
                 () -> assertEquals(TimeUnit.DAYS.toMillis(5L), sendtMelding.getTtl()
                                                                            .toMillis())
             );
@@ -105,7 +103,6 @@ class FiksIOHandlerTest {
                                                                 .build();
             final SendtMeldingApiModel sendtMeldingApiModel = SendtMeldingApiModel.builder()
                                                                                   .meldingId(UUID.randomUUID())
-                                                                                  .meldingType(meldingRequest.getMeldingType())
                                                                                   .avsenderKontoId(UUID.randomUUID())
                                                                                   .mottakerKontoId(mottakerKontoId)
                                                                                   .ttl(meldingRequest.getTtl()
@@ -121,7 +118,6 @@ class FiksIOHandlerTest {
                 () -> assertEquals(meldingRequest.getMottakerKontoId()
                                                  .getUuid(), sendtMelding.getMottakerKontoId()
                                                                          .getUuid()),
-                () -> assertEquals(meldingRequest.getMeldingType(), sendtMelding.getMeldingType()),
                 () -> assertEquals(TimeUnit.DAYS.toMillis(5L), sendtMelding.getTtl()
                                                                            .toMillis())
             );

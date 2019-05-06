@@ -2,17 +2,17 @@ package no.ks.fiks.io.client.send;
 
 import io.vavr.control.Option;
 import lombok.NonNull;
-import no.ks.fiks.svarinn2.klient.MeldingSpesifikasjonApiModel;
-import no.ks.fiks.svarinn2.klient.SendtMeldingApiModel;
-import no.ks.fiks.svarinn2.klient.SvarInnUtsendingKlient;
+import no.ks.fiks.io.klient.FiksIOUtsendingKlient;
+import no.ks.fiks.io.klient.MeldingSpesifikasjonApiModel;
+import no.ks.fiks.io.klient.SendtMeldingApiModel;
 
 import java.io.InputStream;
 
 public class FiksIOSenderClientWrapper implements FiksIOSender {
 
-    private final SvarInnUtsendingKlient utsendingKlient;
+    private final FiksIOUtsendingKlient utsendingKlient;
 
-    public FiksIOSenderClientWrapper(@NonNull final SvarInnUtsendingKlient utsendingKlient) {
+    public FiksIOSenderClientWrapper(@NonNull final FiksIOUtsendingKlient utsendingKlient) {
         this.utsendingKlient = utsendingKlient;
     }
 

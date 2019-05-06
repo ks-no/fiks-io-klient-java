@@ -11,16 +11,18 @@ import no.ks.fiks.dokumentlager.klient.DokumentlagerApiImpl;
 import no.ks.fiks.dokumentlager.klient.DokumentlagerKlient;
 import no.ks.fiks.dokumentlager.klient.authentication.IntegrasjonAuthenticationStrategy;
 import no.ks.fiks.feign.RequestInterceptors;
-import no.ks.fiks.maskinporten.Maskinportenklient;
-import no.ks.fiks.maskinporten.MaskinportenklientProperties;
-import no.ks.fiks.svarinn.client.api.katalog.api.SvarInnKatalogApi;
 import no.ks.fiks.io.client.konfigurasjon.FiksApiKonfigurasjon;
+import no.ks.fiks.io.client.konfigurasjon.FiksIOKonfigurasjon;
 import no.ks.fiks.io.client.konfigurasjon.HostKonfigurasjon;
-import no.ks.fiks.io.client.konfigurasjon.SvarInnKonfigurasjon;
+import no.ks.fiks.io.client.konfigurasjon.SendMeldingKonfigurasjon;
 import no.ks.fiks.io.client.model.KontoId;
 import no.ks.fiks.io.client.send.FiksIOSender;
 import no.ks.fiks.io.client.send.FiksIOSenderClientWrapper;
-import no.ks.fiks.svarinn2.klient.SvarInnUtsendingKlient;
+import no.ks.fiks.io.klient.FiksIOUtsendingKlient;
+import no.ks.fiks.maskinporten.Maskinportenklient;
+import no.ks.fiks.maskinporten.MaskinportenklientProperties;
+import no.ks.fiks.svarinn.client.api.katalog.api.SvarInnKatalogApi;
+import org.eclipse.jetty.client.HttpClient;
 
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -32,7 +34,7 @@ public class FiksIOKlientFactory {
 
     public static final String MASKINPORTEN_KS_SCOPE = "ks:fiks";
 
-    public static FiksIOKlient build(@NonNull SvarInnKonfigurasjon konfigurasjon) {
+    public static FiksIOKlient build(@NonNull FiksIOKonfigurasjon konfigurasjon) {
         settDefaults(konfigurasjon);
         log.info("Setter opp FIKS-IO klient med følgende konfigurasjon: {}", konfigurasjon);
 
@@ -44,7 +46,7 @@ public class FiksIOKlientFactory {
 
         AsicHandler asicHandler = new AsicHandler(
             konfigurasjon.getKontoKonfigurasjon().getPrivatNokkel(),
-            konfigurasjon.getVirksomhetssertifikatKonfigurasjon());
+            konfigurasjon.getVirksomhetssertifikatKonfigurasjon(), konfigurasjon.getExecutor());
 
         KatalogHandler katalogHandler = new KatalogHandler(katalogApi);
 
@@ -65,18 +67,23 @@ public class FiksIOKlientFactory {
         );
     }
 
-    private static SvarInnUtsendingKlient getSvarInnUtsendingKlient(@NonNull SvarInnKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
-        return new SvarInnUtsendingKlient(konfigurasjon.getSendMeldingKonfigurasjon().getScheme(),
-            konfigurasjon.getSendMeldingKonfigurasjon().getHost(),
-            konfigurasjon.getSendMeldingKonfigurasjon().getPort(),
-            new no.ks.fiks.svarinn2.klient.IntegrasjonAuthenticationStrategy(
-                maskinportenklient,
-                konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
-                konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()),
-            konfigurasjon.getSendMeldingKonfigurasjon().getRequestInterceptor() == null ? r -> r : konfigurasjon.getSendMeldingKonfigurasjon().getRequestInterceptor());
+    private static FiksIOUtsendingKlient getSvarInnUtsendingKlient(@NonNull FiksIOKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
+        final SendMeldingKonfigurasjon sendMeldingKonfigurasjon = konfigurasjon.getSendMeldingKonfigurasjon();
+        return FiksIOUtsendingKlient.builder()
+                                    .withScheme(sendMeldingKonfigurasjon
+                                                             .getScheme())
+            .withHostName(sendMeldingKonfigurasjon.getHost())
+            .withPortNumber(sendMeldingKonfigurasjon.getPort())
+            .withHttpClient(new HttpClient())
+            .withObjectMapper(new ObjectMapper().findAndRegisterModules())
+            .withAuthenticationStrategy(new no.ks.fiks.io.klient.IntegrasjonAuthenticationStrategy(maskinportenklient,
+                                                                                                   konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
+                                                                                                   konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
+            .withRequestInterceptor(konfigurasjon.getSendMeldingKonfigurasjon().getRequestInterceptor() == null ? r -> r : konfigurasjon.getSendMeldingKonfigurasjon().getRequestInterceptor())
+            .build();
     }
 
-    private static SvarInnKatalogApi getSvarInnKatalogApi(@NonNull SvarInnKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
+    private static SvarInnKatalogApi getSvarInnKatalogApi(@NonNull FiksIOKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
         ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
         return Feign.builder()
             .decoder(new JacksonDecoder(objectMapper))
@@ -90,7 +97,7 @@ public class FiksIOKlientFactory {
             .target(SvarInnKatalogApi.class, konfigurasjon.getKatalogKonfigurasjon().getUrl());
     }
 
-    private static DokumentlagerKlient getDokumentlagerKlient(@NonNull SvarInnKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
+    private static DokumentlagerKlient getDokumentlagerKlient(@NonNull FiksIOKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
         return DokumentlagerKlient.builder()
             .api(new DokumentlagerApiImpl(
                 konfigurasjon.getDokumentlagerKonfigurasjon().getUrl(),
@@ -103,7 +110,7 @@ public class FiksIOKlientFactory {
             .build();
     }
 
-    private static Maskinportenklient getMaskinportenKlient(@NonNull SvarInnKonfigurasjon konfigurasjon) {
+    private static Maskinportenklient getMaskinportenKlient(@NonNull FiksIOKonfigurasjon konfigurasjon) {
         MaskinportenklientProperties maskinportenklientProperties = MaskinportenklientProperties.builder()
             .audience(konfigurasjon.getFiksIntegrasjonKonfigurasjon()
                     .getIdPortenKonfigurasjon()
@@ -128,11 +135,11 @@ public class FiksIOKlientFactory {
         }
     }
 
-    private static FiksIOSender getSvarInnSender(final SvarInnUtsendingKlient svarInnUtsendingKlient) {
-        return new FiksIOSenderClientWrapper(svarInnUtsendingKlient);
+    private static FiksIOSender getSvarInnSender(final FiksIOUtsendingKlient fiksIOUtsendingKlient) {
+        return new FiksIOSenderClientWrapper(fiksIOUtsendingKlient);
     }
 
-    private static void settDefaults(SvarInnKonfigurasjon konf) {
+    private static void settDefaults(FiksIOKonfigurasjon konf) {
         FiksApiKonfigurasjon fiksKonf = konf.getFiksApiKonfigurasjon();
         settDefaults(fiksKonf, konf.getDokumentlagerKonfigurasjon());
         settDefaults(fiksKonf, konf.getKatalogKonfigurasjon());

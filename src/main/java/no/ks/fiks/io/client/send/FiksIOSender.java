@@ -1,8 +1,8 @@
 package no.ks.fiks.io.client.send;
 
 import io.vavr.control.Option;
-import no.ks.fiks.svarinn2.klient.MeldingSpesifikasjonApiModel;
-import no.ks.fiks.svarinn2.klient.SendtMeldingApiModel;
+import no.ks.fiks.io.klient.MeldingSpesifikasjonApiModel;
+import no.ks.fiks.io.klient.SendtMeldingApiModel;
 
 import java.io.InputStream;
 

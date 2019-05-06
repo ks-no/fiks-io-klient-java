@@ -2,7 +2,12 @@ package no.ks.fiks.io.client;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import no.difi.asic.*;
+import no.difi.asic.AsicReader;
+import no.difi.asic.AsicReaderFactory;
+import no.difi.asic.AsicWriter;
+import no.difi.asic.AsicWriterFactory;
+import no.difi.asic.SignatureHelper;
+import no.difi.asic.SignatureMethod;
 import no.ks.fiks.io.client.konfigurasjon.VirksomhetssertifikatKonfigurasjon;
 import no.ks.fiks.io.client.model.Payload;
 import no.ks.kryptering.CMSKrypteringImpl;
@@ -10,13 +15,20 @@ import no.ks.kryptering.CMSStreamKryptering;
 import org.apache.commons.io.IOUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.PrivateKey;
 import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -29,11 +41,15 @@ class AsicHandler {
     private final VirksomhetssertifikatKonfigurasjon signeringKonfigurasjon;
     private final AsicReaderFactory asicReaderFactory = AsicReaderFactory.newFactory(SignatureMethod.CAdES);
     private final AsicWriterFactory asicWriterFactory = AsicWriterFactory.newFactory(SignatureMethod.CAdES);
+    private final ExecutorService executor;
     private final byte[] keyStoreBytes;
 
-    AsicHandler(@NonNull final PrivateKey privatNokkel, @NonNull final VirksomhetssertifikatKonfigurasjon signeringKonfigurasjon) {
+    AsicHandler(@NonNull final PrivateKey privatNokkel,
+                @NonNull final VirksomhetssertifikatKonfigurasjon signeringKonfigurasjon,
+                @NonNull final ExecutorService executor) {
         this.privatNokkel = privatNokkel;
         this.signeringKonfigurasjon = signeringKonfigurasjon;
+        this.executor = executor;
         Security.addProvider(new BouncyCastleProvider());
 
         try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
@@ -51,25 +67,30 @@ class AsicHandler {
 
             PipedInputStream asicInputStream = new PipedInputStream();
             final OutputStream asicOutputStream = new PipedOutputStream(asicInputStream);
-            new Thread(() -> {
+            executor.submit(() -> {
                 try {
                     AsicWriter writer = asicWriterFactory.newContainer(asicOutputStream);
                     payload.forEach(p -> write(writer, p));
-                    writer.setRootEntryName(payload.get(0).getFilnavn());
+                    writer.setRootEntryName(payload.get(0)
+                                                   .getFilnavn());
                     try (InputStream keyStoreStream = new ByteArrayInputStream(keyStoreBytes)) {
-                        writer.sign(new SignatureHelper(keyStoreStream, signeringKonfigurasjon.getKeyStorePassword(), signeringKonfigurasjon.getKeyAlias(), signeringKonfigurasjon.getKeyPassword()));
+                        writer.sign(
+                            new SignatureHelper(keyStoreStream, signeringKonfigurasjon.getKeyStorePassword(), signeringKonfigurasjon.getKeyAlias(),
+                                                signeringKonfigurasjon.getKeyPassword()));
                     }
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 } finally {
                     log.info("asic builder thread dead");
                 }
-            }).start();
+            });
+
 
             PipedInputStream kryptertInputStream = new PipedInputStream();
             final PipedOutputStream kryptertOutputStream = new PipedOutputStream(kryptertInputStream);
 
-            new Thread(() -> {
+
+            executor.submit(() -> {
                 CMSStreamKryptering cmsKryptoHandler = new CMSKrypteringImpl();
                 try (OutputStream krypteringStream = cmsKryptoHandler.getKrypteringOutputStream(kryptertOutputStream, mottakerCert)){
                     IOUtils.copy(asicInputStream, krypteringStream);
@@ -84,7 +105,7 @@ class AsicHandler {
                         log.error("Uventet feil under cleanup", e);
                     }
                 }
-            }).start();
+            });
 
             return kryptertInputStream;
         } catch (IOException e) {
@@ -98,11 +119,11 @@ class AsicHandler {
             PipedOutputStream out = new PipedOutputStream();
             PipedInputStream pipedInputStream = new PipedInputStream(out);
 
-            new Thread(() -> {
+            executor.execute(() -> {
                 ZipOutputStream zipOutputStream = new ZipOutputStream(out);
                 decrypt(encryptedAsicData, zipOutputStream);
                 log.info("asic decrypt thread dead");
-            }).start();
+            });
 
             return new ZipInputStream(pipedInputStream);
         } catch (IOException e) {

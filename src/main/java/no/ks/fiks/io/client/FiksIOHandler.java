@@ -9,8 +9,8 @@ import no.ks.fiks.io.client.model.MottattMelding;
 import no.ks.fiks.io.client.model.Payload;
 import no.ks.fiks.io.client.model.SendtMelding;
 import no.ks.fiks.io.client.send.FiksIOSender;
-import no.ks.fiks.svarinn2.klient.MeldingSpesifikasjonApiModel;
-import no.ks.fiks.svarinn2.klient.SendtMeldingApiModel;
+import no.ks.fiks.io.klient.MeldingSpesifikasjonApiModel;
+import no.ks.fiks.io.klient.SendtMeldingApiModel;
 
 import java.io.InputStream;
 import java.security.cert.X509Certificate;
@@ -54,14 +54,14 @@ class FiksIOHandler {
         log.debug("Sender melding til \"{}\"", mottagerKontoId);
         return utsendingKlient.send(
             MeldingSpesifikasjonApiModel.builder()
-                .avsenderKontoId(kontoId.getUuid())
-                .mottakerKontoId(mottagerKontoId)
-                .meldingType(request.getMeldingType())
-                .svarPaMelding(request.getSvarPaMelding() == null ? null : request.getSvarPaMelding()
-                    .getUuid())
-                .ttl(request.getTtl()
-                    .getSeconds())
-                .build(),
+                                        .avsenderKontoId(kontoId.getUuid())
+                                        .mottakerKontoId(mottagerKontoId)
+                                        .meldingType(request.getMeldingType())
+                                        .svarPaMelding(request.getSvarPaMelding() == null ? null : request.getSvarPaMelding()
+                                                                                                          .getUuid())
+                                        .ttl(request.getTtl()
+                                                    .getSeconds())
+                                        .build(),
             payload.isEmpty() ? Option.none() : Option.some(encrypt(payload, request.getMottakerKontoId())));
     }
 

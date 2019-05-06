@@ -12,19 +12,36 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.*;
+import java.security.KeyFactory;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.Security;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -32,14 +49,20 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static java.util.Collections.singletonList;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
 public class AsicHandlerTest {
 
+
+
     @Test
     @DisplayName("Verifiser at payload blir kryptert")
     void testKrypterStream() throws Exception {
+
+        final ExecutorService executor = Executors.newFixedThreadPool(2);
         KeyStore keyStore = getKeyStore();
 
         AsicHandler asicHandler = new AsicHandler(getPrivateKeyResource("/bob.key"), VirksomhetssertifikatKonfigurasjon.builder()
@@ -47,9 +70,9 @@ public class AsicHandlerTest {
             .keyPassword("PASSWORD")
             .keyStorePassword("PASSWORD")
             .keyStore(keyStore)
-            .build());
+            .build(), executor);
 
-        byte[] plaintext = UUID.randomUUID().toString().getBytes();
+        byte[] plaintext = UUID.randomUUID().toString().getBytes(StandardCharsets.UTF_8);
         InputStream encrypt = asicHandler.encrypt(
             getPublicCertResource("bob.cert"),
             singletonList(new StreamPayload(new ByteArrayInputStream(plaintext), "payload.bin")));
@@ -63,11 +86,14 @@ public class AsicHandlerTest {
 
         //verifiser at plaintext payloaden ikke finnes i den krypterte filen
         assertEquals(-1, Bytes.indexOf(encrypted, plaintext));
+        executor.shutdownNow();
     }
 
     @Test
     @DisplayName("Test at vi kan dekryptere en payload til en zip stream")
     void testDekrypterStream() throws Exception {
+
+        final ExecutorService executor = Executors.newFixedThreadPool(2);
         KeyStore keyStore = getKeyStore();
 
         AsicHandler asicHandler = new AsicHandler(getPrivateKeyResource("/bob.key"), VirksomhetssertifikatKonfigurasjon.builder()
@@ -75,19 +101,22 @@ public class AsicHandlerTest {
             .keyPassword("PASSWORD")
             .keyStorePassword("PASSWORD")
             .keyStore(keyStore)
-            .build());
+            .build(), executor);
 
-        byte[] payload = UUID.randomUUID().toString().getBytes();
+        byte[] payload = UUID.randomUUID().toString().getBytes(StandardCharsets.UTF_8);
         InputStream encrypted = asicHandler.encrypt(getPublicCertResource("bob.cert"),  singletonList(new StreamPayload(new ByteArrayInputStream(payload), "payload.txt")));
         ZipInputStream decrypt = asicHandler.decrypt(new ByteArrayInputStream(IOUtils.toByteArray(encrypted)));
         assertArrayEquals(payload, readBytes(decrypt).get("payload.txt"));
         decrypt.close();
         encrypted.close();
+        executor.shutdownNow();
     }
 
     @Test
     @DisplayName("Test at vi kan dekryptere en payload til en fil")
     void testDekrypterFil(@TempDir Path tempDir) throws Exception {
+
+        final ExecutorService executor = Executors.newFixedThreadPool(2);
         KeyStore keyStore = getKeyStore();
 
         AsicHandler asicHandler = new AsicHandler(getPrivateKeyResource("/bob.key"), VirksomhetssertifikatKonfigurasjon.builder()
@@ -95,9 +124,9 @@ public class AsicHandlerTest {
             .keyPassword("PASSWORD")
             .keyStorePassword("PASSWORD")
             .keyStore(keyStore)
-            .build());
+            .build(), executor);
 
-        byte[] payload = UUID.randomUUID().toString().getBytes();
+        byte[] payload = UUID.randomUUID().toString().getBytes(StandardCharsets.UTF_8);
         InputStream encrypted = asicHandler.encrypt(getPublicCertResource("bob.cert"), singletonList(new StreamPayload(new ByteArrayInputStream(payload), "payload.txt")));
 
         Path path = tempDir.resolve(UUID.randomUUID().toString());
@@ -105,24 +134,29 @@ public class AsicHandlerTest {
         asicHandler.writeDecrypted(encrypted, path);
         assertTrue(Files.exists(path));
         assertArrayEquals(payload, readBytes(new ZipInputStream(Files.newInputStream(path))).get("payload.txt"));
+        executor.shutdownNow();
     }
 
     @Test
     @DisplayName("Test at vi kan dekryptere mange streams samtidig")
     void testDekrypterStreamMultiThread() throws Exception {
+
         KeyStore keyStore = getKeyStore();
+
+        final int threads = 30;
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicBoolean running = new AtomicBoolean();
+        AtomicInteger overlaps = new AtomicInteger();
+
+        final ExecutorService executor = Executors.newFixedThreadPool(threads);
 
         AsicHandler asicHandler = new AsicHandler(getPrivateKeyResource("/bob.key"), VirksomhetssertifikatKonfigurasjon.builder()
             .keyAlias("et alias")
             .keyPassword("PASSWORD")
             .keyStorePassword("PASSWORD")
             .keyStore(keyStore)
-            .build());
+            .build(), executor);
 
-        int threads = 30;
-        CountDownLatch latch = new CountDownLatch(1);
-        AtomicBoolean running = new AtomicBoolean();
-        AtomicInteger overlaps = new AtomicInteger();
 
         Collection<CompletableFuture<Boolean>> futures =
             new ArrayList<>(threads);
@@ -163,6 +197,7 @@ public class AsicHandlerTest {
             .allMatch(p -> p));
 
         assertTrue(overlaps.get() > 0);
+        executor.shutdownNow();
     }
 
     private KeyStore getKeyStore() throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
@@ -189,7 +224,9 @@ public class AsicHandlerTest {
     private X509Certificate getPublicCertResource(String filename) {
         try {
             CertificateFactory fact = CertificateFactory.getInstance("X.509");
-            return (X509Certificate) fact.generateCertificate(new FileInputStream("src/test/resources/"+ filename));
+            try(final InputStream certificateStream = getClass().getResourceAsStream("/" + filename)) {
+                return (X509Certificate) fact.generateCertificate(certificateStream);
+            }
         } catch (IOException | CertificateException e) {
             throw new RuntimeException(e);
         }

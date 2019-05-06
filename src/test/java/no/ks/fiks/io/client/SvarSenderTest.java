@@ -6,8 +6,8 @@ import no.ks.fiks.io.client.model.MeldingId;
 import no.ks.fiks.io.client.model.MottattMelding;
 import no.ks.fiks.io.client.model.SendtMelding;
 import no.ks.fiks.io.client.send.FiksIOSender;
-import no.ks.fiks.svarinn2.klient.MeldingSpesifikasjonApiModel;
-import no.ks.fiks.svarinn2.klient.SendtMeldingApiModel;
+import no.ks.fiks.io.klient.MeldingSpesifikasjonApiModel;
+import no.ks.fiks.io.klient.SendtMeldingApiModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -62,7 +62,6 @@ class SvarSenderTest {
                     return SendtMeldingApiModel.builder()
                                 .avsenderKontoId(meldingSpesifikasjonApiModel.getAvsenderKontoId())
                                 .meldingId(UUID.randomUUID())
-                                .meldingType(meldingSpesifikasjonApiModel.getMeldingType())
                                 .mottakerKontoId(meldingSpesifikasjonApiModel.getMottakerKontoId())
                                 .ttl(Duration.ofHours(1L).toMillis())
                                 .build();

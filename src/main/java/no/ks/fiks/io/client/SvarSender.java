@@ -12,7 +12,7 @@ import no.ks.fiks.io.client.model.SendtMelding;
 import no.ks.fiks.io.client.model.StreamPayload;
 import no.ks.fiks.io.client.model.StringPayload;
 import no.ks.fiks.io.client.send.FiksIOSender;
-import no.ks.fiks.svarinn2.klient.MeldingSpesifikasjonApiModel;
+import no.ks.fiks.io.klient.MeldingSpesifikasjonApiModel;
 
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -35,12 +35,12 @@ public class SvarSender {
 
     public SendtMelding svar(String meldingType, List<Payload> payloads) {
         return SendtMelding.fromSendResponse(utsendingKlient.send(
-                MeldingSpesifikasjonApiModel.builder()
-                        .avsenderKontoId(meldingSomSkalKvitteres.getMottakerKontoId().getUuid())
-                        .mottakerKontoId(meldingSomSkalKvitteres.getAvsenderKontoId().getUuid())
-                        .svarPaMelding(meldingSomSkalKvitteres.getMeldingId().getUuid())
-                        .meldingType(meldingType)
-                        .build(), payloads.isEmpty() ? Option.none() : Option.of(encrypt.apply(payloads))));
+            MeldingSpesifikasjonApiModel.builder()
+                                        .avsenderKontoId(meldingSomSkalKvitteres.getMottakerKontoId().getUuid())
+                                        .mottakerKontoId(meldingSomSkalKvitteres.getAvsenderKontoId().getUuid())
+                                        .svarPaMelding(meldingSomSkalKvitteres.getMeldingId().getUuid())
+                                        .meldingType(meldingType)
+                                        .build(), payloads.isEmpty() ? Option.none() : Option.of(encrypt.apply(payloads))));
     }
 
     public SendtMelding svar(String meldingType, InputStream melding, String filnavn) {
