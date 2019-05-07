@@ -59,7 +59,7 @@
     <rabbitmq-amqp-client.version>5.6.0</rabbitmq-amqp-client.version>
     <fiks-maskinporten-client.version>1.0.11</fiks-maskinporten-client.version>
     <feign-version>9.4.0</feign-version>
-    <fiks-io-commons.version>1.0.15</fiks-io-commons.version>
+    <fiks-io-commons.version>1.1.0-SNAPSHOT</fiks-io-commons.version>
     <junit-jupiter.version>5.4.2</junit-jupiter.version>
   </properties>
   <dependencyManagement>
@@ -115,7 +115,7 @@
     </dependency>
     <dependency>
       <groupId>no.ks.fiks</groupId>
-      <artifactId>svarinn2-commons</artifactId>
+      <artifactId>fiks-io-commons</artifactId>
       <version>${fiks-io-commons.version}</version>
     </dependency>
     <dependency>

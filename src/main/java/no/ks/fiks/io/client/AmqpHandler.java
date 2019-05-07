@@ -7,15 +7,15 @@ import com.rabbitmq.client.ShutdownSignalException;
 import com.rabbitmq.client.impl.CredentialsProvider;
 import lombok.NonNull;
 import no.ks.fiks.dokumentlager.klient.DokumentlagerKlient;
+import no.ks.fiks.io.commons.FiksIOHeaders;
+import no.ks.fiks.io.commons.FiksIOMeldingParser;
+import no.ks.fiks.io.commons.MottattMeldingMetadata;
 import no.ks.fiks.maskinporten.Maskinportenklient;
 import no.ks.fiks.io.client.konfigurasjon.AmqpKonfigurasjon;
 import no.ks.fiks.io.client.konfigurasjon.FiksIntegrasjonKonfigurasjon;
 import no.ks.fiks.io.client.model.KontoId;
 import no.ks.fiks.io.client.model.MeldingId;
 import no.ks.fiks.io.client.model.MottattMelding;
-import no.ks.fiks.svarinn2.commons.MottattMeldingMetadata;
-import no.ks.fiks.svarinn2.commons.SvarInn2Headers;
-import no.ks.fiks.svarinn2.commons.SvarInnMeldingParser;
 import org.apache.commons.io.IOUtils;
 
 import javax.net.ssl.SSLContext;
@@ -65,8 +65,8 @@ class AmqpHandler {
 
     void newConsume(@NonNull BiConsumer<MottattMelding, SvarSender> onMelding, @NonNull Consumer<ShutdownSignalException> onClose) {
         try {
-            channel.basicConsume(SvarInn2Headers.getKontoQueueName(kontoId.getUuid()), (ct, m) -> {
-                MottattMeldingMetadata parsed = SvarInnMeldingParser.parse(m.getEnvelope(), m.getProperties());
+            channel.basicConsume(FiksIOHeaders.getKontoQueueName(kontoId.getUuid()), (ct, m) -> {
+                MottattMeldingMetadata parsed = FiksIOMeldingParser.parse(m.getEnvelope(), m.getProperties());
 
                 if (m.getEnvelope().isRedeliver() && meldingErBehandlet.test(new MeldingId(parsed.getMeldingId()))) {
                     channel.basicAck(m.getEnvelope().getDeliveryTag(), false);

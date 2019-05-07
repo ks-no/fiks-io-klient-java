@@ -1,7 +1,7 @@
 package no.ks.fiks.io.client.model;
 
 import lombok.*;
-import no.ks.fiks.svarinn2.commons.MottattMeldingMetadata;
+import no.ks.fiks.io.commons.MottattMeldingMetadata;
 
 import java.io.InputStream;
 import java.nio.file.Path;
