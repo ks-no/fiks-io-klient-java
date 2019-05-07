@@ -4,4 +4,4 @@
 ![GitHub last commit](https://img.shields.io/github/last-commit/ks-no/fiks-io-klient-java.svg)
 ![GitHub Release Date](https://img.shields.io/github/release-date/ks-no/fiks-io-klient-java.svg)
 
-Klient for å bruke Fike IO
+Klient for å bruke Fiks IO i et JVM miljø
