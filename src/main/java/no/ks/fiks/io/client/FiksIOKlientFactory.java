@@ -74,7 +74,6 @@ public class FiksIOKlientFactory {
                                                              .getScheme())
             .withHostName(sendMeldingKonfigurasjon.getHost())
             .withPortNumber(sendMeldingKonfigurasjon.getPort())
-            .withHttpClient(new HttpClient())
             .withObjectMapper(new ObjectMapper().findAndRegisterModules())
             .withAuthenticationStrategy(new no.ks.fiks.io.klient.IntegrasjonAuthenticationStrategy(maskinportenklient,
                                                                                                    konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
