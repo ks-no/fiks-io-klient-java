@@ -2,12 +2,7 @@ package no.ks.fiks.io.client;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import no.difi.asic.AsicReader;
-import no.difi.asic.AsicReaderFactory;
-import no.difi.asic.AsicWriter;
-import no.difi.asic.AsicWriterFactory;
-import no.difi.asic.SignatureHelper;
-import no.difi.asic.SignatureMethod;
+import no.difi.asic.*;
 import no.ks.fiks.io.client.konfigurasjon.VirksomhetssertifikatKonfigurasjon;
 import no.ks.fiks.io.client.model.Payload;
 import no.ks.kryptering.CMSKrypteringImpl;
@@ -15,13 +10,7 @@ import no.ks.kryptering.CMSStreamKryptering;
 import org.apache.commons.io.IOUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.PrivateKey;
@@ -67,7 +56,7 @@ class AsicHandler {
 
             PipedInputStream asicInputStream = new PipedInputStream();
             final OutputStream asicOutputStream = new PipedOutputStream(asicInputStream);
-            executor.submit(() -> {
+            executor.execute(() -> {
                 try {
                     AsicWriter writer = asicWriterFactory.newContainer(asicOutputStream);
                     payload.forEach(p -> write(writer, p));
@@ -79,9 +68,8 @@ class AsicHandler {
                                                 signeringKonfigurasjon.getKeyPassword()));
                     }
                 } catch (Exception e) {
+                    log.error("Failed to sign stream", e);
                     throw new RuntimeException(e);
-                } finally {
-                    log.info("asic builder thread dead");
                 }
             });
 
@@ -90,11 +78,12 @@ class AsicHandler {
             final PipedOutputStream kryptertOutputStream = new PipedOutputStream(kryptertInputStream);
 
 
-            executor.submit(() -> {
+            executor.execute(() -> {
                 CMSStreamKryptering cmsKryptoHandler = new CMSKrypteringImpl();
                 try (OutputStream krypteringStream = cmsKryptoHandler.getKrypteringOutputStream(kryptertOutputStream, mottakerCert)){
                     IOUtils.copy(asicInputStream, krypteringStream);
                 } catch (IOException e) {
+                    log.error("Failed to copy stream", e);
                     throw new RuntimeException(e);
                 } finally {
                     try {
@@ -120,9 +109,13 @@ class AsicHandler {
             PipedInputStream pipedInputStream = new PipedInputStream(out);
 
             executor.execute(() -> {
-                ZipOutputStream zipOutputStream = new ZipOutputStream(out);
-                decrypt(encryptedAsicData, zipOutputStream);
-                log.info("asic decrypt thread dead");
+
+                try (ZipOutputStream zipOutputStream = new ZipOutputStream(out)) {
+                    decrypt(encryptedAsicData, zipOutputStream);
+                } catch (IOException e) {
+                    log.error("Failed to decrypt stream", e);
+                    throw new RuntimeException(e);
+                }
             });
 
             return new ZipInputStream(pipedInputStream);
