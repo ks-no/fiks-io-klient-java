@@ -2,16 +2,11 @@ package no.ks.fiks.io.client;
 
 import com.google.common.io.Resources;
 import feign.codec.DecodeException;
-import no.ks.fiks.svarinn.client.api.katalog.api.SvarInnKatalogApi;
+import no.ks.fiks.io.client.model.*;
+import no.ks.fiks.svarinn.client.api.katalog.api.FiksIoKatalogApi;
 import no.ks.fiks.svarinn.client.api.katalog.model.KatalogKonto;
 import no.ks.fiks.svarinn.client.api.katalog.model.KontoStatusApiModel;
 import no.ks.fiks.svarinn.client.api.katalog.model.OffentligNokkel;
-import no.ks.fiks.io.client.model.FiksOrgId;
-import no.ks.fiks.io.client.model.Identifikator;
-import no.ks.fiks.io.client.model.IdentifikatorType;
-import no.ks.fiks.io.client.model.Konto;
-import no.ks.fiks.io.client.model.KontoId;
-import no.ks.fiks.io.client.model.LookupRequest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -35,7 +30,7 @@ import static org.mockito.Mockito.*;
 class KatalogHandlerTest {
 
     @Mock
-    private SvarInnKatalogApi svarInnKatalogApi;
+    private FiksIoKatalogApi fiksIoKatalogApi;
 
     @InjectMocks
     private KatalogHandler katalogHandler;
@@ -57,11 +52,11 @@ class KatalogHandlerTest {
                                                                                .meldingType(meldingType)
                                                                                .build());
             assertFalse(melding.isPresent());
-            verify(svarInnKatalogApi).lookup(eq(Arrays.asList(identifikatorType.name(), identifikator)
+            verify(fiksIoKatalogApi).lookup(eq(Arrays.asList(identifikatorType.name(), identifikator)
                                                       .stream()
                                                       .collect(
                                                           Collectors.joining("."))), eq(meldingType), eq(sikkerhetsNiva));
-            verifyNoMoreInteractions(svarInnKatalogApi);
+            verifyNoMoreInteractions(fiksIoKatalogApi);
         }
 
         @DisplayName("funnet")
@@ -83,7 +78,7 @@ class KatalogHandlerTest {
                                      .isGyldigAvsender(true)
                                      .isGyldigMottaker(true)
                                      .build();
-            when(svarInnKatalogApi.lookup(eq(sammensattIdentifikator), eq(meldingType), eq(sikkerhetsNiva))).thenReturn(new KatalogKonto().fiksOrgId(
+            when(fiksIoKatalogApi.lookup(eq(sammensattIdentifikator), eq(meldingType), eq(sikkerhetsNiva))).thenReturn(new KatalogKonto().fiksOrgId(
                 konto.getFiksOrgId()
                      .getFiksOrgId())
                                                                                                                                           .fiksOrgNavn(
@@ -106,8 +101,8 @@ class KatalogHandlerTest {
                                                                                    .build());
             assertTrue(funnetKonto.isPresent());
             assertEquals(funnetKonto.get(), konto);
-            verify(svarInnKatalogApi).lookup(eq(sammensattIdentifikator), eq(meldingType), eq(sikkerhetsNiva));
-            verifyNoMoreInteractions(svarInnKatalogApi);
+            verify(fiksIoKatalogApi).lookup(eq(sammensattIdentifikator), eq(meldingType), eq(sikkerhetsNiva));
+            verifyNoMoreInteractions(fiksIoKatalogApi);
         }
 
     }
@@ -119,17 +114,17 @@ class KatalogHandlerTest {
         @DisplayName("feiler med exception")
         @Test
         void getPublicKeyFails() {
-            when(svarInnKatalogApi.getOffentligNokkel(isA(UUID.class))).thenThrow(new DecodeException("Could not decode"));
+            when(fiksIoKatalogApi.getOffentligNokkel(isA(UUID.class))).thenThrow(new DecodeException("Could not decode"));
             final UUID kontoId = UUID.randomUUID();
             assertThrows(DecodeException.class, () -> katalogHandler.getPublicKey(new KontoId(kontoId)));
-            verify(svarInnKatalogApi).getOffentligNokkel(eq(kontoId));
-            verifyNoMoreInteractions(svarInnKatalogApi);
+            verify(fiksIoKatalogApi).getOffentligNokkel(eq(kontoId));
+            verifyNoMoreInteractions(fiksIoKatalogApi);
         }
 
         @DisplayName("feiler under lesing av nøkkel")
         @Test
         void getPublicKeyFoundButFails() {
-            when(svarInnKatalogApi.getOffentligNokkel(isA(UUID.class))).thenReturn(new OffentligNokkel().nokkel("something")
+            when(fiksIoKatalogApi.getOffentligNokkel(isA(UUID.class))).thenReturn(new OffentligNokkel().nokkel("something")
                                                                                                         .serial("0x523DC4FE")
                                                                                                         .issuerDN("CN=KS,OU=Alice,O=KS - 971032146,L=HAAKON VIISGT 9 0161 OSLO,C=NO")
                                                                                                         .subjectDN("CN=KS,OU=Alice,O=KS - 971032146,L=HAAKON VIISGT 9 0161 OSLO,C=NO")
@@ -140,8 +135,8 @@ class KatalogHandlerTest {
             );
             final UUID kontoId = UUID.randomUUID();
             assertThrows(RuntimeException.class, () -> katalogHandler.getPublicKey(new KontoId(kontoId)));
-            verify(svarInnKatalogApi).getOffentligNokkel(eq(kontoId));
-            verifyNoMoreInteractions(svarInnKatalogApi);
+            verify(fiksIoKatalogApi).getOffentligNokkel(eq(kontoId));
+            verifyNoMoreInteractions(fiksIoKatalogApi);
         }
 
         @Test
@@ -150,7 +145,7 @@ class KatalogHandlerTest {
             final byte[] certificateChunk = Resources.toByteArray(getClass().getResource("/alice-virksomhetssertifikat.crt"));
 
 
-            when(svarInnKatalogApi.getOffentligNokkel(isA(UUID.class))).thenReturn(new OffentligNokkel().nokkel(new String(certificateChunk,
+            when(fiksIoKatalogApi.getOffentligNokkel(isA(UUID.class))).thenReturn(new OffentligNokkel().nokkel(new String(certificateChunk,
                                                                                                                            StandardCharsets.UTF_8))
                                                                                                         .serial("0x523DC4FE")
                                                                                                         .issuerDN("CN=KS,OU=Alice,O=KS - 971032146,L=HAAKON VIISGT 9 0161 OSLO,C=NO")

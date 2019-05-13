@@ -10,4 +10,6 @@ public interface Melding {
     java.time.Duration getTtl();
 
     MeldingId getSvarPaMelding();
+
+    String getMeldingType();
 }

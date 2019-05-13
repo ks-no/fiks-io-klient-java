@@ -9,20 +9,27 @@ import java.time.Duration;
 
 @Data
 @Builder
-public class SendtMelding implements Melding{
-    @NonNull private MeldingId meldingId;
-    @NonNull private KontoId avsenderKontoId;
-    @NonNull private KontoId mottakerKontoId;
-    @NonNull private Duration ttl;
+public class SendtMelding implements Melding {
+    @NonNull
+    private MeldingId meldingId;
+    @NonNull
+    private KontoId avsenderKontoId;
+    @NonNull
+    private String meldingType;
+    @NonNull
+    private KontoId mottakerKontoId;
+    @NonNull
+    private Duration ttl;
     private MeldingId svarPaMelding;
 
     public static SendtMelding fromSendResponse(@NonNull SendtMeldingApiModel melding) {
         return SendtMelding.builder()
-                .meldingId(new MeldingId(melding.getMeldingId()))
-                .avsenderKontoId(new KontoId(melding.getAvsenderKontoId()))
-                .mottakerKontoId(new KontoId(melding.getMottakerKontoId()))
-                .ttl(Duration.ofMillis(melding.getTtl()))
-                .svarPaMelding(melding.getSvarPaMelding() != null ? new MeldingId(melding.getSvarPaMelding()) : null)
-                .build();
+            .meldingId(new MeldingId(melding.getMeldingId()))
+            .avsenderKontoId(new KontoId(melding.getAvsenderKontoId()))
+            .meldingType(melding.getMeldingType())
+            .mottakerKontoId(new KontoId(melding.getMottakerKontoId()))
+            .ttl(Duration.ofMillis(melding.getTtl()))
+            .svarPaMelding(melding.getSvarPaMelding() != null ? new MeldingId(melding.getSvarPaMelding()) : null)
+            .build();
     }
 }

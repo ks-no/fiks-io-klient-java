@@ -1,12 +1,7 @@
 package no.ks.fiks.io.client;
 
 import io.vavr.control.Option;
-import no.ks.fiks.io.client.model.KontoId;
-import no.ks.fiks.io.client.model.MeldingId;
-import no.ks.fiks.io.client.model.MeldingRequest;
-import no.ks.fiks.io.client.model.MottattMelding;
-import no.ks.fiks.io.client.model.SendtMelding;
-import no.ks.fiks.io.client.model.StringPayload;
+import no.ks.fiks.io.client.model.*;
 import no.ks.fiks.io.client.send.FiksIOSender;
 import no.ks.fiks.io.klient.MeldingSpesifikasjonApiModel;
 import no.ks.fiks.io.klient.SendtMeldingApiModel;
@@ -27,9 +22,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipInputStream;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith({MockitoExtension.class})
@@ -65,26 +58,27 @@ class FiksIOHandlerTest {
         void sendEmptyPayload() {
             final UUID mottakerKontoId = UUID.randomUUID();
             final MeldingRequest meldingRequest = MeldingRequest.builder()
-                                                                .meldingType("meldingType")
-                                                                .mottakerKontoId(new KontoId(mottakerKontoId))
-                                                                .ttl(Duration.ofDays(5L))
-                                                                .build();
+                .meldingType("meldingType")
+                .mottakerKontoId(new KontoId(mottakerKontoId))
+                .ttl(Duration.ofDays(5L))
+                .build();
             final SendtMeldingApiModel sendtMeldingApiModel = SendtMeldingApiModel.builder()
-                                                                                  .meldingId(UUID.randomUUID())
-                                                                                  .avsenderKontoId(UUID.randomUUID())
-                                                                                  .mottakerKontoId(mottakerKontoId)
-                                                                                  .ttl(meldingRequest.getTtl()
-                                                                                                     .toMillis())
-                                                                                  .build();
+                .meldingId(UUID.randomUUID())
+                .avsenderKontoId(UUID.randomUUID())
+                .mottakerKontoId(mottakerKontoId)
+                .meldingType("type")
+                .ttl(meldingRequest.getTtl()
+                    .toMillis())
+                .build();
             when(utsendingKlient.send(isA(MeldingSpesifikasjonApiModel.class), isA(Option.class))).thenReturn(sendtMeldingApiModel);
 
             final SendtMelding sendtMelding = fiksIOHandler.send(meldingRequest, Collections.emptyList());
             assertAll(
                 () -> assertEquals(meldingRequest.getMottakerKontoId()
-                                                 .getUuid(), sendtMelding.getMottakerKontoId()
-                                                                         .getUuid()),
+                    .getUuid(), sendtMelding.getMottakerKontoId()
+                    .getUuid()),
                 () -> assertEquals(TimeUnit.DAYS.toMillis(5L), sendtMelding.getTtl()
-                                                                           .toMillis())
+                    .toMillis())
             );
 
             verify(utsendingKlient).send(isA(MeldingSpesifikasjonApiModel.class), eq(Option.none()));
@@ -97,29 +91,30 @@ class FiksIOHandlerTest {
         void harPayload() {
             final UUID mottakerKontoId = UUID.randomUUID();
             final MeldingRequest meldingRequest = MeldingRequest.builder()
-                                                                .meldingType("meldingType")
-                                                                .mottakerKontoId(new KontoId(mottakerKontoId))
-                                                                .ttl(Duration.ofDays(5L))
-                                                                .build();
+                .meldingType("meldingType")
+                .mottakerKontoId(new KontoId(mottakerKontoId))
+                .ttl(Duration.ofDays(5L))
+                .build();
             final SendtMeldingApiModel sendtMeldingApiModel = SendtMeldingApiModel.builder()
-                                                                                  .meldingId(UUID.randomUUID())
-                                                                                  .avsenderKontoId(UUID.randomUUID())
-                                                                                  .mottakerKontoId(mottakerKontoId)
-                                                                                  .ttl(meldingRequest.getTtl()
-                                                                                                     .toMillis())
-                                                                                  .build();
+                .meldingId(UUID.randomUUID())
+                .avsenderKontoId(UUID.randomUUID())
+                .meldingType(meldingRequest.getMeldingType())
+                .mottakerKontoId(mottakerKontoId)
+                .ttl(meldingRequest.getTtl()
+                    .toMillis())
+                .build();
             when(utsendingKlient.send(isA(MeldingSpesifikasjonApiModel.class), isA(Option.class))).thenReturn(sendtMeldingApiModel);
             when(katalogHandler.getPublicKey(eq(meldingRequest.getMottakerKontoId()))).thenReturn(x509Certificate);
             when(asicHandler.encrypt(same(x509Certificate), isA(List.class))).thenReturn(new ByteArrayInputStream(new byte[]{0, 1, 0, 1}));
 
             final SendtMelding sendtMelding = fiksIOHandler.send(meldingRequest,
-                                                                  Collections.singletonList(new StringPayload("Test 1,2,3", "filnavn.txt")));
+                Collections.singletonList(new StringPayload("Test 1,2,3", "filnavn.txt")));
             assertAll(
                 () -> assertEquals(meldingRequest.getMottakerKontoId()
-                                                 .getUuid(), sendtMelding.getMottakerKontoId()
-                                                                         .getUuid()),
+                    .getUuid(), sendtMelding.getMottakerKontoId()
+                    .getUuid()),
                 () -> assertEquals(TimeUnit.DAYS.toMillis(5L), sendtMelding.getTtl()
-                                                                           .toMillis())
+                    .toMillis())
             );
 
             verify(utsendingKlient).send(isA(MeldingSpesifikasjonApiModel.class), isA(Option.class));
@@ -139,19 +134,19 @@ class FiksIOHandlerTest {
 
             final byte[] chunkOfData = {0, 1, 0, 1};
             final MottattMelding mottattMelding = MottattMelding.builder()
-                                                                .meldingId(new MeldingId(UUID.randomUUID()))
-                                                                .meldingType("MeldingType")
-                                                                .avsenderKontoId(new KontoId(UUID.randomUUID()))
-                                                                .mottakerKontoId(new KontoId(UUID.randomUUID()))
-                                                                .ttl(Duration.ofDays(3))
-                                                                .writeKryptertZip(path -> {
-                                                                })
-                                                                .getKryptertStream(() -> new ByteArrayInputStream(chunkOfData))
-                                                                .writeDekryptertZip(path -> {
-                                                                })
-                                                                .getDekryptertZipStream(
-                                                                    () -> new ZipInputStream(new ByteArrayInputStream(chunkOfData)))
-                                                                .build();
+                .meldingId(new MeldingId(UUID.randomUUID()))
+                .meldingType("MeldingType")
+                .avsenderKontoId(new KontoId(UUID.randomUUID()))
+                .mottakerKontoId(new KontoId(UUID.randomUUID()))
+                .ttl(Duration.ofDays(3))
+                .writeKryptertZip(path -> {
+                })
+                .getKryptertStream(() -> new ByteArrayInputStream(chunkOfData))
+                .writeDekryptertZip(path -> {
+                })
+                .getDekryptertZipStream(
+                    () -> new ZipInputStream(new ByteArrayInputStream(chunkOfData)))
+                .build();
 
             final SvarSender svarSender = fiksIOHandler.buildKvitteringSender(() -> {
             }, mottattMelding);

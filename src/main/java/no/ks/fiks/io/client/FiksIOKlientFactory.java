@@ -21,8 +21,7 @@ import no.ks.fiks.io.client.send.FiksIOSenderClientWrapper;
 import no.ks.fiks.io.klient.FiksIOUtsendingKlient;
 import no.ks.fiks.maskinporten.Maskinportenklient;
 import no.ks.fiks.maskinporten.MaskinportenklientProperties;
-import no.ks.fiks.svarinn.client.api.katalog.api.SvarInnKatalogApi;
-import org.eclipse.jetty.client.HttpClient;
+import no.ks.fiks.svarinn.client.api.katalog.api.FiksIoKatalogApi;
 
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -42,7 +41,7 @@ public class FiksIOKlientFactory {
 
         DokumentlagerKlient dokumentlagerKlient = getDokumentlagerKlient(konfigurasjon, maskinportenklient);
 
-        SvarInnKatalogApi katalogApi = getSvarInnKatalogApi(konfigurasjon, maskinportenklient);
+        final FiksIoKatalogApi katalogApi = getFiksIOKatalogApi(konfigurasjon, maskinportenklient);
 
         AsicHandler asicHandler = new AsicHandler(
             konfigurasjon.getKontoKonfigurasjon().getPrivatNokkel(),
@@ -82,7 +81,7 @@ public class FiksIOKlientFactory {
             .build();
     }
 
-    private static SvarInnKatalogApi getSvarInnKatalogApi(@NonNull FiksIOKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
+    private static FiksIoKatalogApi getFiksIOKatalogApi(@NonNull FiksIOKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
         ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
         return Feign.builder()
             .decoder(new JacksonDecoder(objectMapper))
@@ -93,7 +92,7 @@ public class FiksIOKlientFactory {
                 konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
             .requestInterceptor(konfigurasjon.getKatalogKonfigurasjon().getRequestInterceptor() == null ? r -> {
             } : konfigurasjon.getKatalogKonfigurasjon().getRequestInterceptor())
-            .target(SvarInnKatalogApi.class, konfigurasjon.getKatalogKonfigurasjon().getUrl());
+            .target(FiksIoKatalogApi.class, konfigurasjon.getKatalogKonfigurasjon().getUrl());
     }
 
     private static DokumentlagerKlient getDokumentlagerKlient(@NonNull FiksIOKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {

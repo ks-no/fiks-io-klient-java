@@ -3,10 +3,10 @@ package no.ks.fiks.io.client;
 import feign.FeignException;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import no.ks.fiks.svarinn.client.api.katalog.api.SvarInnKatalogApi;
 import no.ks.fiks.io.client.model.Konto;
 import no.ks.fiks.io.client.model.KontoId;
 import no.ks.fiks.io.client.model.LookupRequest;
+import no.ks.fiks.svarinn.client.api.katalog.api.FiksIoKatalogApi;
 
 import java.io.ByteArrayInputStream;
 import java.security.cert.CertificateException;
@@ -17,10 +17,10 @@ import java.util.Optional;
 
 @Slf4j
 public class KatalogHandler {
-    private SvarInnKatalogApi katalogApi;
+    private FiksIoKatalogApi katalogApi;
     private CertificateFactory cf;
 
-    public KatalogHandler(@NonNull SvarInnKatalogApi katalogApi) {
+    public KatalogHandler(@NonNull FiksIoKatalogApi katalogApi) {
         this.katalogApi = katalogApi;
     }
 

@@ -49,9 +49,9 @@
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <java.version>1.8</java.version>
     <slf4j.version>1.7.26</slf4j.version>
-    <fiks-io-send-klient.version>1.1.1</fiks-io-send-klient.version>
+    <fiks-io-send-klient.version>1.1.2</fiks-io-send-klient.version>
     <junit-platform-commons.version>1.4.2</junit-platform-commons.version>
-    <spec.name>svarinn2-katalog-api-v1</spec.name>
+    <spec.name>fiksio-katalog-api-v1</spec.name>
     <guava.version>23.3-jre</guava.version>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <maven-surefire-plugin.version>3.0.0-M3</maven-surefire-plugin.version>

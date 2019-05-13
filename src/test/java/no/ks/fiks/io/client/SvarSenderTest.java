@@ -26,9 +26,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipInputStream;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @DisplayName("SvarSender")
@@ -36,6 +34,7 @@ import static org.mockito.Mockito.*;
 class SvarSenderTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SvarSenderTest.class);
+    public static final String MELDING_TYPE = "meldingType";
 
     @Mock
     private FiksIOSender fiksIOSender;
@@ -52,7 +51,7 @@ class SvarSenderTest {
     void svar() throws IOException {
 
         final byte[] buf = {0, 1, 0, 1};
-        try(final InputStream inputStream = new ByteArrayInputStream(buf)) {
+        try (final InputStream inputStream = new ByteArrayInputStream(buf)) {
             final MottattMelding mottattMelding = createMottattMelding(buf, inputStream);
 
             final SvarSender svarSender = createSvarSender(buf, mottattMelding);
@@ -60,11 +59,12 @@ class SvarSenderTest {
                 .thenAnswer((Answer<SendtMeldingApiModel>) invocationOnMock -> {
                     MeldingSpesifikasjonApiModel meldingSpesifikasjonApiModel = invocationOnMock.getArgument(0);
                     return SendtMeldingApiModel.builder()
-                                .avsenderKontoId(meldingSpesifikasjonApiModel.getAvsenderKontoId())
-                                .meldingId(UUID.randomUUID())
-                                .mottakerKontoId(meldingSpesifikasjonApiModel.getMottakerKontoId())
-                                .ttl(Duration.ofHours(1L).toMillis())
-                                .build();
+                        .avsenderKontoId(meldingSpesifikasjonApiModel.getAvsenderKontoId())
+                        .meldingId(UUID.randomUUID())
+                        .mottakerKontoId(meldingSpesifikasjonApiModel.getMottakerKontoId())
+                        .ttl(Duration.ofHours(1L).toMillis())
+                        .meldingType(MELDING_TYPE)
+                        .build();
                 });
             final SendtMelding sendtMelding = svarSender.svar(mottattMelding.getMeldingType());
             assertNotNull(sendtMelding);
@@ -78,7 +78,7 @@ class SvarSenderTest {
     @Test
     void ack() throws IOException {
         final byte[] buf = {0, 1, 0, 1};
-        try(final InputStream inputStream = new ByteArrayInputStream(buf)) {
+        try (final InputStream inputStream = new ByteArrayInputStream(buf)) {
             final MottattMelding mottattMelding = createMottattMelding(buf, inputStream);
             final SvarSender svarSender = createSvarSender(buf, mottattMelding);
             svarSender.ack();
@@ -89,27 +89,27 @@ class SvarSenderTest {
 
     private SvarSender createSvarSender(final byte[] buf, final MottattMelding mottattMelding) {
         return SvarSender.builder()
-                         .doQueueAck(() -> {
-                             LOGGER.info("ACK completed");
-                             ackCompleted.set(true);
-                         })
-                         .encrypt(l -> new ByteArrayInputStream(buf))
-                         .meldingSomSkalKvitteres(mottattMelding)
-                         .utsendingKlient(fiksIOSender)
-                         .build();
+            .doQueueAck(() -> {
+                LOGGER.info("ACK completed");
+                ackCompleted.set(true);
+            })
+            .encrypt(l -> new ByteArrayInputStream(buf))
+            .meldingSomSkalKvitteres(mottattMelding)
+            .utsendingKlient(fiksIOSender)
+            .build();
     }
 
     private MottattMelding createMottattMelding(final byte[] buf, final InputStream inputStream) {
         return MottattMelding.builder()
-                             .meldingId(new MeldingId(UUID.randomUUID()))
-                             .meldingType("meldingType")
-                             .avsenderKontoId(new KontoId(UUID.randomUUID()))
-                             .mottakerKontoId(new KontoId(UUID.randomUUID()))
-                             .ttl(Duration.ofHours(1L))
-                             .writeDekryptertZip(p -> LOGGER.info("Dekryptert '{}'", p))
-                             .writeKryptertZip(p -> LOGGER.info("Kryptert '{}'", p))
-                             .getKryptertStream(() -> new ByteArrayInputStream(buf))
-                             .getDekryptertZipStream(() -> new ZipInputStream(inputStream))
-                             .build();
+            .meldingId(new MeldingId(UUID.randomUUID()))
+            .meldingType(MELDING_TYPE)
+            .avsenderKontoId(new KontoId(UUID.randomUUID()))
+            .mottakerKontoId(new KontoId(UUID.randomUUID()))
+            .ttl(Duration.ofHours(1L))
+            .writeDekryptertZip(p -> LOGGER.info("Dekryptert '{}'", p))
+            .writeKryptertZip(p -> LOGGER.info("Kryptert '{}'", p))
+            .getKryptertStream(() -> new ByteArrayInputStream(buf))
+            .getDekryptertZipStream(() -> new ZipInputStream(inputStream))
+            .build();
     }
 }

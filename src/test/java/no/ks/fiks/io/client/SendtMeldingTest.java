@@ -15,13 +15,14 @@ class SendtMeldingTest {
     @Test
     void fromSendResponse() {
         final SendtMeldingApiModel sendtMeldingApiModel = SendtMeldingApiModel.builder()
-                                                                              .meldingId(UUID.randomUUID())
-                                                                              .mottakerKontoId(UUID.randomUUID())
-                                                                              .avsenderKontoId(UUID.randomUUID())
-                                                                              .svarPaMelding(UUID.randomUUID())
-                                                                              .dokumentlagerId(UUID.randomUUID())
-                                                                              .ttl(TimeUnit.DAYS.toMillis(5L))
-                                                                              .build();
+            .meldingId(UUID.randomUUID())
+            .mottakerKontoId(UUID.randomUUID())
+            .meldingType("meldingType")
+            .avsenderKontoId(UUID.randomUUID())
+            .svarPaMelding(UUID.randomUUID())
+            .dokumentlagerId(UUID.randomUUID())
+            .ttl(TimeUnit.DAYS.toMillis(5L))
+            .build();
         final SendtMelding sendtMelding = SendtMelding.fromSendResponse(sendtMeldingApiModel);
         assertAll(
             () -> assertEquals(sendtMeldingApiModel.getMeldingId(), sendtMelding.getMeldingId().getUuid()),
