@@ -1,7 +1,39 @@
 # Fiks IO java klient
 [![MIT Licens](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/ks-no/fiks-io-klient-java/blob/master/LICENSE)
-[![Maven Central](https://img.shields.io/maven-central/v/no.ks.fiks/svarinn2-klient-java.svg)](https://search.maven.org/search?q=g:no.ks.fiks%20a:svarinn2-klient-java)
+[![Maven Central](https://img.shields.io/maven-central/v/no.ks.fiks/fiks-io-klient-java.svg)](https://search.maven.org/search?q=g:no.ks.fiks%20a:fiks-io-klient-java)
 ![GitHub last commit](https://img.shields.io/github/last-commit/ks-no/fiks-io-klient-java.svg)
 ![GitHub Release Date](https://img.shields.io/github/release-date/ks-no/fiks-io-klient-java.svg)
 
-Klient for å bruke [Fiks IO](//ks-no.github.io/fiks-platform/tjenester_under_utvikling/fiksio/) i et JVM miljø
+Klient for å bruke Fiks IO i et JVM miljø
+## Getting Started
+Legg til maven dependency.
+
+### Prerequisites
+
+  - Java 1.8 or higher
+
+##### Maven
+Add dependency no.ks.fiks.svarut:svarut-rest-klient in your POM.
+
+    <dependencies>
+       <dependency>
+            <groupId>no.ks.fiks</groupId>
+            <artifactId>fiks-io-klient-java</artifactId>
+            <version>1.1.0-SNAPSHOT</version>
+       </dependency>
+    </dependencies>
+
+
+## Usage
+
+```java
+Forsendelse forsendelse = //construct;
+HashMap<String, InputStream> filer = //construct;
+SvarUtKlientApi klient = new SvarUtKlientApiImpl("http://test.svarut.ks.no", avsender, servicePassord);
+ForsendelseId id = klient.sendForsendelse(forsendelse, filer);
+```
+
+
+## Dokumentasjon for tjeneste:
+ 
+ * [FIKS IO](https://ks-no.github.io/fiks-platform/tjenester_under_utvikling/fiksio/)
