@@ -17,7 +17,7 @@ class SendtMeldingTest {
         final SendtMeldingApiModel sendtMeldingApiModel = SendtMeldingApiModel.builder()
             .meldingId(UUID.randomUUID())
             .mottakerKontoId(UUID.randomUUID())
-            .meldingType("meldingType")
+            .meldingType("meldingsprotokoll")
             .avsenderKontoId(UUID.randomUUID())
             .svarPaMelding(UUID.randomUUID())
             .dokumentlagerId(UUID.randomUUID())

@@ -49,7 +49,7 @@ class KatalogHandlerTest {
             final Optional<Konto> melding = katalogHandler.lookup(LookupRequest.builder()
                                                                                .identifikator(new Identifikator(identifikatorType, identifikator))
                                                                                .sikkerhetsNiva(sikkerhetsNiva)
-                                                                               .meldingType(meldingType)
+                                                                               .meldingsprotokoll(meldingType)
                                                                                .build());
             assertFalse(melding.isPresent());
             verify(fiksIoKatalogApi).lookup(eq(Arrays.asList(identifikatorType.name(), identifikator)
@@ -97,7 +97,7 @@ class KatalogHandlerTest {
             final Optional<Konto> funnetKonto = katalogHandler.lookup(LookupRequest.builder()
                                                                                    .identifikator(new Identifikator(identifikatorType, identifikator))
                                                                                    .sikkerhetsNiva(sikkerhetsNiva)
-                                                                                   .meldingType(meldingType)
+                                                                                   .meldingsprotokoll(meldingType)
                                                                                    .build());
             assertTrue(funnetKonto.isPresent());
             assertEquals(funnetKonto.get(), konto);

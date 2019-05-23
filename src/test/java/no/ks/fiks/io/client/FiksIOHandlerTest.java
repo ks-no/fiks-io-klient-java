@@ -58,7 +58,7 @@ class FiksIOHandlerTest {
         void sendEmptyPayload() {
             final UUID mottakerKontoId = UUID.randomUUID();
             final MeldingRequest meldingRequest = MeldingRequest.builder()
-                .meldingType("meldingType")
+                .meldingType("meldingsprotokoll")
                 .mottakerKontoId(new KontoId(mottakerKontoId))
                 .ttl(Duration.ofDays(5L))
                 .build();
@@ -91,7 +91,7 @@ class FiksIOHandlerTest {
         void harPayload() {
             final UUID mottakerKontoId = UUID.randomUUID();
             final MeldingRequest meldingRequest = MeldingRequest.builder()
-                .meldingType("meldingType")
+                .meldingType("meldingsprotokoll")
                 .mottakerKontoId(new KontoId(mottakerKontoId))
                 .ttl(Duration.ofDays(5L))
                 .build();

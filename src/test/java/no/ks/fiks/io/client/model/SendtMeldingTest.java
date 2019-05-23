@@ -17,7 +17,7 @@ class SendtMeldingTest {
             .meldingId(UUID.randomUUID())
             .mottakerKontoId(UUID.randomUUID())
             .avsenderKontoId(UUID.randomUUID())
-            .meldingType("meldingType")
+            .meldingType("meldingsprotokoll")
             .svarPaMelding(UUID.randomUUID())
             .dokumentlagerId(UUID.randomUUID())
             .ttl(TimeUnit.DAYS.toMillis(5L))

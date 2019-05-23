@@ -8,6 +8,6 @@ import lombok.Value;
 @Builder
 public class LookupRequest {
     @NonNull private Identifikator identifikator;
-    @NonNull private String meldingType;
+    @NonNull private String meldingsprotokoll;
     @NonNull private Integer sikkerhetsNiva;
 }

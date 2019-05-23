@@ -31,7 +31,7 @@ public class KatalogHandler {
                     .getIdentifikatorType()
                     .name() + "." + request.getIdentifikator()
                     .getIdentifikator(),
-                request.getMeldingType(), request.getSikkerhetsNiva()))
+                request.getMeldingsprotokoll(), request.getSikkerhetsNiva()))
                 .map(Konto::fromKatalogModel);
         } catch (FeignException e) {
             if (e.status() == 404)
