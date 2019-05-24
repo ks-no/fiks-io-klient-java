@@ -25,7 +25,7 @@ public class FiksApiKonfigurasjon implements HostKonfigurasjon{
     /**
      * Konfigurasjon for prod.
      */
-    public static FiksApiKonfigurasjon PROD = FiksApiKonfigurasjon.builder().build();
+    public static FiksApiKonfigurasjon PROD = FiksApiKonfigurasjon.builder().host("api.fiks.ks.no").port(443).scheme("https").build();
     /**
      * Konfigurasjon for test.
      */
