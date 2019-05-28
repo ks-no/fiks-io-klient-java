@@ -36,7 +36,7 @@
     <changelist>-SNAPSHOT</changelist>
     <feign-form-version>2.1.0</feign-form-version>
     <kryptering.version>1.0.5</kryptering.version>
-    <oltu-version>1.0.1</oltu-version>
+    <oltu-version>1.0.2</oltu-version>
     <spec.location>https://ks-no.github.io/api/</spec.location>
     <commons-io.version>2.6</commons-io.version>
     <mockito.version>2.24.5</mockito.version>
