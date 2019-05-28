@@ -39,7 +39,7 @@
     <oltu-version>1.0.1</oltu-version>
     <spec.location>https://ks-no.github.io/api/</spec.location>
     <commons-io.version>2.6</commons-io.version>
-    <mockito.version>2.24.5</mockito.version>
+    <mockito.version>2.27.0</mockito.version>
     <swagger-codegen-maven-plugin.version>2.4.1</swagger-codegen-maven-plugin.version>
     <fiks-dokumentlager-klient.version>1.2.1</fiks-dokumentlager-klient.version>
     <fiks-feign-interceptors.version>1.0.2</fiks-feign-interceptors.version>
