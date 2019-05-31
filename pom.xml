@@ -31,7 +31,7 @@
   </distributionManagement>
   <properties>
     <difi-commons-asic.version>0.9.3</difi-commons-asic.version>
-    <swagger-core-version>1.5.18</swagger-core-version>
+    <swagger-core-version>1.5.22</swagger-core-version>
     <lombok.version>1.18.0</lombok.version>
     <changelist>-SNAPSHOT</changelist>
     <feign-form-version>2.1.0</feign-form-version>
