@@ -34,7 +34,7 @@
     <swagger-core-version>1.5.22</swagger-core-version>
     <lombok.version>1.18.0</lombok.version>
     <changelist>-SNAPSHOT</changelist>
-    <feign-form-version>2.1.0</feign-form-version>
+    <feign-form-version>3.8.0</feign-form-version>
     <kryptering.version>1.0.5</kryptering.version>
     <oltu-version>1.0.1</oltu-version>
     <spec.location>https://ks-no.github.io/api/</spec.location>
