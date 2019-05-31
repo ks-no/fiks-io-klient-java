@@ -5,7 +5,7 @@
   <parent>
     <groupId>no.ks.fiks.pom</groupId>
     <artifactId>fiks-ekstern-super-pom</artifactId>
-    <version>0.0.8</version>
+    <version>0.0.9</version>
   </parent>
   <groupId>no.ks.fiks</groupId>
   <artifactId>fiks-io-klient-java</artifactId>
@@ -59,7 +59,7 @@
     <jackson.version>2.9.8</jackson.version>
     <rabbitmq-amqp-client.version>5.6.0</rabbitmq-amqp-client.version>
     <fiks-maskinporten-client.version>1.0.11</fiks-maskinporten-client.version>
-    <fiks-io-send-klient.version>1.2.0</fiks-io-send-klient.version>
+    <fiks-io-send-klient.version>1.2.1</fiks-io-send-klient.version>
     <feign-version>9.4.0</feign-version>
     <junit-jupiter.version>5.4.2</junit-jupiter.version>
   </properties>
