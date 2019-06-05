@@ -23,6 +23,7 @@ import no.ks.fiks.maskinporten.Maskinportenklient;
 import no.ks.fiks.maskinporten.MaskinportenklientProperties;
 import no.ks.fiks.svarinn.client.api.katalog.api.FiksIoKatalogApi;
 
+import java.io.IOException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
@@ -39,31 +40,33 @@ public class FiksIOKlientFactory {
 
         Maskinportenklient maskinportenklient = getMaskinportenKlient(konfigurasjon);
 
-        DokumentlagerKlient dokumentlagerKlient = getDokumentlagerKlient(konfigurasjon, maskinportenklient);
+        try (DokumentlagerKlient dokumentlagerKlient = getDokumentlagerKlient(konfigurasjon, maskinportenklient);
+             FiksIOUtsendingKlient utsendingKlient = getSvarInnUtsendingKlient(konfigurasjon, maskinportenklient)) {
+            final FiksIoKatalogApi katalogApi = getFiksIOKatalogApi(konfigurasjon, maskinportenklient);
 
-        final FiksIoKatalogApi katalogApi = getFiksIOKatalogApi(konfigurasjon, maskinportenklient);
+            AsicHandler asicHandler = new AsicHandler(
+                konfigurasjon.getKontoKonfigurasjon().getPrivatNokkel(),
+                konfigurasjon.getVirksomhetssertifikatKonfigurasjon(), konfigurasjon.getExecutor());
 
-        AsicHandler asicHandler = new AsicHandler(
-            konfigurasjon.getKontoKonfigurasjon().getPrivatNokkel(),
-            konfigurasjon.getVirksomhetssertifikatKonfigurasjon(), konfigurasjon.getExecutor());
+            KatalogHandler katalogHandler = new KatalogHandler(katalogApi);
 
-        KatalogHandler katalogHandler = new KatalogHandler(katalogApi);
+            KontoId kontoId = konfigurasjon.getKontoKonfigurasjon().getKontoId();
+            FiksIOHandler fiksIOHandler = new FiksIOHandler(
+                kontoId,
+                getSvarInnSender(utsendingKlient),
+                katalogHandler, asicHandler);
 
-        KontoId kontoId = konfigurasjon.getKontoKonfigurasjon().getKontoId();
-
-        FiksIOHandler fiksIOHandler = new FiksIOHandler(
-            kontoId,
-            getSvarInnSender(getSvarInnUtsendingKlient(konfigurasjon, maskinportenklient)),
-            katalogHandler, asicHandler);
-
-        return new FiksIOKlientImpl(
-            kontoId,
-            new AmqpHandler(konfigurasjon.getAmqpKonfigurasjon(),
-                konfigurasjon.getFiksIntegrasjonKonfigurasjon(), fiksIOHandler, asicHandler,
-                maskinportenklient, kontoId, dokumentlagerKlient),
-            katalogHandler,
-            fiksIOHandler
-        );
+            return new FiksIOKlientImpl(
+                kontoId,
+                new AmqpHandler(konfigurasjon.getAmqpKonfigurasjon(),
+                    konfigurasjon.getFiksIntegrasjonKonfigurasjon(), fiksIOHandler, asicHandler,
+                    maskinportenklient, kontoId, dokumentlagerKlient),
+                katalogHandler,
+                fiksIOHandler
+            );
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static FiksIOUtsendingKlient getSvarInnUtsendingKlient(@NonNull FiksIOKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
