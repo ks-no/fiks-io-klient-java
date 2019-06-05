@@ -40,8 +40,12 @@ public class FiksIOKlientFactory {
 
         Maskinportenklient maskinportenklient = getMaskinportenKlient(konfigurasjon);
 
-        try (DokumentlagerKlient dokumentlagerKlient = getDokumentlagerKlient(konfigurasjon, maskinportenklient);
-             FiksIOUtsendingKlient utsendingKlient = getSvarInnUtsendingKlient(konfigurasjon, maskinportenklient)) {
+        DokumentlagerKlient dokumentlagerKlient = null;
+        FiksIOUtsendingKlient utsendingKlient = null;
+        try {
+            dokumentlagerKlient = getDokumentlagerKlient(konfigurasjon, maskinportenklient);
+            utsendingKlient = getSvarInnUtsendingKlient(konfigurasjon, maskinportenklient);
+
             final FiksIoKatalogApi katalogApi = getFiksIOKatalogApi(konfigurasjon, maskinportenklient);
 
             AsicHandler asicHandler = new AsicHandler(
@@ -64,8 +68,22 @@ public class FiksIOKlientFactory {
                 katalogHandler,
                 fiksIOHandler
             );
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            if (dokumentlagerKlient != null) {
+                try {
+                    dokumentlagerKlient.close();
+                } catch (IOException ex) {
+                    log.error("Exception under lukking av dokumentlagerklient", ex);
+                }
+            }
+            if (utsendingKlient != null) {
+                try {
+                    utsendingKlient.close();
+                } catch (IOException ex) {
+                    log.error("Exception under lukking av utsendingsklient", ex);
+                }
+            }
+            throw e;
         }
     }
 
