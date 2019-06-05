@@ -12,13 +12,15 @@ import no.ks.fiks.io.client.send.FiksIOSender;
 import no.ks.fiks.io.klient.MeldingSpesifikasjonApiModel;
 import no.ks.fiks.io.klient.SendtMeldingApiModel;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.io.InputStream;
 import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.UUID;
 
 @Slf4j
-class FiksIOHandler {
+class FiksIOHandler implements Closeable {
     private KontoId kontoId;
     private FiksIOSender utsendingKlient;
     private final KatalogHandler katalogHandler;
@@ -73,5 +75,10 @@ class FiksIOHandler {
     private X509Certificate getPublicKey(final KontoId kontoId) {
         log.debug("Henter offentlig nøkkel for konto \"{}\"", kontoId);
         return katalogHandler.getPublicKey(kontoId);
+    }
+
+    @Override
+    public void close() throws IOException {
+        utsendingKlient.close();
     }
 }

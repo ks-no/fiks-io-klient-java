@@ -4,6 +4,7 @@ import com.rabbitmq.client.ShutdownSignalException;
 import lombok.NonNull;
 import no.ks.fiks.io.client.model.*;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
@@ -67,7 +68,8 @@ public class FiksIOKlientImpl implements FiksIOKlient {
         amqpHandler.newConsume(onMelding, onClose);
     }
 
-    public void close() {
-        //TODO close-it
+    public void close() throws IOException {
+        amqpHandler.close();
+        fiksIOHandler.close();
     }
 }

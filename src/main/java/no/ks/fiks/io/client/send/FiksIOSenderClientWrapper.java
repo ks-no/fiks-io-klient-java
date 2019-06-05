@@ -6,6 +6,7 @@ import no.ks.fiks.io.klient.FiksIOUtsendingKlient;
 import no.ks.fiks.io.klient.MeldingSpesifikasjonApiModel;
 import no.ks.fiks.io.klient.SendtMeldingApiModel;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 public class FiksIOSenderClientWrapper implements FiksIOSender {
@@ -19,5 +20,10 @@ public class FiksIOSenderClientWrapper implements FiksIOSender {
     @Override
     public SendtMeldingApiModel send(final MeldingSpesifikasjonApiModel metadata, final Option<InputStream> data) {
         return utsendingKlient.send(metadata, data);
+    }
+
+    @Override
+    public void close() throws IOException {
+        utsendingKlient.close();
     }
 }

@@ -20,6 +20,7 @@ import org.apache.commons.io.IOUtils;
 
 import javax.net.ssl.SSLContext;
 import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -31,7 +32,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-class AmqpHandler {
+class AmqpHandler implements Closeable {
 
     private static final String DOKUMENTLAGER_PAYLOAD_TYPE_HEADER = "DOKUMENTLAGER_PAYLOAD";
     private final Channel channel;
@@ -134,4 +135,8 @@ class AmqpHandler {
         return factory;
     }
 
+    @Override
+    public void close() throws IOException {
+        dokumentlagerKlient.close();
+    }
 }
