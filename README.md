@@ -1,6 +1,7 @@
 # Fiks IO java klient
 [![MIT Licens](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/ks-no/fiks-io-klient-java/blob/master/LICENSE)
 [![Maven Central](https://img.shields.io/maven-central/v/no.ks.fiks/fiks-io-klient-java.svg)](https://search.maven.org/search?q=g:no.ks.fiks%20a:fiks-io-klient-java)
+[![DepShield Badge](https://depshield.sonatype.org/badges/ks-no/fiks-io-klient-java/depshield.svg)](https://depshield.github.io)
 ![GitHub last commit](https://img.shields.io/github/last-commit/ks-no/fiks-io-klient-java.svg)
 ![GitHub Release Date](https://img.shields.io/github/release-date/ks-no/fiks-io-klient-java.svg)
 
