@@ -53,7 +53,7 @@
     <junit-platform-commons.version>1.4.2</junit-platform-commons.version>
     <fiks-io-commons.version>1.2.0</fiks-io-commons.version>
     <spec.name>fiksio-katalog-api-v1</spec.name>
-    <guava.version>27.1-jre</guava.version>
+    <guava.version>28.0-jre</guava.version>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <maven-surefire-plugin.version>3.0.0-M3</maven-surefire-plugin.version>
     <jackson.version>2.9.9</jackson.version>
