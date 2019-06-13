@@ -20,7 +20,7 @@ Add dependency no.ks.fiks.svarut:svarut-rest-klient in your POM.
        <dependency>
             <groupId>no.ks.fiks</groupId>
             <artifactId>fiks-io-klient-java</artifactId>
-            <version>1.2.4</version>
+            <version>1.2.5</version>
        </dependency>
     </dependencies>
 
