@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.ks.fiks.io.client.model.Konto;
 import no.ks.fiks.io.client.model.KontoId;
 import no.ks.fiks.io.client.model.LookupRequest;
-import no.ks.fiks.svarinn.client.api.katalog.api.FiksIoKatalogApi;
+import no.ks.fiks.fiksio.client.api.katalog.api.FiksIoKatalogApi;
 
 import java.io.ByteArrayInputStream;
 import java.security.cert.CertificateException;

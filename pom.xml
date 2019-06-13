@@ -40,7 +40,6 @@
     <spec.location>https://ks-no.github.io/api/</spec.location>
     <commons-io.version>2.6</commons-io.version>
     <mockito.version>2.28.2</mockito.version>
-    <swagger-codegen-maven-plugin.version>2.4.5</swagger-codegen-maven-plugin.version>
     <fiks-dokumentlager-klient.version>1.2.3</fiks-dokumentlager-klient.version>
     <fiks-feign-interceptors.version>1.0.2</fiks-feign-interceptors.version>
     <spec.postfix>json</spec.postfix>
@@ -62,6 +61,8 @@
     <fiks-io-send-klient.version>1.2.3</fiks-io-send-klient.version>
     <feign-version>9.4.0</feign-version>
     <junit-jupiter.version>5.4.2</junit-jupiter.version>
+    <openapi-generator-maven-plugin.version>4.0.0</openapi-generator-maven-plugin.version>
+    <download-maven-plugin.version>1.4.2</download-maven-plugin.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -227,29 +228,50 @@
         <version>${maven-surefire-plugin.version}</version>
       </plugin>
       <plugin>
-        <groupId>io.swagger</groupId>
-        <artifactId>swagger-codegen-maven-plugin</artifactId>
-        <version>${swagger-codegen-maven-plugin.version}</version>
+        <groupId>com.googlecode.maven-download-plugin</groupId>
+        <artifactId>download-maven-plugin</artifactId>
+        <version>${download-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>wget</goal>
+            </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+              <uri>${spec.location}${spec.name}.${spec.postfix}</uri>
+              <outputDirectory>${project.build.directory}</outputDirectory>
+              <skipCache>true</skipCache>
+              <overwrite>true</overwrite>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.openapitools</groupId>
+        <artifactId>openapi-generator-maven-plugin</artifactId>
+        <version>${openapi-generator-maven-plugin.version}</version>
         <executions>
           <execution>
             <goals>
               <goal>generate</goal>
             </goals>
+            <phase>generate-sources</phase>
             <configuration>
-              <inputSpec>${spec.location}${spec.name}.${spec.postfix}</inputSpec>
-              <language>java</language>
-              <library>feign</library>
+              <inputSpec>${project.build.directory}/${spec.name}.${spec.postfix}</inputSpec>
+              <generatorName>java</generatorName>
               <configOptions>
                 <dateLibrary>java8</dateLibrary>
+                <feignVersion>10.x</feignVersion>
+                <java8>true</java8>
               </configOptions>
-              <groupId>${project.groupId}</groupId>
-              <artifactId>${project.parent.artifactId}-${spec.name}</artifactId>
-              <modelPackage>${project.groupId}.svarinn.client.api.katalog.model</modelPackage>
-              <apiPackage>${project.groupId}.svarinn.client.api.katalog.api</apiPackage>
-              <invokerPackage>${project.groupId}.svarinn.client.api.katalog.invoker</invokerPackage>
-              <artifactVersion>${project.version}</artifactVersion>
+              <modelPackage>${project.groupId}.fiksio.client.api.katalog.model</modelPackage>
+              <apiPackage>${project.groupId}.fiksio.client.api.katalog.api</apiPackage>
+              <invokerPackage>${project.groupId}.fiksio.client.api.katalog.invoker</invokerPackage>
               <generateApiTests>false</generateApiTests>
               <generateModelTests>false</generateModelTests>
+              <generateSupportingFiles>true</generateSupportingFiles>
+              <library>feign</library>
+              <addCompileSourceRoot>true</addCompileSourceRoot>
             </configuration>
           </execution>
         </executions>

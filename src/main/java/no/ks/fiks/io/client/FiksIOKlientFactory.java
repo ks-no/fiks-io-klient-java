@@ -21,7 +21,7 @@ import no.ks.fiks.io.client.send.FiksIOSenderClientWrapper;
 import no.ks.fiks.io.klient.FiksIOUtsendingKlient;
 import no.ks.fiks.maskinporten.Maskinportenklient;
 import no.ks.fiks.maskinporten.MaskinportenklientProperties;
-import no.ks.fiks.svarinn.client.api.katalog.api.FiksIoKatalogApi;
+import no.ks.fiks.fiksio.client.api.katalog.api.FiksIoKatalogApi;
 
 import java.io.IOException;
 import java.security.KeyStoreException;

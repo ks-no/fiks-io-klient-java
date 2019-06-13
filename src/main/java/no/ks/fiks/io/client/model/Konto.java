@@ -3,7 +3,7 @@ package no.ks.fiks.io.client.model;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import no.ks.fiks.svarinn.client.api.katalog.model.KatalogKonto;
+import no.ks.fiks.fiksio.client.api.katalog.model.KatalogKonto;
 
 @Builder
 @Value
@@ -21,8 +21,8 @@ public class Konto {
             .kontoNavn(konto.getKontoNavn())
             .fiksOrgId(new FiksOrgId(konto.getFiksOrgId()))
             .fiksOrgNavn(konto.getFiksOrgNavn())
-            .isGyldigAvsender(konto.getStatus().isGyldigAvsender())
-            .isGyldigMottaker(konto.getStatus().isGyldigMottaker())
+            .isGyldigAvsender(konto.getStatus().getGyldigAvsender())
+            .isGyldigMottaker(konto.getStatus().getGyldigMottaker())
             .build();
     }
 }
