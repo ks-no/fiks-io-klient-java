@@ -114,7 +114,7 @@ class KatalogHandlerTest {
         @DisplayName("feiler med exception")
         @Test
         void getPublicKeyFails() {
-            when(fiksIoKatalogApi.getOffentligNokkel(isA(UUID.class))).thenThrow(new DecodeException("Could not decode"));
+            when(fiksIoKatalogApi.getOffentligNokkel(isA(UUID.class))).thenThrow(new DecodeException(400, "Could not decode"));
             final UUID kontoId = UUID.randomUUID();
             assertThrows(DecodeException.class, () -> katalogHandler.getPublicKey(new KontoId(kontoId)));
             verify(fiksIoKatalogApi).getOffentligNokkel(eq(kontoId));
