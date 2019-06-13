@@ -42,7 +42,7 @@ final Optional<Konto> fiksIoKonto = fiksIOKlient.lookup(...);
 
 
 // Sende melding
-final SendtMelding sendtMelding = fiksIoKonto.map(k -> k.send(...)).orElseThrow(() -> new IllegalStateException("Kunne ikke sende til Fiks IO"));
+final SendtMelding sendtMelding = fiksIoKonto.map(konto -> fiksIOKlient.send(...)).orElseThrow(() -> new IllegalStateException("Kunne ikke sende til Fiks IO"));
 ```
 
 
