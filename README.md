@@ -28,10 +28,21 @@ Add dependency no.ks.fiks.svarut:svarut-rest-klient in your POM.
 ## Usage
 
 ```java
-Forsendelse forsendelse = //construct;
-HashMap<String, InputStream> filer = //construct;
-SvarUtKlientApi klient = new SvarUtKlientApiImpl("http://test.svarut.ks.no", avsender, servicePassord);
-ForsendelseId id = klient.sendForsendelse(forsendelse, filer);
+final FiksIOKonfigurasjon fiksIOKonfigurasjon = FiksIOKonfigurasjon.builder()
+                                            // sett konfig
+                                            .build();
+final FiksIOKlient fiksIOKlient = FiksIOKlientFactory.build(fiksIOKonfigurasjon);
+// Lytte på meldinger
+fiksIOKlient.newSubscription((motattMelding, svarSender) -> {
+                         // Gjør noe med mottatt melding
+                     });
+
+// Slå opp konto
+final Optional<Konto> fiksIoKonto = fiksIOKlient.lookup(...);
+
+
+// Sende melding
+final SendtMelding sendtMelding = fiksIoKonto.map(k -> k.send(...)).orElseThrow(() -> new IllegalStateException("Kunne ikke sende til Fiks IO"));
 ```
 
 
