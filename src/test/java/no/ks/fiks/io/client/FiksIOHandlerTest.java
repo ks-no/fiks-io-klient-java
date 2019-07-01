@@ -10,6 +10,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -90,10 +91,11 @@ class FiksIOHandlerTest {
         @Test
         void harPayload() {
             final UUID mottakerKontoId = UUID.randomUUID();
+            Duration ttl = Duration.ofDays(5L);
             final MeldingRequest meldingRequest = MeldingRequest.builder()
                 .meldingType("meldingsprotokoll")
                 .mottakerKontoId(new KontoId(mottakerKontoId))
-                .ttl(Duration.ofDays(5L))
+                .ttl(ttl)
                 .build();
             final SendtMeldingApiModel sendtMeldingApiModel = SendtMeldingApiModel.builder()
                 .meldingId(UUID.randomUUID())
@@ -116,12 +118,17 @@ class FiksIOHandlerTest {
                 () -> assertEquals(TimeUnit.DAYS.toMillis(5L), sendtMelding.getTtl()
                     .toMillis())
             );
+            final ArgumentCaptor<MeldingSpesifikasjonApiModel> meldingRequestCaptor = ArgumentCaptor.forClass(MeldingSpesifikasjonApiModel.class);
+            verify(utsendingKlient).send(meldingRequestCaptor.capture(), isA(Option.class));
 
-            verify(utsendingKlient).send(isA(MeldingSpesifikasjonApiModel.class), isA(Option.class));
+
             verify(katalogHandler).getPublicKey(eq(meldingRequest.getMottakerKontoId()));
             verify(asicHandler).encrypt(same(x509Certificate), isA(List.class));
             verifyNoMoreInteractions(utsendingKlient, asicHandler, x509Certificate);
             verifyZeroInteractions(katalogHandler);
+
+            MeldingSpesifikasjonApiModel meldingRequestCaptorValue = meldingRequestCaptor.getValue();
+            assertEquals(ttl.toMillis(), meldingRequestCaptorValue.getTtl());
         }
     }
 
