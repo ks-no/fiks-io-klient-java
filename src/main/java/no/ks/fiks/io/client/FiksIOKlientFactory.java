@@ -103,7 +103,8 @@ public class FiksIOKlientFactory {
     }
 
     private static FiksIoKatalogApi getFiksIOKatalogApi(@NonNull FiksIOKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
-        ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new JavaTimeModule());
         return Feign.builder()
             .decoder(new JacksonDecoder(objectMapper))
             .encoder(new JacksonEncoder(objectMapper))
