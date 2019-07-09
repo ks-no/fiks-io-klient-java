@@ -39,7 +39,7 @@
     <oltu-version>1.0.2</oltu-version>
     <spec.location>https://ks-no.github.io/api/</spec.location>
     <commons-io.version>2.6</commons-io.version>
-    <mockito.version>2.28.2</mockito.version>
+    <mockito.version>3.0.0</mockito.version>
     <fiks-dokumentlager-klient.version>1.2.3</fiks-dokumentlager-klient.version>
     <fiks-feign-interceptors.version>1.0.2</fiks-feign-interceptors.version>
     <spec.postfix>json</spec.postfix>
