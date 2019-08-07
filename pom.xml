@@ -48,7 +48,7 @@
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <openapi-generator-maven-plugin.version>4.0.0</openapi-generator-maven-plugin.version>
     <java.version>1.8</java.version>
-    <slf4j.version>1.7.26</slf4j.version>
+    <slf4j.version>1.7.27</slf4j.version>
     <logback.version>1.2.3</logback.version>
     <junit-platform-commons.version>1.4.2</junit-platform-commons.version>
     <fiks-io-commons.version>1.2.0</fiks-io-commons.version>
