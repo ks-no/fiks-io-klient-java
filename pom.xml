@@ -31,7 +31,7 @@
   </distributionManagement>
   <properties>
     <difi-commons-asic.version>0.9.3</difi-commons-asic.version>
-    <swagger-core-version>1.5.22</swagger-core-version>
+    <swagger-core-version>1.5.23</swagger-core-version>
     <lombok.version>1.18.0</lombok.version>
     <changelist>-SNAPSHOT</changelist>
     <feign-form-version>3.8.0</feign-form-version>
@@ -46,11 +46,11 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <revision>1.2.7</revision>
     <maven.compiler.source>${java.version}</maven.compiler.source>
-    <openapi-generator-maven-plugin.version>4.0.0</openapi-generator-maven-plugin.version>
+    <openapi-generator-maven-plugin.version>4.1.1</openapi-generator-maven-plugin.version>
     <java.version>1.8</java.version>
     <slf4j.version>1.7.28</slf4j.version>
     <logback.version>1.2.3</logback.version>
-    <junit-platform-commons.version>1.4.2</junit-platform-commons.version>
+    <junit-platform-commons.version>1.5.2</junit-platform-commons.version>
     <fiks-io-commons.version>1.2.0</fiks-io-commons.version>
     <spec.name>fiksio-katalog-api-v1</spec.name>
     <guava.version>28.0-jre</guava.version>
@@ -62,7 +62,8 @@
     <fiks-io-send-klient.version>1.2.3</fiks-io-send-klient.version>
     <feign-version>10.2.3</feign-version>
     <download-maven-plugin.version>1.4.2</download-maven-plugin.version>
-    <junit-jupiter.version>5.4.2</junit-jupiter.version>
+    <junit-jupiter.version>5.5.2</junit-jupiter.version>
+    <jackson-databind-nullable.version>0.2.0</jackson-databind-nullable.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -189,6 +190,11 @@
       <groupId>org.apache.oltu.oauth2</groupId>
       <artifactId>org.apache.oltu.oauth2.client</artifactId>
       <version>${oltu-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.openapitools</groupId>
+      <artifactId>jackson-databind-nullable</artifactId>
+      <version>${jackson-databind-nullable.version}</version>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
