@@ -9,6 +9,7 @@ import no.ks.kryptering.CMSKrypteringImpl;
 import no.ks.kryptering.CMSStreamKryptering;
 import org.apache.commons.io.IOUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.slf4j.MDC;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -17,6 +18,8 @@ import java.security.PrivateKey;
 import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -56,8 +59,10 @@ class AsicHandler {
 
             PipedInputStream asicInputStream = new PipedInputStream();
             final OutputStream asicOutputStream = new PipedOutputStream(asicInputStream);
+            final Map<String, String> mdc = MDC.getCopyOfContextMap();
             executor.execute(() -> {
                 try {
+                    Optional.ofNullable(mdc).ifPresent(m -> MDC.setContextMap(m));
                     AsicWriter writer = asicWriterFactory.newContainer(asicOutputStream);
                     payload.forEach(p -> write(writer, p));
                     writer.setRootEntryName(payload.get(0)
@@ -70,6 +75,8 @@ class AsicHandler {
                 } catch (Exception e) {
                     log.error("Failed to sign stream", e);
                     throw new RuntimeException(e);
+                } finally {
+                    MDC.clear();
                 }
             });
 
@@ -79,6 +86,7 @@ class AsicHandler {
 
 
             executor.execute(() -> {
+                Optional.ofNullable(mdc).ifPresent(m -> MDC.setContextMap(m));
                 CMSStreamKryptering cmsKryptoHandler = new CMSKrypteringImpl();
                 try (OutputStream krypteringStream = cmsKryptoHandler.getKrypteringOutputStream(kryptertOutputStream, mottakerCert)){
                     IOUtils.copy(asicInputStream, krypteringStream);
@@ -87,6 +95,7 @@ class AsicHandler {
                     throw new RuntimeException(e);
                 } finally {
                     try {
+                        MDC.clear();
                         asicOutputStream.close();
                         asicInputStream.close();
                         kryptertOutputStream.close();
@@ -107,14 +116,16 @@ class AsicHandler {
 
             PipedOutputStream out = new PipedOutputStream();
             PipedInputStream pipedInputStream = new PipedInputStream(out);
-
+            final Map<String, String> mdc = MDC.getCopyOfContextMap();
             executor.execute(() -> {
-
+                Optional.ofNullable(mdc).ifPresent(m -> MDC.setContextMap(m));
                 try (ZipOutputStream zipOutputStream = new ZipOutputStream(out)) {
                     decrypt(encryptedAsicData, zipOutputStream);
                 } catch (IOException e) {
                     log.error("Failed to decrypt stream", e);
                     throw new RuntimeException(e);
+                } finally {
+                    MDC.clear();
                 }
             });
 
