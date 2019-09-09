@@ -63,6 +63,7 @@
     <feign-version>10.2.3</feign-version>
     <download-maven-plugin.version>1.4.2</download-maven-plugin.version>
     <junit-jupiter.version>5.5.2</junit-jupiter.version>
+    <jackson-databind-nullable.version>0.2.0</jackson-databind-nullable.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -189,6 +190,11 @@
       <groupId>org.apache.oltu.oauth2</groupId>
       <artifactId>org.apache.oltu.oauth2.client</artifactId>
       <version>${oltu-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.openapitools</groupId>
+      <artifactId>jackson-databind-nullable</artifactId>
+      <version>${jackson-databind-nullable.version}</version>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
