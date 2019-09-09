@@ -7,15 +7,15 @@ import com.rabbitmq.client.ShutdownSignalException;
 import com.rabbitmq.client.impl.CredentialsProvider;
 import lombok.NonNull;
 import no.ks.fiks.dokumentlager.klient.DokumentlagerKlient;
-import no.ks.fiks.io.commons.FiksIOHeaders;
-import no.ks.fiks.io.commons.FiksIOMeldingParser;
-import no.ks.fiks.io.commons.MottattMeldingMetadata;
-import no.ks.fiks.maskinporten.Maskinportenklient;
 import no.ks.fiks.io.client.konfigurasjon.AmqpKonfigurasjon;
 import no.ks.fiks.io.client.konfigurasjon.FiksIntegrasjonKonfigurasjon;
 import no.ks.fiks.io.client.model.KontoId;
 import no.ks.fiks.io.client.model.MeldingId;
 import no.ks.fiks.io.client.model.MottattMelding;
+import no.ks.fiks.io.commons.FiksIOHeaders;
+import no.ks.fiks.io.commons.FiksIOMeldingParser;
+import no.ks.fiks.io.commons.MottattMeldingMetadata;
+import no.ks.fiks.maskinporten.Maskinportenklient;
 import org.apache.commons.io.IOUtils;
 
 import javax.net.ssl.SSLContext;
@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
@@ -34,7 +35,7 @@ import java.util.function.Predicate;
 
 class AmqpHandler implements Closeable {
 
-    private static final String DOKUMENTLAGER_PAYLOAD_TYPE_HEADER = "DOKUMENTLAGER_PAYLOAD";
+    private static final String DOKUMENTLAGER_PAYLOAD_TYPE_HEADER = "dokumentlager-id";
     private final Channel channel;
     private final Predicate<MeldingId> meldingErBehandlet;
     private final DokumentlagerKlient dokumentlagerKlient;
@@ -101,7 +102,7 @@ class AmqpHandler implements Closeable {
     }
 
     private static UUID getDokumentlagerId(Delivery m) {
-        return UUID.fromString((String) m.getProperties().getHeaders().get(DOKUMENTLAGER_PAYLOAD_TYPE_HEADER));
+        return Optional.ofNullable(m.getProperties().getHeaders().get(DOKUMENTLAGER_PAYLOAD_TYPE_HEADER)).map(Object::toString).map(UUID::fromString).orElse(null);
     }
 
     private static boolean payloadInDokumentlager(Delivery m) {
