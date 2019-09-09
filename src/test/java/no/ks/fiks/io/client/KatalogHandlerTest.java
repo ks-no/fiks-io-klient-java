@@ -1,12 +1,13 @@
 package no.ks.fiks.io.client;
 
 import com.google.common.io.Resources;
+import feign.Request;
 import feign.codec.DecodeException;
-import no.ks.fiks.io.client.model.*;
 import no.ks.fiks.fiksio.client.api.katalog.api.FiksIoKatalogApi;
 import no.ks.fiks.fiksio.client.api.katalog.model.KatalogKonto;
 import no.ks.fiks.fiksio.client.api.katalog.model.KontoStatusApiModel;
 import no.ks.fiks.fiksio.client.api.katalog.model.OffentligNokkel;
+import no.ks.fiks.io.client.model.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -114,7 +116,7 @@ class KatalogHandlerTest {
         @DisplayName("feiler med exception")
         @Test
         void getPublicKeyFails() {
-            when(fiksIoKatalogApi.getOffentligNokkel(isA(UUID.class))).thenThrow(new DecodeException(400, "Could not decode"));
+            when(fiksIoKatalogApi.getOffentligNokkel(isA(UUID.class))).thenThrow(new DecodeException(400, "Could not decode", Request.create(Request.HttpMethod.GET, "/fiks-io/katalog/api/v1/kontoer/{kontoId}/offentligNokkel", Collections.emptyMap(), null)));
             final UUID kontoId = UUID.randomUUID();
             assertThrows(DecodeException.class, () -> katalogHandler.getPublicKey(new KontoId(kontoId)));
             verify(fiksIoKatalogApi).getOffentligNokkel(eq(kontoId));
