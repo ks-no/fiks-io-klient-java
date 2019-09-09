@@ -95,12 +95,13 @@ class AsicHandler {
                     throw new RuntimeException(e);
                 } finally {
                     try {
-                        MDC.clear();
                         asicOutputStream.close();
                         asicInputStream.close();
                         kryptertOutputStream.close();
                     } catch (IOException e) {
                         log.error("Uventet feil under cleanup", e);
+                    } finally {
+                        MDC.clear();
                     }
                 }
             });
