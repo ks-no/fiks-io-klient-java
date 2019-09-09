@@ -50,7 +50,7 @@
     <java.version>1.8</java.version>
     <slf4j.version>1.7.28</slf4j.version>
     <logback.version>1.2.3</logback.version>
-    <junit-platform-commons.version>1.4.2</junit-platform-commons.version>
+    <junit-platform-commons.version>1.5.2</junit-platform-commons.version>
     <fiks-io-commons.version>1.2.0</fiks-io-commons.version>
     <spec.name>fiksio-katalog-api-v1</spec.name>
     <guava.version>28.0-jre</guava.version>
