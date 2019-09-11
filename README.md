@@ -14,7 +14,7 @@ Legg til maven dependency.
   - Java 1.8 or higher
 
 ##### Maven
-Add dependency no.ks.fiks.svarut:svarut-rest-klient in your POM.
+Add dependency no.ks.fiks:fiks-io-klient-java in your POM.
 
     <dependencies>
        <dependency>
@@ -23,7 +23,6 @@ Add dependency no.ks.fiks.svarut:svarut-rest-klient in your POM.
             <version>1.2.5</version>
        </dependency>
     </dependencies>
-
 
 ## Usage
 
@@ -45,7 +44,6 @@ final Optional<Konto> fiksIoKonto = fiksIOKlient.lookup(...);
 final SendtMelding sendtMelding = fiksIoKonto.map(konto -> fiksIOKlient.send(...)).orElseThrow(() -> new IllegalStateException("Kunne ikke sende til Fiks IO"));
 ```
 
-
 ## Dokumentasjon for tjeneste:
  
- * [FIKS IO](https://ks-no.github.io/fiks-platform/tjenester_under_utvikling/fiksio/)
+ * [FIKS IO](https://ks-no.github.io/fiks-platform/tjenester/fiksio/)
