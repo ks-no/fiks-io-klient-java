@@ -20,7 +20,7 @@ Add dependency no.ks.fiks:fiks-io-klient-java in your POM.
        <dependency>
             <groupId>no.ks.fiks</groupId>
             <artifactId>fiks-io-klient-java</artifactId>
-            <version>1.2.5</version>
+            <version>1.2.7</version>
        </dependency>
     </dependencies>
 
