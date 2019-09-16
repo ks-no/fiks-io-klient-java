@@ -133,7 +133,7 @@ class AmqpHandler implements Closeable {
     }
 
     private static boolean payloadInDokumentlager(Delivery m) {
-        return m.getProperties().getHeaders().containsKey(DOKUMENTLAGER_PAYLOAD_TYPE_HEADER);
+        return getDokumentlagerId(m) != null;
     }
 
     private ConnectionFactory getConnectionFactory(AmqpKonfigurasjon amqpKonf, FiksIntegrasjonKonfigurasjon intKonf, Maskinportenklient maskinportenklient) {
