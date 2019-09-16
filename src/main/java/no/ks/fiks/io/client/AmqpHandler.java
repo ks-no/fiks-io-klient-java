@@ -6,9 +6,11 @@ import com.rabbitmq.client.Delivery;
 import com.rabbitmq.client.ShutdownSignalException;
 import com.rabbitmq.client.impl.CredentialsProvider;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import no.ks.fiks.dokumentlager.klient.DokumentlagerKlient;
 import no.ks.fiks.io.client.konfigurasjon.AmqpKonfigurasjon;
 import no.ks.fiks.io.client.konfigurasjon.FiksIntegrasjonKonfigurasjon;
+import no.ks.fiks.io.client.model.AmqpChannelFeedbackHandler;
 import no.ks.fiks.io.client.model.KontoId;
 import no.ks.fiks.io.client.model.MeldingId;
 import no.ks.fiks.io.client.model.MottattMelding;
@@ -33,6 +35,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+@Slf4j
 class AmqpHandler implements Closeable {
 
     private static final String DOKUMENTLAGER_PAYLOAD_TYPE_HEADER = "dokumentlager-id";
@@ -40,17 +43,17 @@ class AmqpHandler implements Closeable {
     private final Predicate<MeldingId> meldingErBehandlet;
     private final DokumentlagerKlient dokumentlagerKlient;
     private KontoId kontoId;
-    private final FiksIOHandler svarInnApi;
+    private final FiksIOHandler fiksIOHandler;
     private final AsicHandler asic;
 
     AmqpHandler(@NonNull AmqpKonfigurasjon amqpKonf,
                 @NonNull FiksIntegrasjonKonfigurasjon intKonf,
-                @NonNull FiksIOHandler svarInn,
+                @NonNull FiksIOHandler fiksIOHandler,
                 @NonNull AsicHandler asic,
                 @NonNull Maskinportenklient maskinportenklient,
                 @NonNull KontoId kontoId,
                 @NonNull DokumentlagerKlient dokumentlagerKlient) {
-        this.svarInnApi = svarInn;
+        this.fiksIOHandler = fiksIOHandler;
         this.asic = asic;
         this.kontoId = kontoId;
         this.meldingErBehandlet = amqpKonf.getMeldingErBehandlet();
@@ -74,23 +77,47 @@ class AmqpHandler implements Closeable {
                     channel.basicAck(m.getEnvelope().getDeliveryTag(), false);
                 } else {
                     MottattMelding melding = MottattMelding.fromMottattMeldingMetadata(
-                            parsed,
-                            f -> asic.writeDecrypted(payloadInDokumentlager(m) ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()), f),
-                            f -> writeFile(payloadInDokumentlager(m) ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()), f),
-                            () -> payloadInDokumentlager(m) ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()),
-                            () -> asic.decrypt(payloadInDokumentlager(m) ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody())));
-                    onMelding.accept(melding, svarInnApi.buildKvitteringSender(() -> {
-                        try {
-                            channel.basicAck(m.getEnvelope().getDeliveryTag(), false);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }, melding));
+                        parsed,
+                        f -> asic.writeDecrypted(payloadInDokumentlager(m) ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()), f),
+                        f -> writeFile(payloadInDokumentlager(m) ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()), f),
+                        () -> payloadInDokumentlager(m) ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()),
+                        () -> asic.decrypt(payloadInDokumentlager(m) ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody())));
+                    onMelding.accept(melding, fiksIOHandler.buildKvitteringSender(amqpChannelFeedbackHandler(m.getEnvelope().getDeliveryTag())
+                        , melding));
                 }
             }, (consumerTag, sig) -> onClose.accept(sig));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private AmqpChannelFeedbackHandler amqpChannelFeedbackHandler(final long deliveryTag) {
+        return AmqpChannelFeedbackHandler.builder()
+            .handleAck(() -> {
+                try {
+                    channel.basicAck(deliveryTag, false);
+                } catch (IOException e) {
+                    log.error("ack failed", e);
+                    throw new RuntimeException(e);
+                }
+            })
+            .handleNack(() -> {
+                try {
+                    channel.basicNack(deliveryTag, false, false);
+                } catch (IOException e) {
+                    log.error("nack failed");
+                    throw new RuntimeException(e);
+                }
+            })
+            .handNackWithRequeue(() -> {
+                try {
+                    channel.basicNack(deliveryTag, false, true);
+                } catch (IOException e) {
+                    log.error("nack with requeue failed");
+                    throw new RuntimeException(e);
+                }
+            })
+            .build();
     }
 
     private static void writeFile(InputStream encryptedAsicData, Path targetPath) {

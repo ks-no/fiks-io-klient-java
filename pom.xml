@@ -30,10 +30,11 @@
     </snapshotRepository>
   </distributionManagement>
   <properties>
+    <revision>1.2.8</revision>
+    <changelist>-SNAPSHOT</changelist>
     <difi-commons-asic.version>0.9.3</difi-commons-asic.version>
     <swagger-core-version>1.5.23</swagger-core-version>
     <lombok.version>1.18.0</lombok.version>
-    <changelist>-SNAPSHOT</changelist>
     <feign-form-version>3.8.0</feign-form-version>
     <kryptering.version>1.0.5</kryptering.version>
     <oltu-version>1.0.2</oltu-version>
@@ -44,7 +45,6 @@
     <fiks-feign-interceptors.version>1.0.4</fiks-feign-interceptors.version>
     <spec.postfix>json</spec.postfix>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <revision>1.2.8</revision>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <openapi-generator-maven-plugin.version>4.1.1</openapi-generator-maven-plugin.version>
     <java.version>1.8</java.version>

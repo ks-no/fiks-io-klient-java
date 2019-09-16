@@ -1,10 +1,7 @@
 package no.ks.fiks.io.client;
 
 import io.vavr.control.Option;
-import no.ks.fiks.io.client.model.KontoId;
-import no.ks.fiks.io.client.model.MeldingId;
-import no.ks.fiks.io.client.model.MottattMelding;
-import no.ks.fiks.io.client.model.SendtMelding;
+import no.ks.fiks.io.client.model.*;
 import no.ks.fiks.io.client.send.FiksIOSender;
 import no.ks.fiks.io.klient.MeldingSpesifikasjonApiModel;
 import no.ks.fiks.io.klient.SendtMeldingApiModel;
@@ -40,10 +37,14 @@ class SvarSenderTest {
     private FiksIOSender fiksIOSender;
 
     private AtomicBoolean ackCompleted;
+    private AtomicBoolean nacked;
+    private AtomicBoolean nackedWithRequeue;
 
     @BeforeEach
     void setUp() {
         ackCompleted = new AtomicBoolean(false);
+        nacked = new AtomicBoolean(false);
+        nackedWithRequeue = new AtomicBoolean(false);
     }
 
     @DisplayName("Sender svar")
@@ -87,12 +88,44 @@ class SvarSenderTest {
         }
     }
 
+    @DisplayName("Nack")
+    @Test
+    void nack() throws IOException {
+        final byte[] buf = {0, 1, 0, 1};
+        try (final InputStream inputStream = new ByteArrayInputStream(buf)) {
+            final MottattMelding mottattMelding = createMottattMelding(buf, inputStream);
+            final SvarSender svarSender = createSvarSender(buf, mottattMelding);
+            svarSender.nack();
+            assertTrue(nacked.get());
+            verifyZeroInteractions(fiksIOSender);
+        }
+    }
+
+    @DisplayName("Nack with requeue")
+    @Test
+    void nackWithRequeue() throws IOException {
+        final byte[] buf = {0, 1, 0, 1};
+        try (final InputStream inputStream = new ByteArrayInputStream(buf)) {
+            final MottattMelding mottattMelding = createMottattMelding(buf, inputStream);
+            final SvarSender svarSender = createSvarSender(buf, mottattMelding);
+            svarSender.nackWithRequeue();
+            assertTrue(nackedWithRequeue.get());
+            verifyZeroInteractions(fiksIOSender);
+        }
+    }
+
+
+
     private SvarSender createSvarSender(final byte[] buf, final MottattMelding mottattMelding) {
         return SvarSender.builder()
-            .doQueueAck(() -> {
-                LOGGER.info("ACK completed");
-                ackCompleted.set(true);
-            })
+            .amqpChannelFeedbackHandler(AmqpChannelFeedbackHandler.builder()
+                .handleAck(() -> {
+                    LOGGER.info("ACK completed");
+                    ackCompleted.set(true);
+                })
+                .handleNack(() -> nacked.set(true))
+                .handNackWithRequeue(() -> nackedWithRequeue.set(true))
+                .build())
             .encrypt(l -> new ByteArrayInputStream(buf))
             .meldingSomSkalKvitteres(mottattMelding)
             .utsendingKlient(fiksIOSender)

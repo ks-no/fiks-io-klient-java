@@ -5,12 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
-import no.ks.fiks.io.client.model.FilePayload;
-import no.ks.fiks.io.client.model.MottattMelding;
-import no.ks.fiks.io.client.model.Payload;
-import no.ks.fiks.io.client.model.SendtMelding;
-import no.ks.fiks.io.client.model.StreamPayload;
-import no.ks.fiks.io.client.model.StringPayload;
+import no.ks.fiks.io.client.model.*;
 import no.ks.fiks.io.client.send.FiksIOSender;
 import no.ks.fiks.io.klient.MeldingSpesifikasjonApiModel;
 
@@ -30,7 +25,8 @@ public class SvarSender {
 
     @NonNull private MottattMelding meldingSomSkalKvitteres;
     @NonNull private FiksIOSender utsendingKlient;
-    @NonNull private Runnable doQueueAck;
+    @NonNull
+    private AmqpChannelFeedbackHandler amqpChannelFeedbackHandler;
     @NonNull private Function<List<Payload>, InputStream> encrypt;
 
     public SendtMelding svar(String meldingType, List<Payload> payloads) {
@@ -60,6 +56,14 @@ public class SvarSender {
     }
 
     public void ack() {
-        doQueueAck.run();
+        amqpChannelFeedbackHandler.getHandleAck().run();
+    }
+
+    public void nack() {
+        amqpChannelFeedbackHandler.getHandleNack().run();
+    }
+
+    public void nackWithRequeue() {
+        amqpChannelFeedbackHandler.getHandNackWithRequeue().run();
     }
 }

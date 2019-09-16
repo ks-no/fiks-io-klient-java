@@ -155,8 +155,8 @@ class FiksIOHandlerTest {
                     () -> new ZipInputStream(new ByteArrayInputStream(chunkOfData)))
                 .build();
 
-            final SvarSender svarSender = fiksIOHandler.buildKvitteringSender(() -> {
-            }, mottattMelding);
+            final SvarSender svarSender = fiksIOHandler.buildKvitteringSender(AmqpChannelFeedbackHandler.builder().handleAck(() -> {
+            }).build(), mottattMelding);
             assertNotNull(svarSender);
 
             verifyZeroInteractions(utsendingKlient, katalogHandler, asicHandler, x509Certificate);

@@ -3,11 +3,7 @@ package no.ks.fiks.io.client;
 import io.vavr.control.Option;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import no.ks.fiks.io.client.model.KontoId;
-import no.ks.fiks.io.client.model.MeldingRequest;
-import no.ks.fiks.io.client.model.MottattMelding;
-import no.ks.fiks.io.client.model.Payload;
-import no.ks.fiks.io.client.model.SendtMelding;
+import no.ks.fiks.io.client.model.*;
 import no.ks.fiks.io.client.send.FiksIOSender;
 import no.ks.fiks.io.klient.MeldingSpesifikasjonApiModel;
 import no.ks.fiks.io.klient.SendtMeldingApiModel;
@@ -16,7 +12,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.cert.X509Certificate;
-import java.time.temporal.TemporalUnit;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -43,9 +38,9 @@ class FiksIOHandler implements Closeable {
         return SendtMelding.fromSendResponse(getSend(request, payload));
     }
 
-    SvarSender buildKvitteringSender(@NonNull Runnable acknowledge, @NonNull MottattMelding melding) {
+    SvarSender buildKvitteringSender(@NonNull AmqpChannelFeedbackHandler amqpChannelFeedbackHandler, @NonNull MottattMelding melding) {
         return SvarSender.builder()
-            .doQueueAck(acknowledge)
+            .amqpChannelFeedbackHandler(amqpChannelFeedbackHandler)
             .utsendingKlient(utsendingKlient)
             .meldingSomSkalKvitteres(melding)
             .encrypt(payload -> encrypt(payload, melding.getAvsenderKontoId()))

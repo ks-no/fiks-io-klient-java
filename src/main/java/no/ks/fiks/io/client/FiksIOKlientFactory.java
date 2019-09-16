@@ -11,6 +11,7 @@ import no.ks.fiks.dokumentlager.klient.DokumentlagerApiImpl;
 import no.ks.fiks.dokumentlager.klient.DokumentlagerKlient;
 import no.ks.fiks.dokumentlager.klient.authentication.IntegrasjonAuthenticationStrategy;
 import no.ks.fiks.feign.RequestInterceptors;
+import no.ks.fiks.fiksio.client.api.katalog.api.FiksIoKatalogApi;
 import no.ks.fiks.io.client.konfigurasjon.FiksApiKonfigurasjon;
 import no.ks.fiks.io.client.konfigurasjon.FiksIOKonfigurasjon;
 import no.ks.fiks.io.client.konfigurasjon.HostKonfigurasjon;
@@ -21,7 +22,6 @@ import no.ks.fiks.io.client.send.FiksIOSenderClientWrapper;
 import no.ks.fiks.io.klient.FiksIOUtsendingKlient;
 import no.ks.fiks.maskinporten.Maskinportenklient;
 import no.ks.fiks.maskinporten.MaskinportenklientProperties;
-import no.ks.fiks.fiksio.client.api.katalog.api.FiksIoKatalogApi;
 
 import java.io.IOException;
 import java.security.KeyStoreException;
@@ -44,7 +44,7 @@ public class FiksIOKlientFactory {
         FiksIOUtsendingKlient utsendingKlient = null;
         try {
             dokumentlagerKlient = getDokumentlagerKlient(konfigurasjon, maskinportenklient);
-            utsendingKlient = getSvarInnUtsendingKlient(konfigurasjon, maskinportenklient);
+            utsendingKlient = getFiksIOUtsendingKlient(konfigurasjon, maskinportenklient);
 
             final FiksIoKatalogApi katalogApi = getFiksIOKatalogApi(konfigurasjon, maskinportenklient);
 
@@ -57,7 +57,7 @@ public class FiksIOKlientFactory {
             KontoId kontoId = konfigurasjon.getKontoKonfigurasjon().getKontoId();
             FiksIOHandler fiksIOHandler = new FiksIOHandler(
                 kontoId,
-                getSvarInnSender(utsendingKlient),
+                getFiksIOSender(utsendingKlient),
                 katalogHandler, asicHandler);
 
             return new FiksIOKlientImpl(
@@ -87,7 +87,7 @@ public class FiksIOKlientFactory {
         }
     }
 
-    private static FiksIOUtsendingKlient getSvarInnUtsendingKlient(@NonNull FiksIOKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
+    private static FiksIOUtsendingKlient getFiksIOUtsendingKlient(@NonNull FiksIOKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
         final SendMeldingKonfigurasjon sendMeldingKonfigurasjon = konfigurasjon.getSendMeldingKonfigurasjon();
         return FiksIOUtsendingKlient.builder()
                                     .withScheme(sendMeldingKonfigurasjon
@@ -155,7 +155,7 @@ public class FiksIOKlientFactory {
         }
     }
 
-    private static FiksIOSender getSvarInnSender(final FiksIOUtsendingKlient fiksIOUtsendingKlient) {
+    private static FiksIOSender getFiksIOSender(final FiksIOUtsendingKlient fiksIOUtsendingKlient) {
         return new FiksIOSenderClientWrapper(fiksIOUtsendingKlient);
     }
 
