@@ -6,7 +6,7 @@ import no.ks.fiks.io.client.model.MeldingId;
 
 import java.util.function.Predicate;
 /**
- * Konfigurer amqp-klienten som benyttes for å lytte på meldinger fra svarinn. Hvis denne ikke er konfigurert vil hosten konfigurert over benyttes sammen med default port.
+ * Konfigurer amqp-klienten som benyttes for å lytte på meldinger fra Fiks IO. Hvis denne ikke er konfigurert vil hosten konfigurert over benyttes sammen med default port.
  */
 @Data
 @Builder

@@ -8,7 +8,7 @@ import no.ks.fiks.io.client.model.KontoId;
 import java.security.PrivateKey;
 
 /**
- * Konfigurer svarinn kontoen som skal benyttes for å sende meldinger.
+ * Konfigurer Fiks IO kontoen som skal benyttes for å sende meldinger.
  */
 @Value
 @Builder

@@ -40,7 +40,7 @@ public class FiksIOKonfigurasjon {
     @Builder.Default private DokumentLagerKonfigurasjon dokumentlagerKonfigurasjon = DokumentLagerKonfigurasjon.builder().build();
 
     /**
-     * Ikke påkrevd. Kan brukes for å overkjøre defaults for fiks-svarinn-amqp. Se {@link AmqpKonfigurasjon}
+     * Ikke påkrevd. Kan brukes for å overkjøre defaults for fiks-io-amqp. Se {@link AmqpKonfigurasjon}
      */
     @Builder.Default private AmqpKonfigurasjon amqpKonfigurasjon = AmqpKonfigurasjon.builder().build();
 

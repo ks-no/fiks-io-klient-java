@@ -28,7 +28,7 @@ public class KatalogKonfigurasjon implements HostKonfigurasjon {
     private String scheme;
 
     /**
-     * Ikke påkrevd. Gir mulighet til å benytte en cache for oppslag mot svarinn katalogen for å bedre ytelse. Hvis dette ikke settes vil ikke caching bli benyttet
+     * Ikke påkrevd. Gir mulighet til å benytte en cache for oppslag mot Fiks IO katalogen for å bedre ytelse. Hvis dette ikke settes vil ikke caching bli benyttet
      */
     private Function<LookupRequest, KontoId> katalogApiCache;
 
