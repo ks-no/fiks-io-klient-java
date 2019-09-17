@@ -30,11 +30,10 @@
     </snapshotRepository>
   </distributionManagement>
   <properties>
-    <revision>1.2.8</revision>
-    <changelist>-SNAPSHOT</changelist>
     <difi-commons-asic.version>0.9.3</difi-commons-asic.version>
     <swagger-core-version>1.5.23</swagger-core-version>
     <lombok.version>1.18.0</lombok.version>
+    <changelist>-SNAPSHOT</changelist>
     <feign-form-version>3.8.0</feign-form-version>
     <kryptering.version>1.0.5</kryptering.version>
     <oltu-version>1.0.2</oltu-version>
@@ -45,22 +44,23 @@
     <fiks-feign-interceptors.version>1.0.4</fiks-feign-interceptors.version>
     <spec.postfix>json</spec.postfix>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <revision>1.2.9</revision>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <openapi-generator-maven-plugin.version>4.1.2</openapi-generator-maven-plugin.version>
     <java.version>1.8</java.version>
-    <logback.version>1.2.3</logback.version>
     <slf4j.version>1.7.28</slf4j.version>
+    <logback.version>1.2.3</logback.version>
     <junit-platform-commons.version>1.5.2</junit-platform-commons.version>
-    <jackson-databind-nullable.version>0.2.0</jackson-databind-nullable.version>
     <fiks-io-commons.version>1.2.0</fiks-io-commons.version>
+    <jackson-databind-nullable.version>0.2.0</jackson-databind-nullable.version>
     <spec.name>fiksio-katalog-api-v1</spec.name>
     <guava.version>28.1-jre</guava.version>
-    <maven-surefire-plugin.version>3.0.0-M3</maven-surefire-plugin.version>
     <maven.compiler.target>${java.version}</maven.compiler.target>
+    <maven-surefire-plugin.version>3.0.0-M3</maven-surefire-plugin.version>
     <jackson.version>2.9.9</jackson.version>
     <rabbitmq-amqp-client.version>5.6.0</rabbitmq-amqp-client.version>
-    <fiks-io-send-klient.version>1.2.3</fiks-io-send-klient.version>
     <fiks-maskinporten-client.version>1.0.11</fiks-maskinporten-client.version>
+    <fiks-io-send-klient.version>1.2.3</fiks-io-send-klient.version>
     <feign-version>10.4.0</feign-version>
     <download-maven-plugin.version>1.4.2</download-maven-plugin.version>
     <junit-jupiter.version>5.5.2</junit-jupiter.version>
