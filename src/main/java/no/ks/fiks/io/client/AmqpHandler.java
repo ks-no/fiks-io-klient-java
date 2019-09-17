@@ -105,7 +105,7 @@ class AmqpHandler implements Closeable {
                 try {
                     channel.basicNack(deliveryTag, false, false);
                 } catch (IOException e) {
-                    log.error("nack failed");
+                    log.error("nack failed", e);
                     throw new RuntimeException(e);
                 }
             })
@@ -113,7 +113,7 @@ class AmqpHandler implements Closeable {
                 try {
                     channel.basicNack(deliveryTag, false, true);
                 } catch (IOException e) {
-                    log.error("nack with requeue failed");
+                    log.error("nack with requeue failed", e);
                     throw new RuntimeException(e);
                 }
             })

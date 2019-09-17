@@ -64,6 +64,6 @@ public class SvarSender {
     }
 
     public void nackWithRequeue() {
-        amqpChannelFeedbackHandler.getHandNackWithRequeue().run();
+        amqpChannelFeedbackHandler.getHandleNackWithRequeue().run();
     }
 }

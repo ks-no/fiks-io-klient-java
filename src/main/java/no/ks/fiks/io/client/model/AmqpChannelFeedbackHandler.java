@@ -25,7 +25,7 @@ public class AmqpChannelFeedbackHandler {
         return handleNack;
     }
 
-    public Runnable getHandNackWithRequeue() {
+    public Runnable getHandleNackWithRequeue() {
         if (handNackWithRequeue == null) {
             throw new UnsupportedOperationException("\"nackWithRequeue\" has not been implemented");
         }
