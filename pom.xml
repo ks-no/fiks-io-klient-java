@@ -35,7 +35,7 @@
     <lombok.version>1.18.0</lombok.version>
     <changelist>-SNAPSHOT</changelist>
     <feign-form-version>3.8.0</feign-form-version>
-    <kryptering.version>1.0.5</kryptering.version>
+    <kryptering.version>1.0.7</kryptering.version>
     <oltu-version>1.0.2</oltu-version>
     <spec.location>https://ks-no.github.io/api/</spec.location>
     <commons-io.version>2.6</commons-io.version>
