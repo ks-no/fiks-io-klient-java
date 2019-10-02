@@ -1,6 +1,7 @@
 package no.ks.fiks.io.client;
 
 import io.vavr.control.Option;
+import no.ks.fiks.io.asice.AsicHandler;
 import no.ks.fiks.io.client.model.*;
 import no.ks.fiks.io.client.send.FiksIOSender;
 import no.ks.fiks.io.klient.MeldingSpesifikasjonApiModel;

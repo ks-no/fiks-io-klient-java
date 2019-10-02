@@ -3,6 +3,7 @@ package no.ks.fiks.io.client;
 import io.vavr.control.Option;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import no.ks.fiks.io.asice.AsicHandler;
 import no.ks.fiks.io.client.model.*;
 import no.ks.fiks.io.client.send.FiksIOSender;
 import no.ks.fiks.io.klient.MeldingSpesifikasjonApiModel;
@@ -15,6 +16,7 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 class FiksIOHandler implements Closeable {
@@ -66,7 +68,7 @@ class FiksIOHandler implements Closeable {
 
     private InputStream encrypt(@NonNull final List<Payload> payload, final KontoId kontoId) {
         log.debug("Krypterer melding til konto \"{}\"", kontoId);
-        return asic.encrypt(getPublicKey(kontoId), payload);
+        return asic.encrypt(getPublicKey(kontoId), payload.stream().map(Payload::toContent).collect(Collectors.toList()));
     }
 
     private X509Certificate getPublicKey(final KontoId kontoId) {

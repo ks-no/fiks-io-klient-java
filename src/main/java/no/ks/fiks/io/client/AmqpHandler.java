@@ -8,6 +8,7 @@ import com.rabbitmq.client.impl.CredentialsProvider;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import no.ks.fiks.dokumentlager.klient.DokumentlagerKlient;
+import no.ks.fiks.io.asice.AsicHandler;
 import no.ks.fiks.io.client.konfigurasjon.AmqpKonfigurasjon;
 import no.ks.fiks.io.client.konfigurasjon.FiksIntegrasjonKonfigurasjon;
 import no.ks.fiks.io.client.model.AmqpChannelFeedbackHandler;

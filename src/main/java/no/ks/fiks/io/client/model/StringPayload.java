@@ -1,6 +1,8 @@
 package no.ks.fiks.io.client.model;
 
 import lombok.NonNull;
+import no.ks.fiks.io.asice.model.Content;
+import no.ks.fiks.io.asice.model.StreamContent;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -22,5 +24,10 @@ public class StringPayload implements Payload {
     @Override
     public InputStream getPayload() {
         return new ByteArrayInputStream(payload.getBytes());
+    }
+
+    @Override
+    public Content toContent() {
+        return new StreamContent(getPayload(), getFilnavn());
     }
 }

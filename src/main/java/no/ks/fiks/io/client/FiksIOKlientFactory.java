@@ -12,10 +12,9 @@ import no.ks.fiks.dokumentlager.klient.DokumentlagerKlient;
 import no.ks.fiks.dokumentlager.klient.authentication.IntegrasjonAuthenticationStrategy;
 import no.ks.fiks.feign.RequestInterceptors;
 import no.ks.fiks.fiksio.client.api.katalog.api.FiksIoKatalogApi;
-import no.ks.fiks.io.client.konfigurasjon.FiksApiKonfigurasjon;
-import no.ks.fiks.io.client.konfigurasjon.FiksIOKonfigurasjon;
-import no.ks.fiks.io.client.konfigurasjon.HostKonfigurasjon;
-import no.ks.fiks.io.client.konfigurasjon.SendMeldingKonfigurasjon;
+import no.ks.fiks.io.asice.AsicHandler;
+import no.ks.fiks.io.asice.model.KeystoreHolder;
+import no.ks.fiks.io.client.konfigurasjon.*;
 import no.ks.fiks.io.client.model.KontoId;
 import no.ks.fiks.io.client.send.FiksIOSender;
 import no.ks.fiks.io.client.send.FiksIOSenderClientWrapper;
@@ -48,9 +47,11 @@ public class FiksIOKlientFactory {
 
             final FiksIoKatalogApi katalogApi = getFiksIOKatalogApi(konfigurasjon, maskinportenklient);
 
-            AsicHandler asicHandler = new AsicHandler(
-                konfigurasjon.getKontoKonfigurasjon().getPrivatNokkel(),
-                konfigurasjon.getVirksomhetssertifikatKonfigurasjon(), konfigurasjon.getExecutor());
+            AsicHandler asicHandler = AsicHandler.builder()
+                .withExecutorService(konfigurasjon.getExecutor())
+                .withPrivatNokkel(konfigurasjon.getKontoKonfigurasjon().getPrivatNokkel())
+                .withKeyStoreHolder(toKeyStoreHolder(konfigurasjon.getVirksomhetssertifikatKonfigurasjon()))
+                .build();
 
             KatalogHandler katalogHandler = new KatalogHandler(katalogApi);
 
@@ -87,17 +88,26 @@ public class FiksIOKlientFactory {
         }
     }
 
+    private static KeystoreHolder toKeyStoreHolder(VirksomhetssertifikatKonfigurasjon virksomhetssertifikatKonfigurasjon) {
+        return KeystoreHolder.builder()
+            .withKeyStore(virksomhetssertifikatKonfigurasjon.getKeyStore())
+            .withKeyStorePassword(virksomhetssertifikatKonfigurasjon.getKeyStorePassword())
+            .withKeyAlias(virksomhetssertifikatKonfigurasjon.getKeyAlias())
+            .withKeyPassword(virksomhetssertifikatKonfigurasjon.getKeyPassword())
+            .build();
+    }
+
     private static FiksIOUtsendingKlient getFiksIOUtsendingKlient(@NonNull FiksIOKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
         final SendMeldingKonfigurasjon sendMeldingKonfigurasjon = konfigurasjon.getSendMeldingKonfigurasjon();
         return FiksIOUtsendingKlient.builder()
-                                    .withScheme(sendMeldingKonfigurasjon
-                                                             .getScheme())
+            .withScheme(sendMeldingKonfigurasjon
+                .getScheme())
             .withHostName(sendMeldingKonfigurasjon.getHost())
             .withPortNumber(sendMeldingKonfigurasjon.getPort())
             .withObjectMapper(new ObjectMapper().findAndRegisterModules())
             .withAuthenticationStrategy(new no.ks.fiks.io.klient.IntegrasjonAuthenticationStrategy(maskinportenklient,
-                                                                                                   konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
-                                                                                                   konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
+                konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
+                konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
             .withRequestInterceptor(konfigurasjon.getSendMeldingKonfigurasjon().getRequestInterceptor() == null ? r -> r : konfigurasjon.getSendMeldingKonfigurasjon().getRequestInterceptor())
             .build();
     }
@@ -133,15 +143,15 @@ public class FiksIOKlientFactory {
     private static Maskinportenklient getMaskinportenKlient(@NonNull FiksIOKonfigurasjon konfigurasjon) {
         MaskinportenklientProperties maskinportenklientProperties = MaskinportenklientProperties.builder()
             .audience(konfigurasjon.getFiksIntegrasjonKonfigurasjon()
-                    .getIdPortenKonfigurasjon()
-                    .getIdPortenAudience())
+                .getIdPortenKonfigurasjon()
+                .getIdPortenAudience())
             .issuer(konfigurasjon.getFiksIntegrasjonKonfigurasjon()
-                    .getIdPortenKonfigurasjon()
-                    .getKlientId())
+                .getIdPortenKonfigurasjon()
+                .getKlientId())
             .numberOfSecondsLeftBeforeExpire(10)
             .tokenEndpoint(konfigurasjon.getFiksIntegrasjonKonfigurasjon()
-                    .getIdPortenKonfigurasjon()
-                    .getAccessTokenUri())
+                .getIdPortenKonfigurasjon()
+                .getAccessTokenUri())
             .build();
 
         try {
