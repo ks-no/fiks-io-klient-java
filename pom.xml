@@ -64,7 +64,7 @@
     <feign-version>10.5.0</feign-version>
     <download-maven-plugin.version>1.4.2</download-maven-plugin.version>
     <junit-jupiter.version>5.5.2</junit-jupiter.version>
-    <fiks-io-asice-handler.version>1.0.0-SNAPSHOT</fiks-io-asice-handler.version>
+    <fiks-io-asice-handler.version>1.0.0</fiks-io-asice-handler.version>
   </properties>
   <dependencyManagement>
     <dependencies>
