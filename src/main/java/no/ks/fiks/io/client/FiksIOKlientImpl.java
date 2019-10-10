@@ -59,6 +59,11 @@ public class FiksIOKlientImpl implements FiksIOKlient {
     }
 
     @Override
+    public SendtMelding sendAsiceInnhold(MeldingRequest meldingRequest, InputStream kryptertPayload) {
+        return fiksIOHandler.sendRaw(meldingRequest, kryptertPayload);
+    }
+
+    @Override
     public void newSubscription(@NonNull BiConsumer<MottattMelding, SvarSender> onMelding) {
         newSubscription(onMelding, p -> {});
     }

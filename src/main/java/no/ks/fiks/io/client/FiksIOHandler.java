@@ -40,6 +40,11 @@ class FiksIOHandler implements Closeable {
         return SendtMelding.fromSendResponse(getSend(request, payload));
     }
 
+    SendtMelding sendRaw(@NonNull MeldingRequest request, @NonNull InputStream inputStream) {
+        return SendtMelding.fromSendResponse(sendFerdigKryptertPakke(request, inputStream));
+    }
+
+
     SvarSender buildKvitteringSender(@NonNull AmqpChannelFeedbackHandler amqpChannelFeedbackHandler, @NonNull MottattMelding melding) {
         return SvarSender.builder()
             .amqpChannelFeedbackHandler(amqpChannelFeedbackHandler)
@@ -54,16 +59,27 @@ class FiksIOHandler implements Closeable {
             .getUuid();
         log.debug("Sender melding til \"{}\"", mottagerKontoId);
         return utsendingKlient.send(
-            MeldingSpesifikasjonApiModel.builder()
-                                        .avsenderKontoId(kontoId.getUuid())
-                                        .mottakerKontoId(mottagerKontoId)
-                                        .meldingType(request.getMeldingType())
-                                        .svarPaMelding(request.getSvarPaMelding() == null ? null : request.getSvarPaMelding()
-                                                                                                          .getUuid())
-                                        .ttl(TimeUnit.SECONDS.toMillis(request.getTtl()
-                                                    .getSeconds()))
-                                        .build(),
+            lagMeldingSpesifikasjon(request),
             payload.isEmpty() ? Option.none() : Option.some(encrypt(payload, request.getMottakerKontoId())));
+    }
+
+    private MeldingSpesifikasjonApiModel lagMeldingSpesifikasjon(@NonNull MeldingRequest request) {
+        return MeldingSpesifikasjonApiModel.builder()
+            .avsenderKontoId(kontoId.getUuid())
+            .mottakerKontoId(request.getMottakerKontoId().getUuid())
+            .meldingType(request.getMeldingType())
+            .svarPaMelding(request.getSvarPaMelding() == null ? null : request.getSvarPaMelding()
+                .getUuid())
+            .ttl(TimeUnit.SECONDS.toMillis(request.getTtl()
+                .getSeconds()))
+            .build();
+    }
+
+    private SendtMeldingApiModel sendFerdigKryptertPakke(final MeldingRequest meldingRequest, final InputStream inputStream) {
+        final UUID mottagerKontoId = meldingRequest.getMottakerKontoId()
+            .getUuid();
+        log.debug("Sender ferdig kryptert melding til \"{}\"", mottagerKontoId);
+        return utsendingKlient.send(lagMeldingSpesifikasjon(meldingRequest), Option.of(inputStream));
     }
 
     private InputStream encrypt(@NonNull final List<Payload> payload, final KontoId kontoId) {

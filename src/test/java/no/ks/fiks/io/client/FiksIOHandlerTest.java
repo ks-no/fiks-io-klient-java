@@ -16,6 +16,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.Collections;
@@ -85,7 +87,7 @@ class FiksIOHandlerTest {
 
             verify(utsendingKlient).send(isA(MeldingSpesifikasjonApiModel.class), eq(Option.none()));
             verifyNoMoreInteractions(utsendingKlient);
-            verifyZeroInteractions(katalogHandler, asicHandler, x509Certificate);
+            verifyNoInteractions(katalogHandler, asicHandler, x509Certificate);
         }
 
         @DisplayName("med payload")
@@ -125,8 +127,7 @@ class FiksIOHandlerTest {
 
             verify(katalogHandler).getPublicKey(eq(meldingRequest.getMottakerKontoId()));
             verify(asicHandler).encrypt(same(x509Certificate), isA(List.class));
-            verifyNoMoreInteractions(utsendingKlient, asicHandler, x509Certificate);
-            verifyZeroInteractions(katalogHandler);
+            verifyNoMoreInteractions(utsendingKlient, asicHandler, x509Certificate, katalogHandler);
 
             MeldingSpesifikasjonApiModel meldingRequestCaptorValue = meldingRequestCaptor.getValue();
             assertEquals(ttl.toMillis(), meldingRequestCaptorValue.getTtl());
@@ -160,7 +161,41 @@ class FiksIOHandlerTest {
             }).build(), mottattMelding);
             assertNotNull(svarSender);
 
-            verifyZeroInteractions(utsendingKlient, katalogHandler, asicHandler, x509Certificate);
+            verifyNoInteractions(utsendingKlient, katalogHandler, asicHandler, x509Certificate);
+        }
+    }
+
+    @Nested
+    @DisplayName("Send rådata")
+    class SendRaw {
+
+        @DisplayName("enkel ferdigpakke")
+        @Test
+        void sendRaw() throws IOException {
+            final UUID mottakerKontoId = UUID.randomUUID();
+            final String meldingsprotokoll = "meldingsprotokoll";
+            final MeldingRequest meldingRequest = MeldingRequest.builder()
+                .meldingType(meldingsprotokoll)
+                .mottakerKontoId(new KontoId(mottakerKontoId))
+                .ttl(Duration.ofDays(5L))
+                .build();
+            final SendtMeldingApiModel sendtMeldingApiModel = SendtMeldingApiModel.builder()
+                .meldingId(UUID.randomUUID())
+                .avsenderKontoId(UUID.randomUUID())
+                .mottakerKontoId(mottakerKontoId)
+                .meldingType(meldingsprotokoll)
+                .ttl(meldingRequest.getTtl()
+                    .toMillis())
+                .build();
+            when(utsendingKlient.send(isA(MeldingSpesifikasjonApiModel.class), isA(Option.class))).thenReturn(sendtMeldingApiModel);
+
+            try (final InputStream dataStream = new ByteArrayInputStream("Innhold".getBytes())) {
+                final SendtMelding sendtMelding = fiksIOHandler.sendRaw(meldingRequest, dataStream);
+                assertNotNull(sendtMelding);
+                assertEquals(sendtMelding.getMeldingId().getUuid(), sendtMeldingApiModel.getMeldingId());
+            }
+            verify(utsendingKlient).send(isA(MeldingSpesifikasjonApiModel.class), isA(Option.class));
+            verifyNoInteractions(katalogHandler, asicHandler, x509Certificate);
         }
     }
 }
