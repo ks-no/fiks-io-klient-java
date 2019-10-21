@@ -23,7 +23,7 @@ public interface FiksIOKlient extends Closeable {
      * Brukes til å finne konto basert på adresse
      *
      * @param request parametre for kontooppslag {@link LookupRequest}
-     * @return
+     * @return Optional som enten er tom eller inneholder et {@link Konto} objekt
      */
     Optional<Konto> lookup(LookupRequest request);
 
