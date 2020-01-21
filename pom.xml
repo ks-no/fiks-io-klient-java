@@ -55,7 +55,7 @@
     <jackson-databind-nullable.version>0.2.1</jackson-databind-nullable.version>
     <fiks-io-commons.version>1.2.0</fiks-io-commons.version>
     <spec.name>fiksio-katalog-api-v1</spec.name>
-    <guava.version>28.1-jre</guava.version>
+    <guava.version>28.2-jre</guava.version>
     <maven-surefire-plugin.version>3.0.0-M3</maven-surefire-plugin.version>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <jackson.version>2.10.2</jackson.version>
