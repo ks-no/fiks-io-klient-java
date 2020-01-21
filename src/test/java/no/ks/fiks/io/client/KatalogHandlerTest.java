@@ -116,7 +116,9 @@ class KatalogHandlerTest {
         @DisplayName("feiler med exception")
         @Test
         void getPublicKeyFails() {
-            when(fiksIoKatalogApi.getOffentligNokkel(isA(UUID.class))).thenThrow(new DecodeException(400, "Could not decode", Request.create(Request.HttpMethod.GET, "/fiks-io/katalog/api/v1/kontoer/{kontoId}/offentligNokkel", Collections.emptyMap(), null)));
+            byte[] body = null;
+            final Request request = Request.create(Request.HttpMethod.GET, "/fiks-io/katalog/api/v1/kontoer/{kontoId}/offentligNokkel", Collections.emptyMap(), body, StandardCharsets.UTF_8, null);
+            when(fiksIoKatalogApi.getOffentligNokkel(isA(UUID.class))).thenThrow(new DecodeException(400, "Could not decode", request));
             final UUID kontoId = UUID.randomUUID();
             assertThrows(DecodeException.class, () -> katalogHandler.getPublicKey(new KontoId(kontoId)));
             verify(fiksIoKatalogApi).getOffentligNokkel(eq(kontoId));
