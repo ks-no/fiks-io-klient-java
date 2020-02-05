@@ -42,7 +42,7 @@ public class MottattMelding implements Melding {
                 .mottakerKontoId(new KontoId(melding.getMottakerKontoId()))
                 .ttl(Duration.ofMillis(melding.getTtl()))
                 .svarPaMelding(melding.getSvarPaMelding() != null ? new MeldingId(melding.getSvarPaMelding()) : null)
-                .headere(melding.getHeadere() != null ? Collections.emptyMap() : melding.getHeadere())
+                .headere(melding.getHeadere() != null ? melding.getHeadere() : Collections.emptyMap())
                 .writeKryptertZip(writeKryptertZip)
                 .writeDekryptertZip(writeDekryptertZip)
                 .getKryptertStream(getKryptertStream)
