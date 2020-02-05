@@ -6,6 +6,8 @@ import no.ks.fiks.io.commons.MottattMeldingMetadata;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.zip.ZipInputStream;
@@ -18,6 +20,7 @@ public class MottattMelding implements Melding {
     @NonNull private KontoId avsenderKontoId;
     @NonNull private KontoId mottakerKontoId;
     @NonNull private Duration ttl;
+    @NonNull private Map<String, String> headere;
 
     @NonNull @Getter(AccessLevel.NONE) private Consumer<Path> writeKryptertZip;
     @NonNull @Getter(AccessLevel.NONE) private Consumer<Path> writeDekryptertZip;
@@ -39,6 +42,7 @@ public class MottattMelding implements Melding {
                 .mottakerKontoId(new KontoId(melding.getMottakerKontoId()))
                 .ttl(Duration.ofMillis(melding.getTtl()))
                 .svarPaMelding(melding.getSvarPaMelding() != null ? new MeldingId(melding.getSvarPaMelding()) : null)
+                .headere(melding.getHeadere() != null ? Collections.emptyMap() : melding.getHeadere())
                 .writeKryptertZip(writeKryptertZip)
                 .writeDekryptertZip(writeDekryptertZip)
                 .getKryptertStream(getKryptertStream)

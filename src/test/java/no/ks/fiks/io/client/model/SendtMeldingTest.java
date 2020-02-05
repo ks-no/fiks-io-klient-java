@@ -3,6 +3,7 @@ package no.ks.fiks.io.client.model;
 import no.ks.fiks.io.klient.SendtMeldingApiModel;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -21,6 +22,7 @@ class SendtMeldingTest {
             .svarPaMelding(UUID.randomUUID())
             .dokumentlagerId(UUID.randomUUID())
             .ttl(TimeUnit.DAYS.toMillis(5L))
+            .headere(Collections.emptyMap())
             .build();
         final SendtMelding sendtMelding = SendtMelding.fromSendResponse(sendtMeldingApiModel);
         assertAll(

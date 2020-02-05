@@ -1,5 +1,7 @@
 package no.ks.fiks.io.client.model;
 
+import java.util.Map;
+
 public interface Melding {
     MeldingId getMeldingId();
 
@@ -12,4 +14,6 @@ public interface Melding {
     MeldingId getSvarPaMelding();
 
     String getMeldingType();
+
+    Map<String, String> getHeadere();
 }

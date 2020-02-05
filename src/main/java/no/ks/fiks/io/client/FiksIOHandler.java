@@ -72,6 +72,7 @@ class FiksIOHandler implements Closeable {
                 .getUuid())
             .ttl(TimeUnit.SECONDS.toMillis(request.getTtl()
                 .getSeconds()))
+            .headere(request.getHeadere())
             .build();
     }
 

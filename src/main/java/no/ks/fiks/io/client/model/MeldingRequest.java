@@ -5,6 +5,8 @@ import lombok.NonNull;
 import lombok.Value;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Map;
 
 @Value
 @Builder
@@ -13,4 +15,5 @@ public class MeldingRequest implements MeldingSpesifikasjon {
     @NonNull private String meldingType;
     @Builder.Default private Duration ttl = Duration.ofDays(2);
     private MeldingId svarPaMelding;
+    @Builder.Default private Map<String, String> headere = Collections.emptyMap();
 }

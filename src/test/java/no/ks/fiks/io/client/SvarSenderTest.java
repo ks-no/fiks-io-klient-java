@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipInputStream;
@@ -65,6 +66,7 @@ class SvarSenderTest {
                         .mottakerKontoId(meldingSpesifikasjonApiModel.getMottakerKontoId())
                         .ttl(Duration.ofHours(1L).toMillis())
                         .meldingType(MELDING_TYPE)
+                        .headere(Collections.emptyMap())
                         .build();
                 });
             final SendtMelding sendtMelding = svarSender.svar(mottattMelding.getMeldingType());
@@ -139,6 +141,7 @@ class SvarSenderTest {
             .avsenderKontoId(new KontoId(UUID.randomUUID()))
             .mottakerKontoId(new KontoId(UUID.randomUUID()))
             .ttl(Duration.ofHours(1L))
+            .headere(Collections.emptyMap())
             .writeDekryptertZip(p -> LOGGER.info("Dekryptert '{}'", p))
             .writeKryptertZip(p -> LOGGER.info("Kryptert '{}'", p))
             .getKryptertStream(() -> new ByteArrayInputStream(buf))

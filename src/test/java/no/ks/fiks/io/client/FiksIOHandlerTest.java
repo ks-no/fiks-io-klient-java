@@ -73,6 +73,7 @@ class FiksIOHandlerTest {
                 .meldingType("type")
                 .ttl(meldingRequest.getTtl()
                     .toMillis())
+                .headere(meldingRequest.getHeadere())
                 .build();
             when(utsendingKlient.send(isA(MeldingSpesifikasjonApiModel.class), isA(Option.class))).thenReturn(sendtMeldingApiModel);
 
@@ -107,6 +108,7 @@ class FiksIOHandlerTest {
                 .mottakerKontoId(mottakerKontoId)
                 .ttl(meldingRequest.getTtl()
                     .toMillis())
+                .headere(meldingRequest.getHeadere())
                 .build();
             when(utsendingKlient.send(isA(MeldingSpesifikasjonApiModel.class), isA(Option.class))).thenReturn(sendtMeldingApiModel);
             when(katalogHandler.getPublicKey(eq(meldingRequest.getMottakerKontoId()))).thenReturn(x509Certificate);
@@ -148,6 +150,7 @@ class FiksIOHandlerTest {
                 .avsenderKontoId(new KontoId(UUID.randomUUID()))
                 .mottakerKontoId(new KontoId(UUID.randomUUID()))
                 .ttl(Duration.ofDays(3))
+                .headere(Collections.emptyMap())
                 .writeKryptertZip(path -> {
                 })
                 .getKryptertStream(() -> new ByteArrayInputStream(chunkOfData))
@@ -186,6 +189,7 @@ class FiksIOHandlerTest {
                 .meldingType(meldingsprotokoll)
                 .ttl(meldingRequest.getTtl()
                     .toMillis())
+                .headere(Collections.emptyMap())
                 .build();
             when(utsendingKlient.send(isA(MeldingSpesifikasjonApiModel.class), isA(Option.class))).thenReturn(sendtMeldingApiModel);
 
