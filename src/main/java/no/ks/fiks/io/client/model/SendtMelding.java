@@ -6,6 +6,7 @@ import lombok.NonNull;
 import no.ks.fiks.io.klient.SendtMeldingApiModel;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,7 +28,7 @@ public class SendtMelding implements Melding {
             .meldingType(melding.getMeldingType())
             .mottakerKontoId(new KontoId(melding.getMottakerKontoId()))
             .ttl(Duration.ofMillis(melding.getTtl()))
-            .headere(melding.getHeadere())
+            .headere(melding.getHeadere() != null ? melding.getHeadere() : Collections.emptyMap())
             .svarPaMelding(melding.getSvarPaMelding() != null ? new MeldingId(melding.getSvarPaMelding()) : null)
             .build();
     }
