@@ -55,14 +55,14 @@
     <slf4j.version>1.7.30</slf4j.version>
     <junit-platform-commons.version>1.6.0</junit-platform-commons.version>
     <jackson-databind-nullable.version>0.2.1</jackson-databind-nullable.version>
-    <fiks-io-commons.version>1.2.1-SNAPSHOT</fiks-io-commons.version>
+    <fiks-io-commons.version>1.2.1</fiks-io-commons.version>
     <spec.name>fiksio-katalog-api-v1</spec.name>
     <guava.version>28.2-jre</guava.version>
     <maven-surefire-plugin.version>3.0.0-M4</maven-surefire-plugin.version>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <jackson.version>2.10.2.20200130</jackson.version>
     <rabbitmq-amqp-client.version>5.6.0</rabbitmq-amqp-client.version>
-    <fiks-io-send-klient.version>1.2.5-SNAPSHOT</fiks-io-send-klient.version>
+    <fiks-io-send-klient.version>1.2.5</fiks-io-send-klient.version>
     <fiks-maskinporten-client.version>1.0.15</fiks-maskinporten-client.version>
     <feign-version>10.7.4</feign-version>
     <download-maven-plugin.version>1.5.0</download-maven-plugin.version>
