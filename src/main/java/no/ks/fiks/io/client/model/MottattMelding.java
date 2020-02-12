@@ -20,7 +20,7 @@ public class MottattMelding implements Melding {
     @NonNull private KontoId avsenderKontoId;
     @NonNull private KontoId mottakerKontoId;
     @NonNull private Duration ttl;
-    @NonNull private Map<String, String> headere;
+    private Map<String, String> headere;
 
     @NonNull @Getter(AccessLevel.NONE) private Consumer<Path> writeKryptertZip;
     @NonNull @Getter(AccessLevel.NONE) private Consumer<Path> writeDekryptertZip;

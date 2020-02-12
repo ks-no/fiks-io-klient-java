@@ -18,7 +18,7 @@ public class SendtMelding implements Melding {
     @NonNull private String meldingType;
     @NonNull private KontoId mottakerKontoId;
     @NonNull private Duration ttl;
-    @NonNull private Map<String, String> headere;
+    private Map<String, String> headere;
     private MeldingId svarPaMelding;
 
     public static SendtMelding fromSendResponse(@NonNull SendtMeldingApiModel melding) {
