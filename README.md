@@ -20,7 +20,7 @@ Add dependency no.ks.fiks:fiks-io-klient-java in your POM.
        <dependency>
             <groupId>no.ks.fiks</groupId>
             <artifactId>fiks-io-klient-java</artifactId>
-            <version>1.2.7</version>
+            <version>1.2.14</version>
        </dependency>
     </dependencies>
 
@@ -45,5 +45,5 @@ final SendtMelding sendtMelding = fiksIoKonto.map(konto -> fiksIOKlient.send(...
 ```
 
 ## Dokumentasjon for tjeneste:
- 
+
  * [FIKS IO](https://ks-no.github.io/fiks-platform/tjenester/fiksio/)
