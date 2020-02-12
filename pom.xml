@@ -32,7 +32,7 @@
   <properties>
     <logback.version>1.2.3</logback.version>
     <fiks-maskinporten-client.version>1.0.15</fiks-maskinporten-client.version>
-    <fiks-io-asice-handler.version>1.0.1</fiks-io-asice-handler.version>
+    <fiks-io-asice-handler.version>1.0.2</fiks-io-asice-handler.version>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <difi-commons-asic.version>0.9.3</difi-commons-asic.version>
     <lombok.version>1.18.12</lombok.version>
@@ -52,7 +52,6 @@
     <fiks-feign-interceptors.version>1.0.4</fiks-feign-interceptors.version>
     <changelist>-SNAPSHOT</changelist>
     <slf4j.version>1.7.30</slf4j.version>
-    <junit-platform-commons.version>1.6.0</junit-platform-commons.version>
     <openapi-generator-maven-plugin.version>4.2.3</openapi-generator-maven-plugin.version>
     <rabbitmq-amqp-client.version>5.6.0</rabbitmq-amqp-client.version>
     <java.version>1.8</java.version>
@@ -78,6 +77,13 @@
         <groupId>com.fasterxml.jackson</groupId>
         <artifactId>jackson-bom</artifactId>
         <version>${jackson.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit-jupiter.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -212,21 +218,13 @@
       <version>${javax.annotation-api.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <version>${junit-jupiter.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <version>${junit-jupiter.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.junit.platform</groupId>
       <artifactId>junit-platform-commons</artifactId>
-      <version>${junit-platform-commons.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
