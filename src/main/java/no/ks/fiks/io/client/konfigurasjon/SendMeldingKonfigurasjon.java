@@ -26,7 +26,7 @@ public class SendMeldingKonfigurasjon implements HostKonfigurasjon{
     private String scheme;
 
     /**
-     * Ikke påkrevd felt. Gir mulighet for å intercepte request mot svarinn2-send-service.
+     * Ikke påkrevd felt. Gir mulighet for å intercepte request mot fiksio-service.
      */
     private Function<Request, Request> requestInterceptor;
 }
