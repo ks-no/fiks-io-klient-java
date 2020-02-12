@@ -65,7 +65,7 @@
     <maven-surefire-plugin.version>3.0.0-M4</maven-surefire-plugin.version>
     <download-maven-plugin.version>1.5.0</download-maven-plugin.version>
     <spec.postfix>json</spec.postfix>
-    <revision>1.2.13</revision>
+    <revision>1.2.14</revision>
   </properties>
   <dependencyManagement>
     <dependencies>
