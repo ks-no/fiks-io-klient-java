@@ -12,7 +12,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Builder
 public class FiksIOKonfigurasjon {
 
-    public static final int DEFAULT_THREADPOOL_SIZE = 5;
+    public static final int DEFAULT_THREADPOOL_SIZE = 6;
 
     /**
      * Påkrevd felt. Se {@link KontoKonfigurasjon}
