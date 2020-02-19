@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
 public class FiksIOKlientImpl implements FiksIOKlient {
@@ -61,6 +62,11 @@ public class FiksIOKlientImpl implements FiksIOKlient {
     @Override
     public SendtMelding sendAsiceInnhold(MeldingRequest meldingRequest, InputStream kryptertPayload) {
         return fiksIOHandler.sendRaw(meldingRequest, kryptertPayload);
+    }
+
+    @Override
+    public SendtMelding sendWithoutPayload(MeldingRequest meldingRequest) {
+        return fiksIOHandler.send(meldingRequest, emptyList());
     }
 
     @Override

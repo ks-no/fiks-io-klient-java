@@ -75,6 +75,14 @@ public interface FiksIOKlient extends Closeable {
     SendtMelding sendAsiceInnhold(MeldingRequest meldingRequest, InputStream kryptertPayload);
 
     /**
+     * Sender melding uten payload (kun metadata) via Fiks-IO
+     *
+     * @param request informasjon om mottager
+     * @return kvittering på sending av melding
+     */
+    SendtMelding sendWithoutPayload(MeldingRequest request);
+
+    /**
      * Setter opp lytting på meldinger fra Fiks IO
      *
      * @param onMelding meldingshåndterer
