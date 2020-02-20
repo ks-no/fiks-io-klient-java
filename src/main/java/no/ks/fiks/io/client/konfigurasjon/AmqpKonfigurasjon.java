@@ -18,12 +18,21 @@ public class AmqpKonfigurasjon {
     private String host;
 
     /**
-     * Ikke påkrevd. Hvis port ikke settes vil default amqp port 5672 benyttes.
+     * Ikke påkrevd. Hvis port ikke settes vil default amqp port 5671 benyttes.
      */
-    @Builder.Default private Integer port = 5672;
+    @Builder.Default private Integer port = 5671;
 
     /**
      * Ikke påkrevd. Det er her mulig å konfigurere et predikat som forteller om en spesifikk melding har blitt behandlet tidligere, slik at man unngår duplikat meldinger som ellers kan oppstå gjennom en amqp kobling, pga. nettverksbrudd eller lignende.
      */
     @Builder.Default private Predicate<MeldingId> meldingErBehandlet = m -> false;
+
+    /**
+     * Konfigurasjon for prod.
+     */
+    public static AmqpKonfigurasjon PROD = AmqpKonfigurasjon.builder().host("io.fiks.ks.no").build();
+    /**
+     * Konfigurasjon for test.
+     */
+    public static AmqpKonfigurasjon TEST = AmqpKonfigurasjon.builder().host("io.fiks.test.ks.no").build();
 }

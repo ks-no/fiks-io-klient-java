@@ -3,7 +3,10 @@ package no.ks.fiks.io.client.konfigurasjon;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import no.ks.fiks.io.client.model.KontoId;
 
+import java.security.PrivateKey;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -58,5 +61,49 @@ public class FiksIOKonfigurasjon {
      * Ikke påkrevd. Som standard opprettes en {@link ThreadPoolExecutor} med det antallet tråder som er angitt i {@link #DEFAULT_THREADPOOL_SIZE}
      */
     @NonNull @Builder.Default private ExecutorService executor = Executors.newFixedThreadPool(DEFAULT_THREADPOOL_SIZE);
+
+    public static FiksIOKonfigurasjon defaultProdConfiguration(
+        final String klientId,
+        final UUID integrasjonId,
+        final String integrasjonPassord,
+        final KontoKonfigurasjon kontoKonfigurasjon,
+        final VirksomhetssertifikatKonfigurasjon virksomhetssertifikatKonfigurasjon) {
+
+        return FiksIOKonfigurasjon.builder()
+            .fiksApiKonfigurasjon(FiksApiKonfigurasjon.PROD)
+            .amqpKonfigurasjon(AmqpKonfigurasjon.PROD)
+            .fiksIntegrasjonKonfigurasjon(FiksIntegrasjonKonfigurasjon.builder()
+                .idPortenKonfigurasjon(IdPortenKonfigurasjon.PROD
+                    .klientId(klientId)
+                    .build())
+                .integrasjonId(integrasjonId)
+                .integrasjonPassord(integrasjonPassord)
+                .build())
+            .kontoKonfigurasjon(kontoKonfigurasjon)
+            .virksomhetssertifikatKonfigurasjon(virksomhetssertifikatKonfigurasjon)
+            .build();
+    }
+
+    public static FiksIOKonfigurasjon defaultTestConfiguration(
+        final String klientId,
+        final UUID integrasjonId,
+        final String integrasjonPassord,
+        final KontoKonfigurasjon kontoKonfigurasjon,
+        final VirksomhetssertifikatKonfigurasjon virksomhetssertifikatKonfigurasjon) {
+
+        return FiksIOKonfigurasjon.builder()
+            .fiksApiKonfigurasjon(FiksApiKonfigurasjon.TEST)
+            .amqpKonfigurasjon(AmqpKonfigurasjon.TEST)
+            .fiksIntegrasjonKonfigurasjon(FiksIntegrasjonKonfigurasjon.builder()
+                .idPortenKonfigurasjon(IdPortenKonfigurasjon.VER2
+                    .klientId(klientId)
+                    .build())
+                .integrasjonId(integrasjonId)
+                .integrasjonPassord(integrasjonPassord)
+                .build())
+            .kontoKonfigurasjon(kontoKonfigurasjon)
+            .virksomhetssertifikatKonfigurasjon(virksomhetssertifikatKonfigurasjon)
+            .build();
+    }
 
 }

@@ -6,12 +6,10 @@
 ![GitHub Release Date](https://img.shields.io/github/release-date/ks-no/fiks-io-klient-java.svg)
 
 Klient for å bruke Fiks IO i et JVM miljø
-## Getting Started
+
+## Ta i bruk
+
 Legg til maven dependency.
-
-### Prerequisites
-
-  - Java 1.8 or higher
 
 ##### Maven
 Add dependency no.ks.fiks:fiks-io-klient-java in your POM.
@@ -24,7 +22,11 @@ Add dependency no.ks.fiks:fiks-io-klient-java in your POM.
        </dependency>
     </dependencies>
 
-## Usage
+### Forutsetninger
+
+  - Java 1.8 or higher
+
+## Bruk
 
 ```java
 final FiksIOKonfigurasjon fiksIOKonfigurasjon = FiksIOKonfigurasjon.builder()
@@ -44,6 +46,41 @@ final Optional<Konto> fiksIoKonto = fiksIOKlient.lookup(...);
 final SendtMelding sendtMelding = fiksIoKonto.map(konto -> fiksIOKlient.send(...)).orElseThrow(() -> new IllegalStateException("Kunne ikke sende til Fiks IO"));
 ```
 
+### Konfigurasjon av klienten
+
+For å konfigurere klienten, trengs en instans av `FiksIOKonfigurasjon`. Den har en tilhørende *builder* som kan benyttes til å angi all konfigurasjon. Eksempel:
+```java
+FiksIoKonfigurasjon konfigurasjon = FiksIOKonfigurasjon.builder()
+    .fiksApiKonfigurasjon(FiksApiKonfigurasjon.builder()
+        .host("api.fiks.ks.no")
+        .port(443)
+        .scheme("https")
+        .build())
+    .amqpKonfigurasjon(AmqpKonfigurasjon.builder()
+        .host("io.fiks.ks.no")
+        .port(5671)
+        .build())
+    // Resten av konfigurasjonen...
+    .build();
+```
+
+For å gjøre det enklere å sette opp standard konfigurasjon for *test* og *prod* miljøene, finnes det i tillegg to funksjoner `defaultProdConfiguration` og `defaultTestConfiguration` for å lage default konfigurasjon. Påkrevde felter angis som argument, slik:
+```java
+final FiksIOKonfigurasjon fiksIOKonfigurasjon = FiksIOKonfigurasjon.defaultProdConfiguration(
+    clientId,
+    integrationId,
+    integrationPassword,
+    KontoKonfigurasjon.builder()
+        .kontoId(new KontoId(kontoId))
+        .privatNokkel(privateKey)
+        .build(),
+    VirksomhetssertifikatKonfigurasjon.builder()
+        .keyAlias(keyAlias)
+        .keyPassword(keyPassword)
+        .keyStore(keyStore)
+        .keyStorePassword(keyStorePassword)
+        .build());
+```
 ## Dokumentasjon for tjeneste:
 
  * [FIKS IO](https://ks-no.github.io/fiks-platform/tjenester/fiksio/)
