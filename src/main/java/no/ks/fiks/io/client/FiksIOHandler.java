@@ -24,16 +24,19 @@ class FiksIOHandler implements Closeable {
     private FiksIOSender utsendingKlient;
     private final KatalogHandler katalogHandler;
     private final AsicHandler asic;
+    private final PublicKeyProvider publicKeyProvider;
 
     FiksIOHandler(@NonNull KontoId kontoId,
                   @NonNull FiksIOSender utsendingKlient,
                   @NonNull KatalogHandler katalogHandler,
-                  @NonNull AsicHandler asicHandler) {
+                  @NonNull AsicHandler asicHandler,
+                  @NonNull PublicKeyProvider publicKeyProvider) {
         this.kontoId = kontoId;
 
         this.utsendingKlient = utsendingKlient;
         this.katalogHandler = katalogHandler;
         this.asic = asicHandler;
+        this.publicKeyProvider = publicKeyProvider;
     }
 
     SendtMelding send(@NonNull MeldingRequest request, @NonNull List<Payload> payload) {
@@ -90,7 +93,7 @@ class FiksIOHandler implements Closeable {
 
     private X509Certificate getPublicKey(final KontoId kontoId) {
         log.debug("Henter offentlig nøkkel for konto \"{}\"", kontoId);
-        return katalogHandler.getPublicKey(kontoId);
+        return publicKeyProvider.getPublicKey(kontoId);
     }
 
     @Override

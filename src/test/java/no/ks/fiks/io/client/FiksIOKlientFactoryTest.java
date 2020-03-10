@@ -51,7 +51,7 @@ class FiksIOKlientFactoryTest {
                                                                            .fiksIntegrasjonKonfigurasjon(fiksIntegrasjonKonfigurasjon)
                                                                            .fiksApiKonfigurasjon(fiksApiKonfigurasjon)
                                                                            .build();
-        assertThrows(RuntimeException.class, () -> FiksIOKlientFactory.build(fiksIOKonfigurasjon));
+        assertThrows(RuntimeException.class, () -> new FiksIOKlientFactory(fiksIOKonfigurasjon).build());
 
     }
 

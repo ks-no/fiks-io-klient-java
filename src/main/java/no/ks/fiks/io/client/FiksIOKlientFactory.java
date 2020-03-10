@@ -28,43 +28,58 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateEncodingException;
 
+
 @Slf4j
 public class FiksIOKlientFactory {
 
     public static final String MASKINPORTEN_KS_SCOPE = "ks:fiks";
 
-    public static FiksIOKlient build(@NonNull FiksIOKonfigurasjon konfigurasjon) {
-        settDefaults(konfigurasjon);
-        log.info("Setter opp FIKS-IO klient med følgende konfigurasjon: {}", konfigurasjon);
+    private final PublicKeyProvider publicKeyProvider;
 
-        Maskinportenklient maskinportenklient = getMaskinportenKlient(konfigurasjon);
+    private final FiksIOKonfigurasjon fiksIOKonfigurasjon;
+
+    public FiksIOKlientFactory(@NonNull FiksIOKonfigurasjon fiksIOKonfigurasjon, @NonNull PublicKeyProvider publicKeyProvider) {
+        this.fiksIOKonfigurasjon = fiksIOKonfigurasjon;
+        this.publicKeyProvider = publicKeyProvider;
+    }
+
+    public FiksIOKlientFactory(@NonNull FiksIOKonfigurasjon fiksIOKonfigurasjon) {
+        this.fiksIOKonfigurasjon = fiksIOKonfigurasjon;
+        this.publicKeyProvider = null;
+    }
+
+    public FiksIOKlient build() {
+        settDefaults(fiksIOKonfigurasjon);
+        log.info("Setter opp FIKS-IO klient med følgende konfigurasjon: {}", fiksIOKonfigurasjon);
+
+        Maskinportenklient maskinportenklient = getMaskinportenKlient(fiksIOKonfigurasjon);
 
         DokumentlagerKlient dokumentlagerKlient = null;
         FiksIOUtsendingKlient utsendingKlient = null;
         try {
-            dokumentlagerKlient = getDokumentlagerKlient(konfigurasjon, maskinportenklient);
-            utsendingKlient = getFiksIOUtsendingKlient(konfigurasjon, maskinportenklient);
+            dokumentlagerKlient = getDokumentlagerKlient(fiksIOKonfigurasjon, maskinportenklient);
+            utsendingKlient = getFiksIOUtsendingKlient(fiksIOKonfigurasjon, maskinportenklient);
 
-            final FiksIoKatalogApi katalogApi = getFiksIOKatalogApi(konfigurasjon, maskinportenklient);
+            final FiksIoKatalogApi katalogApi = getFiksIOKatalogApi(fiksIOKonfigurasjon, maskinportenklient);
 
             AsicHandler asicHandler = AsicHandler.builder()
-                .withExecutorService(konfigurasjon.getExecutor())
-                .withPrivatNokkel(konfigurasjon.getKontoKonfigurasjon().getPrivatNokkel())
-                .withKeyStoreHolder(toKeyStoreHolder(konfigurasjon.getVirksomhetssertifikatKonfigurasjon()))
+                .withExecutorService(fiksIOKonfigurasjon.getExecutor())
+                .withPrivatNokkel(fiksIOKonfigurasjon.getKontoKonfigurasjon().getPrivatNokkel())
+                .withKeyStoreHolder(toKeyStoreHolder(fiksIOKonfigurasjon.getVirksomhetssertifikatKonfigurasjon()))
                 .build();
 
             KatalogHandler katalogHandler = new KatalogHandler(katalogApi);
 
-            KontoId kontoId = konfigurasjon.getKontoKonfigurasjon().getKontoId();
+            KontoId kontoId = fiksIOKonfigurasjon.getKontoKonfigurasjon().getKontoId();
             FiksIOHandler fiksIOHandler = new FiksIOHandler(
                 kontoId,
                 getFiksIOSender(utsendingKlient),
-                katalogHandler, asicHandler);
+                katalogHandler, asicHandler, publicKeyProvider != null ? publicKeyProvider : new KatalogPublicKeyProvider(katalogHandler));
 
             return new FiksIOKlientImpl(
                 kontoId,
-                new AmqpHandler(konfigurasjon.getAmqpKonfigurasjon(),
-                    konfigurasjon.getFiksIntegrasjonKonfigurasjon(), fiksIOHandler, asicHandler,
+                new AmqpHandler(fiksIOKonfigurasjon.getAmqpKonfigurasjon(),
+                    fiksIOKonfigurasjon.getFiksIntegrasjonKonfigurasjon(), fiksIOHandler, asicHandler,
                     maskinportenklient, kontoId, dokumentlagerKlient),
                 katalogHandler,
                 fiksIOHandler

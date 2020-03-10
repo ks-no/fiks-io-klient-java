@@ -50,7 +50,8 @@ class FiksIOHandlerTest {
 
     @BeforeEach
     void setUp() {
-        this.fiksIOHandler = new FiksIOHandler(kontoId, utsendingKlient, katalogHandler, asicHandler);
+        final PublicKeyProvider publicKeyProvider = new KatalogPublicKeyProvider(katalogHandler);
+        this.fiksIOHandler = new FiksIOHandler(kontoId, utsendingKlient, katalogHandler, asicHandler, publicKeyProvider);
     }
 
     @Nested
