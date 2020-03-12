@@ -32,7 +32,8 @@ Add dependency no.ks.fiks:fiks-io-klient-java in your POM.
 final FiksIOKonfigurasjon fiksIOKonfigurasjon = FiksIOKonfigurasjon.builder()
                                             // sett konfig
                                             .build();
-final FiksIOKlient fiksIOKlient = FiksIOKlientFactory.build(fiksIOKonfigurasjon);
+final FiksIOKlientFactory fiksIOKlientFactory = new FiksIOKlientFactory(fiksIOKonfigurasjon);
+final FiksIOKlient fiksIOKlient = fiksIOKlientFactory.build();
 // Lytte på meldinger
 fiksIOKlient.newSubscription((motattMelding, svarSender) -> {
                          // Gjør noe med mottatt melding
@@ -81,6 +82,18 @@ final FiksIOKonfigurasjon fiksIOKonfigurasjon = FiksIOKonfigurasjon.defaultProdC
         .keyStorePassword(keyStorePassword)
         .build());
 ```
+
+### Konfigurasjon av Offentlig Nøkkel for mottaker
+
+Ved oppsett av Fiks IO klienten kan man velge om man vil sette opp en egen metode for å hente offentlig nøkkel til mottaker av meldinger.
+Man må da lage en egen implementasjon av `PublicKeyProvider` med metoden `X509Certificate getPublicKey(final KontoId kontoId)`. Altså gitt en `KontoId` skal
+den returnere en nøkkel som skal benyttes ved sending av meldinger til den kontoen. En instans av denne implementasjonen angis som argument til `FiksIOKlientFactory` slik:
+`public FiksIOKlientFactory(@NonNull FiksIOKonfigurasjon fiksIOKonfigurasjon, @NonNull PublicKeyProvider publicKeyProvider)`
+
+Om man ikke angir en egen implemtasjon av `PublicKeyProvider`, vil klienten bli satt opp med en instans av `KatalogPublicKeyProvider` som
+vil hente offentlig nøkkel fra katalogtjenesten. Man kaller da konstruktøren til FiksIOKlientFactory med kun 1 argument slik:
+`public FiksIOKlientFactory(@NonNull FiksIOKonfigurasjon fiksIOKonfigurasjon)`
+
 ## Dokumentasjon for tjeneste:
 
  * [FIKS IO](https://ks-no.github.io/fiks-platform/tjenester/fiksio/)
