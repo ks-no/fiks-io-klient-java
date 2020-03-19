@@ -1,5 +1,6 @@
 package no.ks.fiks.io.client;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import feign.Feign;
@@ -119,7 +120,7 @@ public class FiksIOKlientFactory {
                 .getScheme())
             .withHostName(sendMeldingKonfigurasjon.getHost())
             .withPortNumber(sendMeldingKonfigurasjon.getPort())
-            .withObjectMapper(new ObjectMapper().findAndRegisterModules())
+            .withObjectMapper(new ObjectMapper().findAndRegisterModules().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES))
             .withAuthenticationStrategy(new no.ks.fiks.io.klient.IntegrasjonAuthenticationStrategy(maskinportenklient,
                 konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
                 konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
@@ -129,7 +130,8 @@ public class FiksIOKlientFactory {
 
     private static FiksIoKatalogApi getFiksIOKatalogApi(@NonNull FiksIOKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
         ObjectMapper objectMapper = new ObjectMapper()
-            .registerModule(new JavaTimeModule());
+            .registerModule(new JavaTimeModule())
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         return Feign.builder()
             .decoder(new JacksonDecoder(objectMapper))
             .encoder(new JacksonEncoder(objectMapper))
