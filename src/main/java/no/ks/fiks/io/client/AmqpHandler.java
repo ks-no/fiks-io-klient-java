@@ -43,6 +43,7 @@ class AmqpHandler implements Closeable {
     private KontoId kontoId;
     private final FiksIOHandler fiksIOHandler;
     private final AsicHandler asic;
+    private final Connection amqpConnection;
 
     AmqpHandler(@NonNull AmqpKonfigurasjon amqpKonf,
                 @NonNull FiksIntegrasjonKonfigurasjon intKonf,
@@ -59,8 +60,9 @@ class AmqpHandler implements Closeable {
 
         ConnectionFactory factory = getConnectionFactory(amqpKonf, intKonf, maskinportenklient);
 
-        try (Connection connection = factory.newConnection()) {
-            channel = connection.createChannel();
+        try {
+            amqpConnection = factory.newConnection();
+            channel = amqpConnection.createChannel();
         } catch (IOException | TimeoutException e) {
             throw new RuntimeException(e);
         }
@@ -145,7 +147,7 @@ class AmqpHandler implements Closeable {
         try {
             factory.useSslProtocol(SSLContext.getDefault());
         } catch (NoSuchAlgorithmException e) {
-            log.warn("Could not setup TLS", e);
+            log.error("Could not setup TLS", e);
         }
 
         factory.setCredentialsProvider(new CredentialsProvider() {
@@ -165,5 +167,15 @@ class AmqpHandler implements Closeable {
     @Override
     public void close() throws IOException {
         dokumentlagerKlient.close();
+        if (channel.isOpen()) {
+            try {
+                channel.close();
+            } catch (TimeoutException e) {
+                log.warn("Timed out while closing AMQP channel", e);
+            }
+        }
+        if (amqpConnection.isOpen()) {
+            amqpConnection.close(30_000);
+        }
     }
 }
