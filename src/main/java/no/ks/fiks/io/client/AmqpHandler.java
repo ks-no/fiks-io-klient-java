@@ -1,9 +1,6 @@
 package no.ks.fiks.io.client;
 
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.Delivery;
-import com.rabbitmq.client.ShutdownSignalException;
+import com.rabbitmq.client.*;
 import com.rabbitmq.client.impl.CredentialsProvider;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -62,8 +59,8 @@ class AmqpHandler implements Closeable {
 
         ConnectionFactory factory = getConnectionFactory(amqpKonf, intKonf, maskinportenklient);
 
-        try {
-            channel = factory.newConnection().createChannel();
+        try (Connection connection = factory.newConnection()) {
+            channel = connection.createChannel();
         } catch (IOException | TimeoutException e) {
             throw new RuntimeException(e);
         }
