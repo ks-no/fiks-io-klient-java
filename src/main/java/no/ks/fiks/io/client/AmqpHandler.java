@@ -145,7 +145,7 @@ class AmqpHandler implements Closeable {
         try {
             factory.useSslProtocol(SSLContext.getDefault());
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            log.warn("Could not setup TLS", e);
         }
 
         factory.setCredentialsProvider(new CredentialsProvider() {

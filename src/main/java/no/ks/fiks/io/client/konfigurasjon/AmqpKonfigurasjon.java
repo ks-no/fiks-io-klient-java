@@ -30,9 +30,9 @@ public class AmqpKonfigurasjon {
     /**
      * Konfigurasjon for prod.
      */
-    public static AmqpKonfigurasjon PROD = AmqpKonfigurasjon.builder().host("io.fiks.ks.no").build();
+    public static final AmqpKonfigurasjon PROD = AmqpKonfigurasjon.builder().host("io.fiks.ks.no").build();
     /**
      * Konfigurasjon for test.
      */
-    public static AmqpKonfigurasjon TEST = AmqpKonfigurasjon.builder().host("io.fiks.test.ks.no").build();
+    public static final AmqpKonfigurasjon TEST = AmqpKonfigurasjon.builder().host("io.fiks.test.ks.no").build();
 }
