@@ -15,17 +15,32 @@ import java.util.zip.ZipInputStream;
 @Data
 @Builder
 public class MottattMelding implements Melding {
-    @NonNull private MeldingId meldingId;
-    @NonNull private String meldingType;
-    @NonNull private KontoId avsenderKontoId;
-    @NonNull private KontoId mottakerKontoId;
-    @NonNull private Duration ttl;
+    @NonNull
+    private MeldingId meldingId;
+    @NonNull
+    private String meldingType;
+    @NonNull
+    private KontoId avsenderKontoId;
+    @NonNull
+    private KontoId mottakerKontoId;
+    @NonNull
+    private Duration ttl;
+    @Builder.Default
+    private boolean resendt = false;
     private Map<String, String> headere;
 
-    @NonNull @Getter(AccessLevel.NONE) private Consumer<Path> writeKryptertZip;
-    @NonNull @Getter(AccessLevel.NONE) private Consumer<Path> writeDekryptertZip;
-    @NonNull @Getter(AccessLevel.NONE) private Supplier<InputStream> getKryptertStream;
-    @NonNull @Getter(AccessLevel.NONE) private Supplier<ZipInputStream> getDekryptertZipStream;
+    @NonNull
+    @Getter(AccessLevel.NONE)
+    private Consumer<Path> writeKryptertZip;
+    @NonNull
+    @Getter(AccessLevel.NONE)
+    private Consumer<Path> writeDekryptertZip;
+    @NonNull
+    @Getter(AccessLevel.NONE)
+    private Supplier<InputStream> getKryptertStream;
+    @NonNull
+    @Getter(AccessLevel.NONE)
+    private Supplier<ZipInputStream> getDekryptertZipStream;
 
     private MeldingId svarPaMelding;
 
@@ -36,13 +51,14 @@ public class MottattMelding implements Melding {
             Supplier<InputStream> getKryptertStream,
             Supplier<ZipInputStream> getDekryptertZipStream) {
         return MottattMelding.builder()
-                .meldingId(new MeldingId(melding.getMeldingId()))
-                .meldingType(melding.getMeldingType())
-                .avsenderKontoId(new KontoId(melding.getAvsenderKontoId()))
-                .mottakerKontoId(new KontoId(melding.getMottakerKontoId()))
-                .ttl(Duration.ofMillis(melding.getTtl()))
-                .svarPaMelding(melding.getSvarPaMelding() != null ? new MeldingId(melding.getSvarPaMelding()) : null)
-                .headere(melding.getHeadere() != null ? melding.getHeadere() : Collections.emptyMap())
+            .meldingId(new MeldingId(melding.getMeldingId()))
+            .meldingType(melding.getMeldingType())
+            .avsenderKontoId(new KontoId(melding.getAvsenderKontoId()))
+            .mottakerKontoId(new KontoId(melding.getMottakerKontoId()))
+            .ttl(Duration.ofMillis(melding.getTtl()))
+            .svarPaMelding(melding.getSvarPaMelding() != null ? new MeldingId(melding.getSvarPaMelding()) : null)
+            .headere(melding.getHeadere() != null ? melding.getHeadere() : Collections.emptyMap())
+            .resendt(melding.isResendt())
                 .writeKryptertZip(writeKryptertZip)
                 .writeDekryptertZip(writeDekryptertZip)
                 .getKryptertStream(getKryptertStream)

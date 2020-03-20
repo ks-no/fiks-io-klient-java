@@ -75,6 +75,7 @@ class AmqpHandler implements Closeable {
                 MottattMeldingMetadata parsed = FiksIOMeldingParser.parse(m.getEnvelope(), m.getProperties());
 
                 if (m.getEnvelope().isRedeliver() && meldingErBehandlet.test(new MeldingId(parsed.getMeldingId()))) {
+                    log.debug("message {} has been delivered before and is automatically acked", parsed.getMeldingId());
                     channel.basicAck(m.getEnvelope().getDeliveryTag(), false);
                 } else {
                     MottattMelding melding = MottattMelding.fromMottattMeldingMetadata(
