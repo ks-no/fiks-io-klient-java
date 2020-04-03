@@ -15,6 +15,7 @@ import java.util.zip.ZipInputStream;
 @Data
 @Builder
 public class MottattMelding implements Melding {
+    static final String NO_PAYLOAD_MESSAGE = "Meldingen har ingen payload";
     @NonNull
     private MeldingId meldingId;
     @NonNull
@@ -70,20 +71,37 @@ public class MottattMelding implements Melding {
                 .build();
     }
 
-    public InputStream getKryptertStream(){
-        return getKryptertStream.get();
+    public InputStream getKryptertStream() {
+        if (harPayload) {
+            return getKryptertStream.get();
+        } else {
+            throw new IllegalStateException(NO_PAYLOAD_MESSAGE);
+        }
+
     }
 
-    public ZipInputStream getDekryptertZipStream(){
-        return getDekryptertZipStream.get();
+    public ZipInputStream getDekryptertZipStream() {
+        if (harPayload) {
+            return getDekryptertZipStream.get();
+        } else {
+            throw new IllegalStateException(NO_PAYLOAD_MESSAGE);
+        }
     }
 
-    public void writeKryptertZip(Path path){
-        writeKryptertZip.accept(path);
+    public void writeKryptertZip(Path path) {
+        if (harPayload) {
+            writeKryptertZip.accept(path);
+        } else {
+            throw new IllegalStateException(NO_PAYLOAD_MESSAGE);
+        }
     }
 
-    public void writeDekryptertZip(Path path){
-        writeDekryptertZip.accept(path);
+    public void writeDekryptertZip(Path path) {
+        if (harPayload) {
+            writeDekryptertZip.accept(path);
+        } else {
+            throw new IllegalStateException(NO_PAYLOAD_MESSAGE);
+        }
     }
 
 }
