@@ -27,6 +27,8 @@ public class MottattMelding implements Melding {
     private Duration ttl;
     @Builder.Default
     private boolean resendt = false;
+
+    private boolean harPayload;
     private Map<String, String> headere;
 
     @NonNull
@@ -45,13 +47,15 @@ public class MottattMelding implements Melding {
     private MeldingId svarPaMelding;
 
     public static MottattMelding fromMottattMeldingMetadata(
-            MottattMeldingMetadata melding,
-            Consumer<Path> writeDekryptertZip,
-            Consumer<Path> writeKryptertZip,
-            Supplier<InputStream> getKryptertStream,
-            Supplier<ZipInputStream> getDekryptertZipStream) {
+        MottattMeldingMetadata melding,
+        boolean harPaylod,
+        Consumer<Path> writeDekryptertZip,
+        Consumer<Path> writeKryptertZip,
+        Supplier<InputStream> getKryptertStream,
+        Supplier<ZipInputStream> getDekryptertZipStream) {
         return MottattMelding.builder()
             .meldingId(new MeldingId(melding.getMeldingId()))
+            .harPayload(harPaylod)
             .meldingType(melding.getMeldingType())
             .avsenderKontoId(new KontoId(melding.getAvsenderKontoId()))
             .mottakerKontoId(new KontoId(melding.getMottakerKontoId()))

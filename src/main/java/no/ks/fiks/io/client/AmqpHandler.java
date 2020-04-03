@@ -77,12 +77,14 @@ class AmqpHandler implements Closeable {
                     log.debug("message {} has been delivered before and is automatically acked", parsed.getMeldingId());
                     channel.basicAck(m.getEnvelope().getDeliveryTag(), false);
                 } else {
+                    boolean hasPayloadInDokumentlager = payloadInDokumentlager(m);
                     MottattMelding melding = MottattMelding.fromMottattMeldingMetadata(
                         parsed,
-                        f -> asic.writeDecrypted(payloadInDokumentlager(m) ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()), f),
-                        f -> writeFile(payloadInDokumentlager(m) ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()), f),
-                        () -> payloadInDokumentlager(m) ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()),
-                        () -> asic.decrypt(payloadInDokumentlager(m) ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody())));
+                        hasPayloadInDokumentlager || m.getBody() != null,
+                        f -> asic.writeDecrypted(hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()), f),
+                        f -> writeFile(hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()), f),
+                        () -> hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()),
+                        () -> asic.decrypt(hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody())));
                     onMelding.accept(melding, fiksIOHandler.buildKvitteringSender(amqpChannelFeedbackHandler(m.getEnvelope().getDeliveryTag())
                         , melding));
                 }

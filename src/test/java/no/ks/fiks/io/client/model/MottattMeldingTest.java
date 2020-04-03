@@ -29,7 +29,7 @@ class MottattMeldingTest {
             .build();
         final MottattMelding mottattMelding = MottattMelding.fromMottattMeldingMetadata(
             mottattMeldingMetadata,
-            path -> {
+            false, path -> {
             },
             path -> {
             },
@@ -58,7 +58,7 @@ class MottattMeldingTest {
             .build();
         final MottattMelding mottattMelding = MottattMelding.fromMottattMeldingMetadata(
             mottattMeldingMetadata,
-            path -> {
+            false, path -> {
             },
             path -> {
             },
