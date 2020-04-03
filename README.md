@@ -8,23 +8,20 @@
 Klient for å bruke Fiks IO i et JVM miljø
 
 ## Ta i bruk
+### Forutsetninger
 
-Legg til maven dependency.
+  - Java 1.8 eller høyere
 
-##### Maven
-Add dependency no.ks.fiks:fiks-io-klient-java in your POM.
+### Maven
+Legg til følgende i POM-filen din:
 
     <dependencies>
        <dependency>
             <groupId>no.ks.fiks</groupId>
             <artifactId>fiks-io-klient-java</artifactId>
-            <version>1.2.14</version>
+            <version>1.2.23</version>
        </dependency>
     </dependencies>
-
-### Forutsetninger
-
-  - Java 1.8 or higher
 
 ## Bruk
 
