@@ -31,7 +31,7 @@
   </distributionManagement>
   <properties>
     <difi-commons-asic.version>0.9.3</difi-commons-asic.version>
-    <swagger-core-version>1.6.1</swagger-core-version>
+    <swagger-core-version>1.6.2</swagger-core-version>
     <fiks-io-asice-handler.version>1.0.3</fiks-io-asice-handler.version>
     <lombok.version>1.18.12</lombok.version>
     <changelist>-SNAPSHOT</changelist>
