@@ -60,7 +60,7 @@
     <maven-surefire-plugin.version>3.0.0-M4</maven-surefire-plugin.version>
     <jackson.version>2.10.3</jackson.version>
     <rabbitmq-amqp-client.version>5.6.0</rabbitmq-amqp-client.version>
-    <fiks-maskinporten-client.version>1.0.15</fiks-maskinporten-client.version>
+    <fiks-maskinporten-client.version>1.0.16</fiks-maskinporten-client.version>
     <fiks-io-send-klient.version>1.2.5</fiks-io-send-klient.version>
     <feign-version>10.9</feign-version>
     <download-maven-plugin.version>1.5.0</download-maven-plugin.version>
