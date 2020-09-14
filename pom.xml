@@ -60,7 +60,7 @@
     <spec.postfix>json</spec.postfix>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <oltu-version>1.0.2</oltu-version>
-    <junit-jupiter.version>5.6.2</junit-jupiter.version>
+    <junit-jupiter.version>5.7.0</junit-jupiter.version>
     <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
     <jackson-databind-nullable.version>0.2.1</jackson-databind-nullable.version>
     <changelist>-SNAPSHOT</changelist>
