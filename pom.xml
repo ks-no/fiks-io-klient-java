@@ -56,7 +56,7 @@
     <mockito.version>3.5.2</mockito.version>
     <feign-version>11.0</feign-version>
     <revision>1.2.25</revision>
-    <lombok.version>1.18.12</lombok.version>
+    <lombok.version>1.18.18</lombok.version>
     <spec.postfix>json</spec.postfix>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <oltu-version>1.0.2</oltu-version>
