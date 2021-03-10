@@ -19,7 +19,7 @@ Legg til følgende i POM-filen din:
        <dependency>
             <groupId>no.ks.fiks</groupId>
             <artifactId>fiks-io-klient-java</artifactId>
-            <version>1.2.23</version>
+            <version>1.2.25</version>
        </dependency>
     </dependencies>
 
