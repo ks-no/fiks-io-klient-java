@@ -28,6 +28,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateEncodingException;
+import java.util.Optional;
 
 
 @Slf4j
@@ -146,14 +147,16 @@ public class FiksIOKlientFactory {
 
     private static DokumentlagerKlient getDokumentlagerKlient(@NonNull FiksIOKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
         return DokumentlagerKlient.builder()
-            .api(new DokumentlagerApiImpl(
-                konfigurasjon.getDokumentlagerKonfigurasjon().getUrl(),
-                konfigurasjon.getDokumentlagerKonfigurasjon().getUrl(),
-                new IntegrasjonAuthenticationStrategy(
-                    maskinportenklient,
-                    konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
-                    konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()),
-                konfigurasjon.getDokumentlagerKonfigurasjon().getRequestInterceptor() == null ? r -> r : konfigurasjon.getDokumentlagerKonfigurasjon().getRequestInterceptor()))
+            .api(DokumentlagerApiImpl.builder()
+                .uploadBaseUrl(konfigurasjon.getDokumentlagerKonfigurasjon().getUrl())
+                .downloadBaseUrl(konfigurasjon.getDokumentlagerKonfigurasjon().getUrl())
+                .authenticationStrategy(
+                    new IntegrasjonAuthenticationStrategy(
+                        maskinportenklient,
+                        konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
+                        konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
+                .requestInterceptor(Optional.ofNullable(konfigurasjon.getDokumentlagerKonfigurasjon().getRequestInterceptor()).orElseGet(() -> r -> r))
+                .build())
             .build();
     }
 
