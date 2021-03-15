@@ -33,8 +33,8 @@
     <rabbitmq-amqp-client.version>5.11.0</rabbitmq-amqp-client.version>
     <feign-form-version>3.8.0</feign-form-version>
     <fiks-feign-interceptors.version>1.0.5</fiks-feign-interceptors.version>
-    <difi-commons-asic.version>0.9.3</difi-commons-asic.version>
     <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
+    <difi-commons-asic.version>0.9.3</difi-commons-asic.version>
     <guava.version>30.1-jre</guava.version>
     <jackson.version>2.12.2</jackson.version>
     <download-maven-plugin.version>1.6.1</download-maven-plugin.version>
@@ -55,7 +55,7 @@
     <fiks-io-commons.version>1.2.3</fiks-io-commons.version>
     <mockito.version>3.8.0</mockito.version>
     <feign-version>11.1</feign-version>
-    <revision>1.2.26</revision>
+    <revision>1.2.27</revision>
     <lombok.version>1.18.18</lombok.version>
     <spec.postfix>json</spec.postfix>
     <maven.compiler.target>${java.version}</maven.compiler.target>
