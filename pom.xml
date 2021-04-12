@@ -30,7 +30,7 @@
     </snapshotRepository>
   </distributionManagement>
   <properties>
-    <rabbitmq-amqp-client.version>5.11.0</rabbitmq-amqp-client.version>
+    <rabbitmq-amqp-client.version>5.12.0</rabbitmq-amqp-client.version>
     <feign-form-version>3.8.0</feign-form-version>
     <fiks-feign-interceptors.version>1.0.5</fiks-feign-interceptors.version>
     <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
