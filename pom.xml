@@ -49,7 +49,7 @@
     <commons-io.version>2.8.0</commons-io.version>
     <logback.version>1.2.3</logback.version>
     <swagger-core-version>1.6.2</swagger-core-version>
-    <kryptering.version>1.0.11</kryptering.version>
+    <kryptering.version>1.0.12</kryptering.version>
     <java.version>1.8</java.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <fiks-io-commons.version>1.2.3</fiks-io-commons.version>
