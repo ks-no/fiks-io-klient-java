@@ -1,3 +1,3 @@
-libPipelineMvnCentral {
-    componentTestProject = "fiks-io-klient-java-komponent-test"
-}
+libPipelineMvnCentral(
+    componentTestProject: "fiks-io-klient-java-komponent-test"
+)
