@@ -9,26 +9,15 @@
   </parent>
   <groupId>no.ks.fiks</groupId>
   <artifactId>fiks-io-klient-java</artifactId>
-  <version>${revision}${changelist}</version>
+  <version>1.3.0-SNAPSHOT</version>
   <name>FIKS IO Java-klient</name>
-  <description>Klient for integrasjoner mot Fiks IO. Håndterer sending, mottak, kryptering, dekryptering og
-        signering</description>
+  <description>Klient for integrasjoner mot Fiks IO. Håndterer sending, mottak, kryptering, dekryptering og signering</description>
   <url>https://github.com/ks-no/fiks-io-klient-java</url>
   <scm>
     <connection>scm:git:git@github.com:ks-no/fiks-io-klient-java.git</connection>
     <developerConnection>scm:git:git@github.com:ks-no/fiks-io-klient-java.git</developerConnection>
     <url>https://github.com/ks-no/fiks-io-klient-java</url>
   </scm>
-  <distributionManagement>
-    <repository>
-      <id>oss.sonatype.org</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
-    <snapshotRepository>
-      <id>oss.sonatype.org</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-    </snapshotRepository>
-  </distributionManagement>
   <properties>
     <rabbitmq-amqp-client.version>5.11.0</rabbitmq-amqp-client.version>
     <feign-form-version>3.8.0</feign-form-version>
@@ -55,7 +44,6 @@
     <fiks-io-commons.version>1.2.3</fiks-io-commons.version>
     <mockito.version>3.8.0</mockito.version>
     <feign-version>11.1</feign-version>
-    <revision>1.2.27</revision>
     <lombok.version>1.18.18</lombok.version>
     <spec.postfix>json</spec.postfix>
     <maven.compiler.target>${java.version}</maven.compiler.target>
@@ -63,7 +51,6 @@
     <junit-jupiter.version>5.7.2</junit-jupiter.version>
     <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
     <jackson-databind-nullable.version>0.2.1</jackson-databind-nullable.version>
-    <changelist>-SNAPSHOT</changelist>
     <fiks-io-asice-handler.version>1.0.5</fiks-io-asice-handler.version>
   </properties>
   <dependencyManagement>
