@@ -44,7 +44,7 @@
     <fiks-io-commons.version>1.2.3</fiks-io-commons.version>
     <mockito.version>3.11.2</mockito.version>
     <feign-version>11.2</feign-version>
-    <lombok.version>1.18.18</lombok.version>
+    <lombok.version>1.18.20</lombok.version>
     <spec.postfix>json</spec.postfix>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <oltu-version>1.0.2</oltu-version>
