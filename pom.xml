@@ -25,7 +25,7 @@
     <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
     <difi-commons-asic.version>0.9.4</difi-commons-asic.version>
     <guava.version>30.1.1-jre</guava.version>
-    <jackson.version>2.12.3</jackson.version>
+    <jackson.version>2.12.4</jackson.version>
     <download-maven-plugin.version>1.6.6</download-maven-plugin.version>
     <fiks-dokumentlager-klient.version>1.7.1</fiks-dokumentlager-klient.version>
     <openapi-generator-maven-plugin.version>5.0.0</openapi-generator-maven-plugin.version>
