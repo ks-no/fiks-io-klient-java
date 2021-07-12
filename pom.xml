@@ -28,7 +28,7 @@
     <jackson.version>2.12.3</jackson.version>
     <download-maven-plugin.version>1.6.6</download-maven-plugin.version>
     <fiks-dokumentlager-klient.version>1.7.1</fiks-dokumentlager-klient.version>
-    <openapi-generator-maven-plugin.version>5.0.0</openapi-generator-maven-plugin.version>
+    <openapi-generator-maven-plugin.version>5.2.0</openapi-generator-maven-plugin.version>
     <slf4j.version>1.7.31</slf4j.version>
     <fiks-io-send-klient.version>1.3.0</fiks-io-send-klient.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
