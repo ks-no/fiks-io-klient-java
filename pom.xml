@@ -35,7 +35,7 @@
     <spec.location>https://ks-no.github.io/api/</spec.location>
     <spec.name>fiksio-katalog-api-v1</spec.name>
     <fiks-maskinporten-client.version>1.2.0</fiks-maskinporten-client.version>
-    <commons-io.version>2.10.0</commons-io.version>
+    <commons-io.version>2.11.0</commons-io.version>
     <logback.version>1.2.3</logback.version>
     <swagger-core-version>1.6.2</swagger-core-version>
     <kryptering.version>1.1.0</kryptering.version>
