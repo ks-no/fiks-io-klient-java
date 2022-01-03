@@ -86,7 +86,7 @@ class SvarSenderTest {
             final SvarSender svarSender = createSvarSender(buf, mottattMelding);
             svarSender.ack();
             assertTrue(ackCompleted.get());
-            verifyZeroInteractions(fiksIOSender);
+            verifyNoInteractions(fiksIOSender);
         }
     }
 
@@ -99,7 +99,7 @@ class SvarSenderTest {
             final SvarSender svarSender = createSvarSender(buf, mottattMelding);
             svarSender.nack();
             assertTrue(nacked.get());
-            verifyZeroInteractions(fiksIOSender);
+            verifyNoInteractions(fiksIOSender);
         }
     }
 
@@ -112,7 +112,7 @@ class SvarSenderTest {
             final SvarSender svarSender = createSvarSender(buf, mottattMelding);
             svarSender.nackWithRequeue();
             assertTrue(nackedWithRequeue.get());
-            verifyZeroInteractions(fiksIOSender);
+            verifyNoInteractions(fiksIOSender);
         }
     }
 
