@@ -24,10 +24,6 @@ import no.ks.fiks.maskinporten.Maskinportenklient;
 import no.ks.fiks.maskinporten.MaskinportenklientProperties;
 
 import java.io.IOException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateEncodingException;
 import java.util.Optional;
 
 
@@ -180,7 +176,7 @@ public class FiksIOKlientFactory {
                 konfigurasjon.getVirksomhetssertifikatKonfigurasjon().getKeyAlias(),
                 konfigurasjon.getVirksomhetssertifikatKonfigurasjon().getKeyPassword().toCharArray(),
                 maskinportenklientProperties);
-        } catch (CertificateEncodingException | KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
