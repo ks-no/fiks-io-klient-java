@@ -282,6 +282,16 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.8.7</version>
+        <configuration>
+          <excludes>
+            <exclude>**/katalog/*/*</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
   <profiles>
