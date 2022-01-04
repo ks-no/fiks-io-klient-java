@@ -28,7 +28,7 @@
     <jackson.version>2.13.1</jackson.version>
     <download-maven-plugin.version>1.6.7</download-maven-plugin.version>
     <fiks-dokumentlager-klient.version>1.8.0</fiks-dokumentlager-klient.version>
-    <openapi-generator-maven-plugin.version>5.0.0</openapi-generator-maven-plugin.version>
+    <openapi-generator-maven-plugin.version>5.3.1</openapi-generator-maven-plugin.version>
     <slf4j.version>1.7.32</slf4j.version>
     <fiks-io-send-klient.version>1.3.0</fiks-io-send-klient.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -52,6 +52,7 @@
     <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
     <jackson-databind-nullable.version>0.2.2</jackson-databind-nullable.version>
     <fiks-io-asice-handler.version>1.1.1</fiks-io-asice-handler.version>
+    <scribejava.version>8.3.1</scribejava.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -149,6 +150,7 @@
       <artifactId>swagger-annotations</artifactId>
       <version>${swagger-core-version}</version>
     </dependency>
+    <!-- Feign deps -->
     <dependency>
       <groupId>io.github.openfeign</groupId>
       <artifactId>feign-core</artifactId>
@@ -169,6 +171,12 @@
       <artifactId>feign-form</artifactId>
       <version>${feign-form-version}</version>
     </dependency>
+    <dependency>
+      <groupId>io.github.openfeign</groupId>
+      <artifactId>feign-okhttp</artifactId>
+      <version>${feign-version}</version>
+    </dependency>
+    <!-- /Feign deps -->
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jdk8</artifactId>
@@ -203,6 +211,11 @@
       <groupId>javax.annotation</groupId>
       <artifactId>javax.annotation-api</artifactId>
       <version>${javax.annotation-api.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.scribejava</groupId>
+      <artifactId>scribejava-core</artifactId>
+      <version>${scribejava.version}</version>
     </dependency>
     <dependency>
       <groupId>org.junit.platform</groupId>
