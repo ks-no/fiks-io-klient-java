@@ -80,6 +80,13 @@ final FiksIOKonfigurasjon fiksIOKonfigurasjon = FiksIOKonfigurasjon.defaultProdC
         .build());
 ```
 
+
+**privatNokkel**: `privatNokkel` property forventer en private key i PKCS#8 format. En privat nøkkel som har PKCS#1 format vil føre til en exception. En PKCS#1 nøkkel kan bli konvertert ved hjelp av denne kommandoen:
+```powershell
+openssl pkcs8 -topk8 -nocrypt -in <pkcs#1 key file> -out <pkcs#8 key file>
+```
+
+
 ### Konfigurasjon av Offentlig Nøkkel for mottaker
 
 Ved oppsett av Fiks IO klienten kan man velge om man vil sette opp en egen metode for å hente offentlig nøkkel til mottaker av meldinger.
