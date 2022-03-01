@@ -1,5 +1,6 @@
 package no.ks.fiks.io.client;
 
+import com.google.common.collect.ImmutableMap;
 import io.vavr.control.Option;
 import no.ks.fiks.io.client.model.*;
 import no.ks.fiks.io.client.send.FiksIOSender;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipInputStream;
@@ -70,6 +72,37 @@ class SvarSenderTest {
                         .build();
                 });
             final SendtMelding sendtMelding = svarSender.svar(mottattMelding.getMeldingType());
+            assertNotNull(sendtMelding);
+            assertFalse(ackCompleted.get());
+            verify(fiksIOSender).send(isA(MeldingSpesifikasjonApiModel.class), isA(Option.class));
+            verifyNoMoreInteractions(fiksIOSender);
+        }
+    }
+
+    @DisplayName("Sender svar med klientMeldingId")
+    @Test
+    void svarWithKlientmeldingId() throws IOException {
+
+        final byte[] buf = {0, 1, 0, 1};
+        try (final InputStream inputStream = new ByteArrayInputStream(buf)) {
+            final MottattMelding mottattMelding = createMottattMelding(buf, inputStream);
+            final MeldingId klientMeldingId = new MeldingId(UUID.randomUUID());
+            final SvarSender svarSender = createSvarSender(buf, mottattMelding);
+            when(fiksIOSender.send(isA(MeldingSpesifikasjonApiModel.class), isA(Option.class)))
+                .thenAnswer((Answer<SendtMeldingApiModel>) invocationOnMock -> {
+                    MeldingSpesifikasjonApiModel meldingSpesifikasjonApiModel = invocationOnMock.getArgument(0);
+                    return SendtMeldingApiModel.builder()
+                        .avsenderKontoId(meldingSpesifikasjonApiModel.getAvsenderKontoId())
+                        .meldingId(UUID.randomUUID())
+                        .mottakerKontoId(meldingSpesifikasjonApiModel.getMottakerKontoId())
+                        .ttl(Duration.ofHours(1L).toMillis())
+                        .meldingType(MELDING_TYPE)
+                        .headere(ImmutableMap.of(Melding.HeaderKlientMeldingId, meldingSpesifikasjonApiModel.getHeadere().get(Melding.HeaderKlientMeldingId)))
+                        .build();
+                });
+
+            final SendtMelding sendtMelding = svarSender.svar(mottattMelding.getMeldingType(), klientMeldingId);
+            assertEquals(klientMeldingId, sendtMelding.getKlientMeldingId());
             assertNotNull(sendtMelding);
             assertFalse(ackCompleted.get());
             verify(fiksIOSender).send(isA(MeldingSpesifikasjonApiModel.class), isA(Option.class));
