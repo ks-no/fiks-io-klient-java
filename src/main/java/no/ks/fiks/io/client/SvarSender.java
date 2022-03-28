@@ -14,7 +14,6 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 import static java.util.Collections.singletonList;
@@ -33,23 +32,14 @@ public class SvarSender {
 
     public SendtMelding svar(String meldingType, List<Payload> payloads) {
         return SendtMelding.fromSendResponse(utsendingKlient.send(
-            MeldingSpesifikasjonApiModel.builder()
-                                        .avsenderKontoId(meldingSomSkalKvitteres.getMottakerKontoId().getUuid())
-                                        .mottakerKontoId(meldingSomSkalKvitteres.getAvsenderKontoId().getUuid())
-                                        .svarPaMelding(meldingSomSkalKvitteres.getMeldingId().getUuid())
-                                        .meldingType(meldingType)
-                                        .build(), payloads.isEmpty() ? Option.none() : Option.of(encrypt.apply(payloads))));
+            fellesBuilder(meldingType).build(), payloads.isEmpty() ? Option.none() : Option.of(encrypt.apply(payloads))));
     }
 
     public SendtMelding svar(String meldingType, List<Payload> payloads, MeldingId klientMeldingId) {
         return SendtMelding.fromSendResponse(utsendingKlient.send(
-            MeldingSpesifikasjonApiModel.builder()
-                .avsenderKontoId(meldingSomSkalKvitteres.getMottakerKontoId().getUuid())
-                .mottakerKontoId(meldingSomSkalKvitteres.getAvsenderKontoId().getUuid())
-                .svarPaMelding(meldingSomSkalKvitteres.getMeldingId().getUuid())
-                .meldingType(meldingType)
-                .headere(ImmutableMap.of(Melding.HeaderKlientMeldingId, klientMeldingId.toString()))
-                .build(), payloads.isEmpty() ? Option.none() : Option.of(encrypt.apply(payloads))));
+            fellesBuilder(meldingType)
+            .headere(ImmutableMap.of(Melding.HeaderKlientMeldingId, klientMeldingId.toString()))
+            .build(), payloads.isEmpty() ? Option.none() : Option.of(encrypt.apply(payloads))));
     }
 
     public SendtMelding svar(String meldingType, InputStream melding, String filnavn) {
@@ -94,5 +84,13 @@ public class SvarSender {
 
     public void nackWithRequeue() {
         amqpChannelFeedbackHandler.getHandleNackWithRequeue().run();
+    }
+
+    private MeldingSpesifikasjonApiModel.MeldingSpesifikasjonApiModelBuilder fellesBuilder(String meldingType) {
+        return MeldingSpesifikasjonApiModel.builder()
+            .avsenderKontoId(meldingSomSkalKvitteres.getMottakerKontoId().getUuid())
+            .mottakerKontoId(meldingSomSkalKvitteres.getAvsenderKontoId().getUuid())
+            .svarPaMelding(meldingSomSkalKvitteres.getMeldingId().getUuid())
+            .meldingType(meldingType);
     }
 }
