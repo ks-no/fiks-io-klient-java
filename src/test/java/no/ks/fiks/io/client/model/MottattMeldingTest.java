@@ -101,4 +101,28 @@ class MottattMeldingTest {
         assertEquals(mottattMeldingMetadata.getMeldingId(), mottattMelding.getMeldingId().getUuid());
         assertEquals(mottattMeldingMetadata.getHeadere(), mottattMelding.getHeadere());
     }
+
+    @DisplayName("Bygger mottatt melding inkludert klientMeldingId")
+    @Test
+    void fromMottattMeldingMetadataMedKlientMeldingId() {
+        final MeldingId klientMeldingId = new MeldingId(UUID.randomUUID());
+        final MottattMeldingMetadata mottattMeldingMetadata = MottattMeldingMetadata.builder()
+            .avsenderKontoId(UUID.randomUUID())
+            .meldingId(UUID.randomUUID())
+            .meldingType("meldingType")
+            .mottakerKontoId(UUID.randomUUID())
+            .svarPaMelding(UUID.randomUUID())
+            .deliveryTag(Long.MAX_VALUE)
+            .ttl(Duration.ofMinutes(22L).toMillis())
+            .headere(ImmutableMap.of("header1", "verdi1", "header2", "verdi2", Melding.HeaderKlientMeldingId, klientMeldingId.toString()))
+            .build();
+        final MottattMelding mottattMelding = MottattMelding.fromMottattMeldingMetadata(
+            mottattMeldingMetadata,
+            true, path -> {
+            },
+            path -> {
+            },
+            () -> new NullInputStream(0L), () -> new ZipInputStream(new NullInputStream(100L)));
+        assertEquals(klientMeldingId, mottattMelding.getKlientMeldingId());
+    }
 }

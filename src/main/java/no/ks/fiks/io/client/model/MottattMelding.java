@@ -2,12 +2,14 @@ package no.ks.fiks.io.client.model;
 
 import lombok.*;
 import no.ks.fiks.io.commons.MottattMeldingMetadata;
+import no.ks.fiks.io.klient.SendtMeldingApiModel;
 
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.zip.ZipInputStream;
@@ -47,6 +49,8 @@ public class MottattMelding implements Melding {
 
     private MeldingId svarPaMelding;
 
+    private MeldingId klientMeldingId;
+
     public static MottattMelding fromMottattMeldingMetadata(
         MottattMeldingMetadata melding,
         boolean harPaylod,
@@ -62,6 +66,7 @@ public class MottattMelding implements Melding {
             .mottakerKontoId(new KontoId(melding.getMottakerKontoId()))
             .ttl(Duration.ofMillis(melding.getTtl()))
             .svarPaMelding(melding.getSvarPaMelding() != null ? new MeldingId(melding.getSvarPaMelding()) : null)
+            .klientMeldingId(getKlientMeldingIdFromHeader(melding))
             .headere(melding.getHeadere() != null ? melding.getHeadere() : Collections.emptyMap())
             .resendt(melding.isResendt())
                 .writeKryptertZip(writeKryptertZip)
@@ -104,4 +109,14 @@ public class MottattMelding implements Melding {
         }
     }
 
+    private static MeldingId getKlientMeldingIdFromHeader(MottattMeldingMetadata melding) {
+        if(melding.getHeadere() != null && melding.getHeadere().get(HeaderKlientMeldingId) != null) {
+            try {
+                return new MeldingId(UUID.fromString(melding.getHeadere().get(HeaderKlientMeldingId)));
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
+        }
+        return null;
+    }
 }

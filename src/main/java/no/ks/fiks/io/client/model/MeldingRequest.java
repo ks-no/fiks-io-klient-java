@@ -15,5 +15,6 @@ public class MeldingRequest implements MeldingSpesifikasjon {
     @NonNull private String meldingType;
     @Builder.Default private Duration ttl = Duration.ofDays(2);
     private MeldingId svarPaMelding;
+    private MeldingId klientMeldingId;
     @Builder.Default private Map<String, String> headere = Collections.emptyMap();
 }

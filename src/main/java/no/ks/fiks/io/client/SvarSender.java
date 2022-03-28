@@ -1,5 +1,6 @@
 package no.ks.fiks.io.client;
 
+import com.google.common.collect.ImmutableMap;
 import io.vavr.control.Option;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,28 +32,46 @@ public class SvarSender {
 
     public SendtMelding svar(String meldingType, List<Payload> payloads) {
         return SendtMelding.fromSendResponse(utsendingKlient.send(
-            MeldingSpesifikasjonApiModel.builder()
-                                        .avsenderKontoId(meldingSomSkalKvitteres.getMottakerKontoId().getUuid())
-                                        .mottakerKontoId(meldingSomSkalKvitteres.getAvsenderKontoId().getUuid())
-                                        .svarPaMelding(meldingSomSkalKvitteres.getMeldingId().getUuid())
-                                        .meldingType(meldingType)
-                                        .build(), payloads.isEmpty() ? Option.none() : Option.of(encrypt.apply(payloads))));
+            fellesBuilder(meldingType).build(), payloads.isEmpty() ? Option.none() : Option.of(encrypt.apply(payloads))));
+    }
+
+    public SendtMelding svar(String meldingType, List<Payload> payloads, MeldingId klientMeldingId) {
+        return SendtMelding.fromSendResponse(utsendingKlient.send(
+            fellesBuilder(meldingType)
+            .headere(ImmutableMap.of(Melding.HeaderKlientMeldingId, klientMeldingId.toString()))
+            .build(), payloads.isEmpty() ? Option.none() : Option.of(encrypt.apply(payloads))));
     }
 
     public SendtMelding svar(String meldingType, InputStream melding, String filnavn) {
         return svar(meldingType, singletonList(new StreamPayload(melding, filnavn)));
     }
 
+    public SendtMelding svar(String meldingType, InputStream melding, String filnavn, MeldingId klientMeldingId) {
+        return svar(meldingType, singletonList(new StreamPayload(melding, filnavn)), klientMeldingId);
+    }
+
     public SendtMelding svar(String meldingType, String melding, String filnavn) {
         return svar(meldingType, singletonList(new StringPayload(melding, filnavn)));
+    }
+
+    public SendtMelding svar(String meldingType, String melding, String filnavn, MeldingId klientMeldingId) {
+        return svar(meldingType, singletonList(new StringPayload(melding, filnavn)), klientMeldingId);
     }
 
     public SendtMelding svar(String meldingType, Path melding) {
         return svar(meldingType, singletonList(new FilePayload(melding)));
     }
 
+    public SendtMelding svar(String meldingType, Path melding, MeldingId klientMeldingId) {
+        return svar(meldingType, singletonList(new FilePayload(melding)), klientMeldingId);
+    }
+
     public SendtMelding svar(String meldingType) {
         return svar(meldingType, Collections.emptyList());
+    }
+
+    public SendtMelding svar(String meldingType, MeldingId klientMeldingId) {
+        return svar(meldingType, Collections.emptyList(), klientMeldingId);
     }
 
     public void ack() {
@@ -65,5 +84,13 @@ public class SvarSender {
 
     public void nackWithRequeue() {
         amqpChannelFeedbackHandler.getHandleNackWithRequeue().run();
+    }
+
+    private MeldingSpesifikasjonApiModel.MeldingSpesifikasjonApiModelBuilder fellesBuilder(String meldingType) {
+        return MeldingSpesifikasjonApiModel.builder()
+            .avsenderKontoId(meldingSomSkalKvitteres.getMottakerKontoId().getUuid())
+            .mottakerKontoId(meldingSomSkalKvitteres.getAvsenderKontoId().getUuid())
+            .svarPaMelding(meldingSomSkalKvitteres.getMeldingId().getUuid())
+            .meldingType(meldingType);
     }
 }
