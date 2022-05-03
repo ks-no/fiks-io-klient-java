@@ -19,30 +19,30 @@
     <url>https://github.com/ks-no/fiks-io-klient-java</url>
   </scm>
   <properties>
-    <rabbitmq-amqp-client.version>5.14.0</rabbitmq-amqp-client.version>
+    <rabbitmq-amqp-client.version>5.14.2</rabbitmq-amqp-client.version>
     <feign-form-version>3.8.0</feign-form-version>
-    <fiks-feign-interceptors.version>1.1.0</fiks-feign-interceptors.version>
+    <fiks-feign-interceptors.version>1.1.1</fiks-feign-interceptors.version>
     <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
-    <difi-commons-asic.version>0.10.0</difi-commons-asic.version>
-    <guava.version>31.0.1-jre</guava.version>
-    <jackson.version>2.13.1</jackson.version>
-    <download-maven-plugin.version>1.6.7</download-maven-plugin.version>
-    <fiks-dokumentlager-klient.version>1.8.0</fiks-dokumentlager-klient.version>
-    <openapi-generator-maven-plugin.version>5.3.1</openapi-generator-maven-plugin.version>
-    <slf4j.version>1.7.32</slf4j.version>
-    <fiks-io-send-klient.version>1.3.0</fiks-io-send-klient.version>
+    <difi-commons-asic.version>0.11.0</difi-commons-asic.version>
+    <guava.version>31.1-jre</guava.version>
+    <jackson.version>2.13.2.20220328</jackson.version>
+    <download-maven-plugin.version>1.6.8</download-maven-plugin.version>
+    <fiks-dokumentlager-klient.version>1.8.2</fiks-dokumentlager-klient.version>
+    <openapi-generator-maven-plugin.version>5.4.0</openapi-generator-maven-plugin.version>
+    <slf4j.version>1.7.36</slf4j.version>
+    <fiks-io-send-klient.version>1.3.2</fiks-io-send-klient.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spec.location>https://ks-no.github.io/api/</spec.location>
     <spec.name>fiksio-katalog-api-v1</spec.name>
-    <fiks-maskinporten-client.version>2.0.3</fiks-maskinporten-client.version>
+    <fiks-maskinporten-client.version>2.0.5</fiks-maskinporten-client.version>
     <commons-io.version>2.11.0</commons-io.version>
-    <logback.version>1.2.10</logback.version>
-    <swagger-core-version>1.6.4</swagger-core-version>
-    <kryptering.version>1.1.1</kryptering.version>
+    <logback.version>1.2.11</logback.version>
+    <swagger-core-version>1.6.6</swagger-core-version>
+    <kryptering.version>1.1.2</kryptering.version>
     <java.version>1.8</java.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <fiks-io-commons.version>1.3.1</fiks-io-commons.version>
-    <mockito.version>4.2.0</mockito.version>
+    <mockito.version>4.4.0</mockito.version>
     <feign-version>11.8</feign-version>
     <lombok.version>1.18.22</lombok.version>
     <spec.postfix>json</spec.postfix>
@@ -298,7 +298,7 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.8.7</version>
+        <version>0.8.8</version>
         <configuration>
           <excludes>
             <exclude>**/katalog/*/*</exclude>
