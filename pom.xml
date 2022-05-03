@@ -21,7 +21,7 @@
   <properties>
     <rabbitmq-amqp-client.version>5.14.0</rabbitmq-amqp-client.version>
     <feign-form-version>3.8.0</feign-form-version>
-    <fiks-feign-interceptors.version>1.1.0</fiks-feign-interceptors.version>
+    <fiks-feign-interceptors.version>1.1.1</fiks-feign-interceptors.version>
     <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
     <difi-commons-asic.version>0.10.0</difi-commons-asic.version>
     <guava.version>31.0.1-jre</guava.version>
