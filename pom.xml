@@ -30,7 +30,7 @@
     <fiks-dokumentlager-klient.version>1.8.2</fiks-dokumentlager-klient.version>
     <openapi-generator-maven-plugin.version>5.4.0</openapi-generator-maven-plugin.version>
     <slf4j.version>1.7.36</slf4j.version>
-    <fiks-io-send-klient.version>1.3.0</fiks-io-send-klient.version>
+    <fiks-io-send-klient.version>1.3.2</fiks-io-send-klient.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spec.location>https://ks-no.github.io/api/</spec.location>
     <spec.name>fiksio-katalog-api-v1</spec.name>
