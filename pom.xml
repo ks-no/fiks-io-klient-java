@@ -42,7 +42,7 @@
     <java.version>1.8</java.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <fiks-io-commons.version>1.3.1</fiks-io-commons.version>
-    <mockito.version>4.4.0</mockito.version>
+    <mockito.version>4.5.1</mockito.version>
     <feign-version>11.8</feign-version>
     <lombok.version>1.18.24</lombok.version>
     <spec.postfix>json</spec.postfix>
