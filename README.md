@@ -10,7 +10,7 @@ Klient for å bruke Fiks IO i et JVM miljø
 ## Ta i bruk
 ### Forutsetninger
 
-  - Java 1.8 eller høyere
+  - Java 11 eller høyere 
 
 ### Maven
 Legg til følgende i POM-filen din:
@@ -19,7 +19,7 @@ Legg til følgende i POM-filen din:
        <dependency>
             <groupId>no.ks.fiks</groupId>
             <artifactId>fiks-io-klient-java</artifactId>
-            <version>1.2.25</version>
+            <version>2.0.0</version>
        </dependency>
     </dependencies>
 
