@@ -63,7 +63,7 @@ class AmqpHandler implements Closeable {
         try {
             amqpConnection = factory.newConnection(amqpKonf.getApplikasjonNavn());
             channel = amqpConnection.createChannel();
-            channel.basicQos(amqpKonf.getMottakBufferStorrelse(), true);
+            channel.basicQos(amqpKonf.getMottakBufferStorrelse(), false);
         } catch (IOException | TimeoutException e) {
             throw new RuntimeException(e);
         }
