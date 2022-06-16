@@ -2,6 +2,7 @@ package no.ks.fiks.io.client.konfigurasjon;
 
 import lombok.Builder;
 import lombok.Data;
+import no.ks.fiks.io.client.Meta;
 import no.ks.fiks.io.client.model.MeldingId;
 
 import java.util.function.Predicate;
@@ -26,6 +27,17 @@ public class AmqpKonfigurasjon {
      * Ikke påkrevd. Det er her mulig å konfigurere et predikat som forteller om en spesifikk melding har blitt behandlet tidligere, slik at man unngår duplikat meldinger som ellers kan oppstå gjennom en amqp kobling, pga. nettverksbrudd eller lignende.
      */
     @Builder.Default private Predicate<MeldingId> meldingErBehandlet = m -> false;
+
+    /**
+     * Meta informasjon om klienten som skal motta meldinger
+     */
+    @Builder.Default private String applikasjonNavn = String.format("Fiks IO klient (Java) %s", Meta.VERSJON);
+
+    /**
+     * Hvor mange meldinger skal buffres ved mottak. Trenger stort sett ikke endres.
+     * Teknisk informasjon: brukes som AMQP QOS/prefetch- størrelse for konsumentsiden
+     */
+    @Builder.Default private int mottakBufferStorrelse = 10;
 
     /**
      * Konfigurasjon for prod.
