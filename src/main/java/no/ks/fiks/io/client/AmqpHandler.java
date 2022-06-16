@@ -15,7 +15,7 @@ import no.ks.fiks.io.client.model.MottattMelding;
 import no.ks.fiks.io.commons.FiksIOHeaders;
 import no.ks.fiks.io.commons.FiksIOMeldingParser;
 import no.ks.fiks.io.commons.MottattMeldingMetadata;
-import no.ks.fiks.maskinporten.Maskinportenklient;
+import no.ks.fiks.maskinporten.MaskinportenklientOperations;
 import org.apache.commons.io.IOUtils;
 
 import javax.net.ssl.SSLContext;
@@ -49,7 +49,7 @@ class AmqpHandler implements Closeable {
                 @NonNull FiksIntegrasjonKonfigurasjon intKonf,
                 @NonNull FiksIOHandler fiksIOHandler,
                 @NonNull AsicHandler asic,
-                @NonNull Maskinportenklient maskinportenklient,
+                @NonNull MaskinportenklientOperations maskinportenklient,
                 @NonNull KontoId kontoId,
                 @NonNull DokumentlagerKlient dokumentlagerKlient) {
         this.fiksIOHandler = fiksIOHandler;
@@ -61,8 +61,9 @@ class AmqpHandler implements Closeable {
         ConnectionFactory factory = getConnectionFactory(amqpKonf, intKonf, maskinportenklient);
 
         try {
-            amqpConnection = factory.newConnection();
+            amqpConnection = factory.newConnection(amqpKonf.getApplikasjonNavn());
             channel = amqpConnection.createChannel();
+            channel.basicQos(amqpKonf.getMottakBufferStorrelse(), true);
         } catch (IOException | TimeoutException e) {
             throw new RuntimeException(e);
         }
@@ -139,7 +140,7 @@ class AmqpHandler implements Closeable {
         return getDokumentlagerId(m) != null;
     }
 
-    private ConnectionFactory getConnectionFactory(AmqpKonfigurasjon amqpKonf, FiksIntegrasjonKonfigurasjon intKonf, Maskinportenklient maskinportenklient) {
+    private ConnectionFactory getConnectionFactory(AmqpKonfigurasjon amqpKonf, FiksIntegrasjonKonfigurasjon intKonf, MaskinportenklientOperations maskinportenklient) {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(amqpKonf.getHost());
         factory.setPort(amqpKonf.getPort());

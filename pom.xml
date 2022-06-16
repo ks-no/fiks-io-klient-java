@@ -241,8 +241,15 @@
       <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
+
   </dependencies>
   <build>
+    <resources>
+      <resource>
+        <filtering>true</filtering>
+        <directory>${basedir}/src/main/resources</directory>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
