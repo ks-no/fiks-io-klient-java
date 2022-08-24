@@ -46,7 +46,7 @@
     <enforcer.jdk.version>${java.version}</enforcer.jdk.version>
     <fiks-io-commons.version>1.4.1</fiks-io-commons.version>
     <mockito.version>4.7.0</mockito.version>
-    <feign-version>11.8</feign-version>
+    <feign-version>11.9.1</feign-version>
     <lombok.version>1.18.24</lombok.version>
     <spec.postfix>json</spec.postfix>
     <oltu-version>1.0.2</oltu-version>
