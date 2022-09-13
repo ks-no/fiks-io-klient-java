@@ -1,6 +1,5 @@
 package no.ks.fiks.io.client;
 
-import io.vavr.control.Option;
 import no.ks.fiks.io.asice.AsicHandler;
 import no.ks.fiks.io.client.model.*;
 import no.ks.fiks.io.client.send.FiksIOSender;
@@ -22,6 +21,7 @@ import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipInputStream;
@@ -76,7 +76,7 @@ class FiksIOHandlerTest {
                     .toMillis())
                 .headere(meldingRequest.getHeadere())
                 .build();
-            when(utsendingKlient.send(isA(MeldingSpesifikasjonApiModel.class), isA(Option.class))).thenReturn(sendtMeldingApiModel);
+            when(utsendingKlient.send(isA(MeldingSpesifikasjonApiModel.class), isA(Optional.class))).thenReturn(sendtMeldingApiModel);
 
             final SendtMelding sendtMelding = fiksIOHandler.send(meldingRequest, Collections.emptyList());
             assertAll(
@@ -87,7 +87,7 @@ class FiksIOHandlerTest {
                     .toMillis())
             );
 
-            verify(utsendingKlient).send(isA(MeldingSpesifikasjonApiModel.class), eq(Option.none()));
+            verify(utsendingKlient).send(isA(MeldingSpesifikasjonApiModel.class), eq(Optional.empty()));
             verifyNoMoreInteractions(utsendingKlient);
             verifyNoInteractions(katalogHandler, asicHandler, x509Certificate);
         }
@@ -111,7 +111,7 @@ class FiksIOHandlerTest {
                     .toMillis())
                 .headere(meldingRequest.getHeadere())
                 .build();
-            when(utsendingKlient.send(isA(MeldingSpesifikasjonApiModel.class), isA(Option.class))).thenReturn(sendtMeldingApiModel);
+            when(utsendingKlient.send(isA(MeldingSpesifikasjonApiModel.class), isA(Optional.class))).thenReturn(sendtMeldingApiModel);
             when(katalogHandler.getPublicKey(eq(meldingRequest.getMottakerKontoId()))).thenReturn(x509Certificate);
             when(asicHandler.encrypt(same(x509Certificate), isA(List.class))).thenReturn(new ByteArrayInputStream(new byte[]{0, 1, 0, 1}));
 
@@ -125,7 +125,7 @@ class FiksIOHandlerTest {
                     .toMillis())
             );
             final ArgumentCaptor<MeldingSpesifikasjonApiModel> meldingRequestCaptor = ArgumentCaptor.forClass(MeldingSpesifikasjonApiModel.class);
-            verify(utsendingKlient).send(meldingRequestCaptor.capture(), isA(Option.class));
+            verify(utsendingKlient).send(meldingRequestCaptor.capture(), isA(Optional.class));
 
 
             verify(katalogHandler).getPublicKey(eq(meldingRequest.getMottakerKontoId()));
@@ -192,14 +192,14 @@ class FiksIOHandlerTest {
                     .toMillis())
                 .headere(Collections.emptyMap())
                 .build();
-            when(utsendingKlient.send(isA(MeldingSpesifikasjonApiModel.class), isA(Option.class))).thenReturn(sendtMeldingApiModel);
+            when(utsendingKlient.send(isA(MeldingSpesifikasjonApiModel.class), isA(Optional.class))).thenReturn(sendtMeldingApiModel);
 
             try (final InputStream dataStream = new ByteArrayInputStream("Innhold".getBytes())) {
                 final SendtMelding sendtMelding = fiksIOHandler.sendRaw(meldingRequest, dataStream);
                 assertNotNull(sendtMelding);
                 assertEquals(sendtMelding.getMeldingId().getUuid(), sendtMeldingApiModel.getMeldingId());
             }
-            verify(utsendingKlient).send(isA(MeldingSpesifikasjonApiModel.class), isA(Option.class));
+            verify(utsendingKlient).send(isA(MeldingSpesifikasjonApiModel.class), isA(Optional.class));
             verifyNoInteractions(katalogHandler, asicHandler, x509Certificate);
         }
     }

@@ -1,7 +1,6 @@
 package no.ks.fiks.io.client;
 
 import com.google.common.collect.ImmutableMap;
-import io.vavr.control.Option;
 import no.ks.fiks.io.client.model.*;
 import no.ks.fiks.io.client.send.FiksIOSender;
 import no.ks.fiks.io.klient.MeldingSpesifikasjonApiModel;
@@ -21,7 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
 import java.util.Collections;
-import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipInputStream;
@@ -59,7 +58,7 @@ class SvarSenderTest {
             final MottattMelding mottattMelding = createMottattMelding(buf, inputStream);
 
             final SvarSender svarSender = createSvarSender(buf, mottattMelding);
-            when(fiksIOSender.send(isA(MeldingSpesifikasjonApiModel.class), isA(Option.class)))
+            when(fiksIOSender.send(isA(MeldingSpesifikasjonApiModel.class), isA(Optional.class)))
                 .thenAnswer((Answer<SendtMeldingApiModel>) invocationOnMock -> {
                     MeldingSpesifikasjonApiModel meldingSpesifikasjonApiModel = invocationOnMock.getArgument(0);
                     return SendtMeldingApiModel.builder()
@@ -74,7 +73,7 @@ class SvarSenderTest {
             final SendtMelding sendtMelding = svarSender.svar(mottattMelding.getMeldingType());
             assertNotNull(sendtMelding);
             assertFalse(ackCompleted.get());
-            verify(fiksIOSender).send(isA(MeldingSpesifikasjonApiModel.class), isA(Option.class));
+            verify(fiksIOSender).send(isA(MeldingSpesifikasjonApiModel.class), isA(Optional.class));
             verifyNoMoreInteractions(fiksIOSender);
         }
     }
@@ -88,7 +87,7 @@ class SvarSenderTest {
             final MottattMelding mottattMelding = createMottattMelding(buf, inputStream);
             final MeldingId klientMeldingId = new MeldingId(UUID.randomUUID());
             final SvarSender svarSender = createSvarSender(buf, mottattMelding);
-            when(fiksIOSender.send(isA(MeldingSpesifikasjonApiModel.class), isA(Option.class)))
+            when(fiksIOSender.send(isA(MeldingSpesifikasjonApiModel.class), isA(Optional.class)))
                 .thenAnswer((Answer<SendtMeldingApiModel>) invocationOnMock -> {
                     MeldingSpesifikasjonApiModel meldingSpesifikasjonApiModel = invocationOnMock.getArgument(0);
                     return SendtMeldingApiModel.builder()
@@ -105,7 +104,7 @@ class SvarSenderTest {
             assertEquals(klientMeldingId, sendtMelding.getKlientMeldingId());
             assertNotNull(sendtMelding);
             assertFalse(ackCompleted.get());
-            verify(fiksIOSender).send(isA(MeldingSpesifikasjonApiModel.class), isA(Option.class));
+            verify(fiksIOSender).send(isA(MeldingSpesifikasjonApiModel.class), isA(Optional.class));
             verifyNoMoreInteractions(fiksIOSender);
         }
     }

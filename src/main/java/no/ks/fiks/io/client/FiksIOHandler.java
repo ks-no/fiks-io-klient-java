@@ -1,6 +1,5 @@
 package no.ks.fiks.io.client;
 
-import io.vavr.control.Option;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import no.ks.fiks.io.asice.AsicHandler;
@@ -14,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.cert.X509Certificate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -63,7 +63,7 @@ class FiksIOHandler implements Closeable {
         log.debug("Sender melding til \"{}\"", mottagerKontoId);
         return utsendingKlient.send(
             lagMeldingSpesifikasjon(request),
-            payload.isEmpty() ? Option.none() : Option.some(encrypt(payload, request.getMottakerKontoId())));
+            Optional.of(payload).filter(p -> ! p.isEmpty()).map(p -> encrypt(p, request.getMottakerKontoId())));
     }
 
     private MeldingSpesifikasjonApiModel lagMeldingSpesifikasjon(@NonNull MeldingRequest request) {
@@ -83,7 +83,7 @@ class FiksIOHandler implements Closeable {
         final UUID mottagerKontoId = meldingRequest.getMottakerKontoId()
             .getUuid();
         log.debug("Sender ferdig kryptert melding til \"{}\"", mottagerKontoId);
-        return utsendingKlient.send(lagMeldingSpesifikasjon(meldingRequest), Option.of(inputStream));
+        return utsendingKlient.send(lagMeldingSpesifikasjon(meldingRequest), Optional.of(inputStream));
     }
 
     private InputStream encrypt(@NonNull final List<Payload> payload, final KontoId kontoId) {
