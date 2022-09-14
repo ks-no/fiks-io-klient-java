@@ -1,7 +1,6 @@
 package no.ks.fiks.io.client;
 
 import com.google.common.collect.ImmutableMap;
-import io.vavr.control.Option;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -14,6 +13,7 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 import static java.util.Collections.singletonList;
@@ -32,14 +32,14 @@ public class SvarSender {
 
     public SendtMelding svar(String meldingType, List<Payload> payloads) {
         return SendtMelding.fromSendResponse(utsendingKlient.send(
-            fellesBuilder(meldingType).build(), payloads.isEmpty() ? Option.none() : Option.of(encrypt.apply(payloads))));
+            fellesBuilder(meldingType).build(), Optional.ofNullable(payloads).filter(p -> ! p.isEmpty()).map(encrypt)));
     }
 
     public SendtMelding svar(String meldingType, List<Payload> payloads, MeldingId klientMeldingId) {
         return SendtMelding.fromSendResponse(utsendingKlient.send(
             fellesBuilder(meldingType)
             .headere(ImmutableMap.of(Melding.HeaderKlientMeldingId, klientMeldingId.toString()))
-            .build(), payloads.isEmpty() ? Option.none() : Option.of(encrypt.apply(payloads))));
+            .build(), Optional.ofNullable(payloads).filter(p -> ! p.isEmpty()).map(encrypt)));
     }
 
     public SendtMelding svar(String meldingType, InputStream melding, String filnavn) {
