@@ -49,7 +49,6 @@
     <feign-version>11.10</feign-version>
     <lombok.version>1.18.24</lombok.version>
     <spec.postfix>json</spec.postfix>
-    <oltu-version>1.0.2</oltu-version>
     <junit-jupiter.version>5.9.1</junit-jupiter.version>
     <maven-surefire-plugin.version>3.0.0-M7</maven-surefire-plugin.version>
     <jackson-databind-nullable.version>0.2.3</jackson-databind-nullable.version>
@@ -204,11 +203,6 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.oltu.oauth2</groupId>
-      <artifactId>org.apache.oltu.oauth2.client</artifactId>
-      <version>${oltu-version}</version>
     </dependency>
     <dependency>
       <groupId>org.openapitools</groupId>
