@@ -53,7 +53,7 @@
     <maven-surefire-plugin.version>3.0.0-M7</maven-surefire-plugin.version>
     <jackson-databind-nullable.version>0.2.3</jackson-databind-nullable.version>
     <fiks-io-asice-handler.version>1.2.2</fiks-io-asice-handler.version>
-    <scribejava.version>8.3.1</scribejava.version>
+    <scribejava.version>8.3.2</scribejava.version>
   </properties>
   <dependencyManagement>
     <dependencies>
