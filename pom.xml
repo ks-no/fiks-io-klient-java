@@ -36,7 +36,7 @@
     <spec.name>fiksio-katalog-api-v1</spec.name>
     <fiks-maskinporten-client.version>2.1.2</fiks-maskinporten-client.version>
     <commons-io.version>2.11.0</commons-io.version>
-    <logback.version>1.2.11</logback.version>
+    <logback.version>1.4.4</logback.version>
     <swagger-core-version>1.6.8</swagger-core-version>
     <kryptering.version>1.2.1</kryptering.version>
     <java.version>11</java.version>
