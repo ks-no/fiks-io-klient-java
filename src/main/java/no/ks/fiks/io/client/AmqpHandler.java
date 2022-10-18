@@ -15,6 +15,7 @@ import no.ks.fiks.io.client.model.MottattMelding;
 import no.ks.fiks.io.commons.FiksIOHeaders;
 import no.ks.fiks.io.commons.FiksIOMeldingParser;
 import no.ks.fiks.io.commons.MottattMeldingMetadata;
+import no.ks.fiks.maskinporten.AccessTokenRequest;
 import no.ks.fiks.maskinporten.MaskinportenklientOperations;
 import org.apache.commons.io.IOUtils;
 
@@ -40,7 +41,7 @@ class AmqpHandler implements Closeable {
     private final Channel channel;
     private final Predicate<MeldingId> meldingErBehandlet;
     private final DokumentlagerKlient dokumentlagerKlient;
-    private KontoId kontoId;
+    private final KontoId kontoId;
     private final FiksIOHandler fiksIOHandler;
     private final AsicHandler asic;
     private final Connection amqpConnection;
@@ -78,14 +79,8 @@ class AmqpHandler implements Closeable {
                     log.debug("message {} has been delivered before and is automatically acked", parsed.getMeldingId());
                     channel.basicAck(m.getEnvelope().getDeliveryTag(), false);
                 } else {
-                    boolean hasPayloadInDokumentlager = payloadInDokumentlager(m);
-                    MottattMelding melding = MottattMelding.fromMottattMeldingMetadata(
-                        parsed,
-                        hasPayloadInDokumentlager || m.getBody() != null,
-                        f -> asic.writeDecrypted(hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()), f),
-                        f -> writeFile(hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()), f),
-                        () -> hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()),
-                        () -> asic.decrypt(hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody())));
+
+                    MottattMelding melding = getMelding(m, parsed, asic, dokumentlagerKlient);
                     onMelding.accept(melding, fiksIOHandler.buildKvitteringSender(amqpChannelFeedbackHandler(m.getEnvelope().getDeliveryTag())
                         , melding));
                 }
@@ -93,6 +88,17 @@ class AmqpHandler implements Closeable {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    static MottattMelding getMelding(Delivery m, MottattMeldingMetadata parsed, AsicHandler asic, DokumentlagerKlient dokumentlagerKlient) {
+        boolean hasPayloadInDokumentlager = payloadInDokumentlager(m);
+        return MottattMelding.fromMottattMeldingMetadata(
+            parsed,
+            hasPayloadInDokumentlager || (m.getBody() != null && m.getBody().length > 0),
+            f -> asic.writeDecrypted(hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()), f),
+            f -> writeFile(hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()), f),
+            () -> hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()),
+            () -> asic.decrypt(hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody())));
     }
 
     private AmqpChannelFeedbackHandler amqpChannelFeedbackHandler(final long deliveryTag) {
@@ -161,7 +167,7 @@ class AmqpHandler implements Closeable {
 
             @Override
             public String getPassword() {
-                return String.format("%s %s", intKonf.getIntegrasjonPassord(), maskinportenklient.getAccessToken(FiksIOKlientFactory.MASKINPORTEN_KS_SCOPE));
+                return String.format("%s %s", intKonf.getIntegrasjonPassord(), maskinportenklient.getAccessToken(AccessTokenRequest.builder().scope(FiksIOKlientFactory.MASKINPORTEN_KS_SCOPE).build()));
             }
         });
         return factory;
