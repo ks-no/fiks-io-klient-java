@@ -5,12 +5,24 @@
 ![GitHub last commit](https://img.shields.io/github/last-commit/ks-no/fiks-io-klient-java.svg)
 ![GitHub Release Date](https://img.shields.io/github/release-date/ks-no/fiks-io-klient-java.svg)
 
-Klient for å bruke Fiks IO i et JVM miljø
+Dette er en klient for å bruke Fiks IO i et JVM miljø
+
+
+Fiks IO er et meldingssystem for offentlig sektor i Norge. [Om Fiks IO](https://ks-no.github.io/fiks-plattform/tjenester/fiksprotokoll/fiksio/)
+
+Fiks IO er også det underliggende meldingssystemet for Fiks Protokoll meldinger. Les mer om Fiks Protokoll [her](https://ks-no.github.io/fiks-plattform/tjenester/fiksprotokoll/)
+
+
+### Forenkler bruk av Fiks-IO
+Denne klienten og tilsvarende klienter for andre språk utgitt av KS forenkler autentisering, kryptering og kommunikasjon med meldinger via Fiks-IO.
+Fiks-IO forlanger f.eks. noen spesifikke [headere](https://ks-no.github.io/fiks-plattform/tjenester/fiksprotokoll/fiksio/#headere) i meldingene.
+Ved å bruke denne klienten blir disse detaljene skjult og forenkler sending og mottak av meldinger gjennom Fiks-IO. Du kan lese mer om Fiks-IO headerene [her](https://ks-no.github.io/fiks-plattform/tjenester/fiksprotokoll/fiksio/#headere).
+
 
 ## Ta i bruk
 ### Forutsetninger
 
-  - Java 11 eller høyere 
+  - Java 11 eller høyere
 
 ### Maven
 Legg til følgende i POM-filen din:
