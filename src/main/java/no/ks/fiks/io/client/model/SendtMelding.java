@@ -8,6 +8,7 @@ import no.ks.fiks.io.klient.SendtMeldingApiModel;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Data
@@ -17,7 +18,7 @@ public class SendtMelding implements Melding {
     @NonNull private KontoId avsenderKontoId;
     @NonNull private String meldingType;
     @NonNull private KontoId mottakerKontoId;
-    @NonNull private Duration ttl;
+    private Duration ttl;
     private Map<String, String> headere;
     private MeldingId svarPaMelding;
     private MeldingId klientMeldingId;
@@ -28,7 +29,7 @@ public class SendtMelding implements Melding {
             .avsenderKontoId(new KontoId(melding.getAvsenderKontoId()))
             .meldingType(melding.getMeldingType())
             .mottakerKontoId(new KontoId(melding.getMottakerKontoId()))
-            .ttl(Duration.ofMillis(melding.getTtl()))
+            .ttl(Optional.ofNullable(melding.getTtl()).map(Duration::ofMillis).orElse(null))
             .headere(melding.getHeadere() != null ? melding.getHeadere() : Collections.emptyMap())
             .svarPaMelding(melding.getSvarPaMelding() != null ? new MeldingId(melding.getSvarPaMelding()) : null)
             .klientMeldingId(getKlientMeldingIdFromHeader(melding))
