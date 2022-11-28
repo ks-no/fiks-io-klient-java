@@ -1,9 +1,17 @@
 version: 2
+registries:
+  fiks-artifactory-maven-all:
+    type: maven-repository
+    url: https://artifactory.fiks.ks.no/artifactory/maven-all
+    username: tok-dependabot
+    password: ${{secrets.DEPENDABOT}}
 updates:
-- package-ecosystem: maven
-  directory: "/"
-  schedule:
-    interval: daily
-    time: "03:00"
-    timezone: Europe/Oslo
-  open-pull-requests-limit: 15
+  - package-ecosystem: maven
+    directory: "/"
+    schedule:
+      interval: daily
+      time: "03:00"
+      timezone: Europe/Oslo
+    open-pull-requests-limit: 30
+    registries:
+      - fiks-artifactory-maven-all
