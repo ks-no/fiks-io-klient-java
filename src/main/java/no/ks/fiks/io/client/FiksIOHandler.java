@@ -12,10 +12,10 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.cert.X509Certificate;
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -73,8 +73,7 @@ class FiksIOHandler implements Closeable {
             .meldingType(request.getMeldingType())
             .svarPaMelding(request.getSvarPaMelding() == null ? null : request.getSvarPaMelding()
                 .getUuid())
-            .ttl(TimeUnit.SECONDS.toMillis(request.getTtl()
-                .getSeconds()))
+            .ttl(Optional.ofNullable(request.getTtl()).map(Duration::toMillis).orElse(null))
             .headere(request.getHeadere())
             .build();
     }
