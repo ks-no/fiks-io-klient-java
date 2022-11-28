@@ -2,7 +2,6 @@ package no.ks.fiks.io.client.model;
 
 import lombok.*;
 import no.ks.fiks.io.commons.MottattMeldingMetadata;
-import no.ks.fiks.io.klient.SendtMeldingApiModel;
 
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -26,7 +25,6 @@ public class MottattMelding implements Melding {
     private KontoId avsenderKontoId;
     @NonNull
     private KontoId mottakerKontoId;
-    @NonNull
     private Duration ttl;
     @Builder.Default
     private boolean resendt = false;
@@ -64,7 +62,7 @@ public class MottattMelding implements Melding {
             .meldingType(melding.getMeldingType())
             .avsenderKontoId(new KontoId(melding.getAvsenderKontoId()))
             .mottakerKontoId(new KontoId(melding.getMottakerKontoId()))
-            .ttl(Duration.ofMillis(melding.getTtl()))
+            .ttl( (melding.getTtl() != null) ? Duration.ofMillis(melding.getTtl()) : null)
             .svarPaMelding(melding.getSvarPaMelding() != null ? new MeldingId(melding.getSvarPaMelding()) : null)
             .klientMeldingId(getKlientMeldingIdFromHeader(melding))
             .headere(melding.getHeadere() != null ? melding.getHeadere() : Collections.emptyMap())
