@@ -33,6 +33,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.zip.ZipInputStream;
 
 @Slf4j
 class AmqpHandler implements Closeable {
@@ -92,13 +94,34 @@ class AmqpHandler implements Closeable {
 
     static MottattMelding getMelding(Delivery m, MottattMeldingMetadata parsed, AsicHandler asic, DokumentlagerKlient dokumentlagerKlient) {
         boolean hasPayloadInDokumentlager = payloadInDokumentlager(m);
+
+        Consumer<Path> writeDekryptertZip = f -> {
+            try (InputStream payload = hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody())) {
+                asic.writeDecrypted(payload, f);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        };
+        Consumer<Path> writeKryptertZip = f -> {
+            try (InputStream payload = hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody())) {
+                writeFile(payload, f);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        };
+
+        // The consumer of these supplier methods are responsible for closing the input stream
+        Supplier<InputStream> kryptertStreamSupplier = () -> hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody());
+        Supplier<ZipInputStream> zipInputStreamSupplier = () -> asic.decrypt(kryptertStreamSupplier.get());
+
         return MottattMelding.fromMottattMeldingMetadata(
             parsed,
             hasPayloadInDokumentlager || (m.getBody() != null && m.getBody().length > 0),
-            f -> asic.writeDecrypted(hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()), f),
-            f -> writeFile(hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()), f),
-            () -> hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()),
-            () -> asic.decrypt(hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody())));
+            writeDekryptertZip,
+            writeKryptertZip,
+            kryptertStreamSupplier,
+            zipInputStreamSupplier
+        );
     }
 
     private AmqpChannelFeedbackHandler amqpChannelFeedbackHandler(final long deliveryTag) {
