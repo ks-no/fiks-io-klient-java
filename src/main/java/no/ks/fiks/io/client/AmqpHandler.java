@@ -43,18 +43,18 @@ class AmqpHandler implements Closeable {
     private final DokumentlagerKlient dokumentlagerKlient;
     private final KontoId kontoId;
     private final FiksIOHandler fiksIOHandler;
-    private final AsicHandler asic;
+    private final AsicHandler asicHandler;
     private final Connection amqpConnection;
 
     AmqpHandler(@NonNull AmqpKonfigurasjon amqpKonf,
                 @NonNull FiksIntegrasjonKonfigurasjon intKonf,
                 @NonNull FiksIOHandler fiksIOHandler,
-                @NonNull AsicHandler asic,
+                @NonNull AsicHandler asicHandler,
                 @NonNull MaskinportenklientOperations maskinportenklient,
                 @NonNull KontoId kontoId,
                 @NonNull DokumentlagerKlient dokumentlagerKlient) {
         this.fiksIOHandler = fiksIOHandler;
-        this.asic = asic;
+        this.asicHandler = asicHandler;
         this.kontoId = kontoId;
         this.meldingErBehandlet = amqpKonf.getMeldingErBehandlet();
         this.dokumentlagerKlient = dokumentlagerKlient;
@@ -72,16 +72,16 @@ class AmqpHandler implements Closeable {
 
     void newConsume(@NonNull BiConsumer<MottattMelding, SvarSender> onMelding, @NonNull Consumer<ShutdownSignalException> onClose) {
         try {
-            channel.basicConsume(FiksIOHeaders.getKontoQueueName(kontoId.getUuid()), (ct, m) -> {
-                MottattMeldingMetadata parsed = FiksIOMeldingParser.parse(m.getEnvelope(), m.getProperties());
+            channel.basicConsume(FiksIOHeaders.getKontoQueueName(kontoId.getUuid()), (ct, delivery) -> {
+                MottattMeldingMetadata parsed = FiksIOMeldingParser.parse(delivery.getEnvelope(), delivery.getProperties());
 
-                if (m.getEnvelope().isRedeliver() && meldingErBehandlet.test(new MeldingId(parsed.getMeldingId()))) {
+                if (delivery.getEnvelope().isRedeliver() && meldingErBehandlet.test(new MeldingId(parsed.getMeldingId()))) {
                     log.debug("message {} has been delivered before and is automatically acked", parsed.getMeldingId());
-                    channel.basicAck(m.getEnvelope().getDeliveryTag(), false);
+                    channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
                 } else {
 
-                    MottattMelding melding = getMelding(m, parsed, asic, dokumentlagerKlient);
-                    onMelding.accept(melding, fiksIOHandler.buildKvitteringSender(amqpChannelFeedbackHandler(m.getEnvelope().getDeliveryTag())
+                    MottattMelding melding = getMelding(delivery, parsed, asicHandler, dokumentlagerKlient);
+                    onMelding.accept(melding, fiksIOHandler.buildKvitteringSender(amqpChannelFeedbackHandler(delivery.getEnvelope().getDeliveryTag())
                         , melding));
                 }
             }, (consumerTag, sig) -> onClose.accept(sig));
