@@ -33,6 +33,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.zip.ZipInputStream;
 
 @Slf4j
 class AmqpHandler implements Closeable {
@@ -43,18 +45,18 @@ class AmqpHandler implements Closeable {
     private final DokumentlagerKlient dokumentlagerKlient;
     private final KontoId kontoId;
     private final FiksIOHandler fiksIOHandler;
-    private final AsicHandler asic;
+    private final AsicHandler asicHandler;
     private final Connection amqpConnection;
 
     AmqpHandler(@NonNull AmqpKonfigurasjon amqpKonf,
                 @NonNull FiksIntegrasjonKonfigurasjon intKonf,
                 @NonNull FiksIOHandler fiksIOHandler,
-                @NonNull AsicHandler asic,
+                @NonNull AsicHandler asicHandler,
                 @NonNull MaskinportenklientOperations maskinportenklient,
                 @NonNull KontoId kontoId,
                 @NonNull DokumentlagerKlient dokumentlagerKlient) {
         this.fiksIOHandler = fiksIOHandler;
-        this.asic = asic;
+        this.asicHandler = asicHandler;
         this.kontoId = kontoId;
         this.meldingErBehandlet = amqpKonf.getMeldingErBehandlet();
         this.dokumentlagerKlient = dokumentlagerKlient;
@@ -72,16 +74,16 @@ class AmqpHandler implements Closeable {
 
     void newConsume(@NonNull BiConsumer<MottattMelding, SvarSender> onMelding, @NonNull Consumer<ShutdownSignalException> onClose) {
         try {
-            channel.basicConsume(FiksIOHeaders.getKontoQueueName(kontoId.getUuid()), (ct, m) -> {
-                MottattMeldingMetadata parsed = FiksIOMeldingParser.parse(m.getEnvelope(), m.getProperties());
+            channel.basicConsume(FiksIOHeaders.getKontoQueueName(kontoId.getUuid()), (ct, delivery) -> {
+                MottattMeldingMetadata parsed = FiksIOMeldingParser.parse(delivery.getEnvelope(), delivery.getProperties());
 
-                if (m.getEnvelope().isRedeliver() && meldingErBehandlet.test(new MeldingId(parsed.getMeldingId()))) {
+                if (delivery.getEnvelope().isRedeliver() && meldingErBehandlet.test(new MeldingId(parsed.getMeldingId()))) {
                     log.debug("message {} has been delivered before and is automatically acked", parsed.getMeldingId());
-                    channel.basicAck(m.getEnvelope().getDeliveryTag(), false);
+                    channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
                 } else {
 
-                    MottattMelding melding = getMelding(m, parsed, asic, dokumentlagerKlient);
-                    onMelding.accept(melding, fiksIOHandler.buildKvitteringSender(amqpChannelFeedbackHandler(m.getEnvelope().getDeliveryTag())
+                    MottattMelding melding = getMelding(delivery, parsed, asicHandler, dokumentlagerKlient);
+                    onMelding.accept(melding, fiksIOHandler.buildKvitteringSender(amqpChannelFeedbackHandler(delivery.getEnvelope().getDeliveryTag())
                         , melding));
                 }
             }, (consumerTag, sig) -> onClose.accept(sig));
@@ -92,13 +94,34 @@ class AmqpHandler implements Closeable {
 
     static MottattMelding getMelding(Delivery m, MottattMeldingMetadata parsed, AsicHandler asic, DokumentlagerKlient dokumentlagerKlient) {
         boolean hasPayloadInDokumentlager = payloadInDokumentlager(m);
+
+        Consumer<Path> writeDekryptertZip = f -> {
+            try (InputStream payload = hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody())) {
+                asic.writeDecrypted(payload, f);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        };
+        Consumer<Path> writeKryptertZip = f -> {
+            try (InputStream payload = hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody())) {
+                writeFile(payload, f);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        };
+
+        // The consumer of these supplier methods are responsible for closing the input stream
+        Supplier<InputStream> kryptertStreamSupplier = () -> hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody());
+        Supplier<ZipInputStream> zipInputStreamSupplier = () -> asic.decrypt(kryptertStreamSupplier.get());
+
         return MottattMelding.fromMottattMeldingMetadata(
             parsed,
             hasPayloadInDokumentlager || (m.getBody() != null && m.getBody().length > 0),
-            f -> asic.writeDecrypted(hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()), f),
-            f -> writeFile(hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()), f),
-            () -> hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody()),
-            () -> asic.decrypt(hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody())));
+            writeDekryptertZip,
+            writeKryptertZip,
+            kryptertStreamSupplier,
+            zipInputStreamSupplier
+        );
     }
 
     private AmqpChannelFeedbackHandler amqpChannelFeedbackHandler(final long deliveryTag) {
