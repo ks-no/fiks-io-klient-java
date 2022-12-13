@@ -92,31 +92,31 @@ class AmqpHandler implements Closeable {
         }
     }
 
-    static MottattMelding getMelding(Delivery m, MottattMeldingMetadata parsed, AsicHandler asic, DokumentlagerKlient dokumentlagerKlient) {
-        boolean hasPayloadInDokumentlager = payloadInDokumentlager(m);
+    static MottattMelding getMelding(Delivery delivery, MottattMeldingMetadata parsed, AsicHandler asicHandler, DokumentlagerKlient dokumentlagerKlient) {
+        boolean hasPayloadInDokumentlager = payloadInDokumentlager(delivery);
 
         Consumer<Path> writeDekryptertZip = f -> {
-            try (InputStream payload = hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody())) {
-                asic.writeDecrypted(payload, f);
+            try (InputStream payload = hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(delivery)).getResult() : new ByteArrayInputStream(delivery.getBody())) {
+                asicHandler.writeDecrypted(payload, f);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("WriteDekrypterZip failed", e);
             }
         };
         Consumer<Path> writeKryptertZip = f -> {
-            try (InputStream payload = hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody())) {
+            try (InputStream payload = hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(delivery)).getResult() : new ByteArrayInputStream(delivery.getBody())) {
                 writeFile(payload, f);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("WriteKryptertZip failed", e);
             }
         };
 
         // The consumer of these supplier methods are responsible for closing the input stream
-        Supplier<InputStream> kryptertStreamSupplier = () -> hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(m)).getResult() : new ByteArrayInputStream(m.getBody());
-        Supplier<ZipInputStream> zipInputStreamSupplier = () -> asic.decrypt(kryptertStreamSupplier.get());
+        Supplier<InputStream> kryptertStreamSupplier = () -> hasPayloadInDokumentlager ? dokumentlagerKlient.download(getDokumentlagerId(delivery)).getResult() : new ByteArrayInputStream(delivery.getBody());
+        Supplier<ZipInputStream> zipInputStreamSupplier = () -> asicHandler.decrypt(kryptertStreamSupplier.get());
 
         return MottattMelding.fromMottattMeldingMetadata(
             parsed,
-            hasPayloadInDokumentlager || (m.getBody() != null && m.getBody().length > 0),
+            hasPayloadInDokumentlager || (delivery.getBody() != null && delivery.getBody().length > 0),
             writeDekryptertZip,
             writeKryptertZip,
             kryptertStreamSupplier,
