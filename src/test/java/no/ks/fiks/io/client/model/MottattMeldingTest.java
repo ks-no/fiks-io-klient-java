@@ -78,6 +78,35 @@ class MottattMeldingTest {
         Files.delete(tempDirectory);
     }
 
+    @DisplayName("Bygger melding uten ttl")
+    @Test
+    void meldingUtenTTL() throws IOException {
+        final MottattMeldingMetadata mottattMeldingMetadata = MottattMeldingMetadata.builder()
+            .avsenderKontoId(UUID.randomUUID())
+            .meldingId(UUID.randomUUID())
+            .meldingType("meldingType")
+            .mottakerKontoId(UUID.randomUUID())
+            .svarPaMelding(UUID.randomUUID())
+            .deliveryTag(Long.MAX_VALUE)
+            .resendt(true)
+            .build();
+        final MottattMelding mottattMelding = MottattMelding.fromMottattMeldingMetadata(
+            mottattMeldingMetadata,
+            false, path -> {
+            },
+            path -> {
+            },
+            () -> new NullInputStream(0L), () -> new ZipInputStream(new NullInputStream(100L)));
+        assertFalse(mottattMelding.isHarPayload());
+
+        final Path tempDirectory = Files.createTempDirectory(RandomString.make(10));
+        assertEquals(MottattMelding.NO_PAYLOAD_MESSAGE, assertThrows(IllegalStateException.class, () -> mottattMelding.getDekryptertZipStream()).getMessage());
+        assertEquals(MottattMelding.NO_PAYLOAD_MESSAGE, assertThrows(IllegalStateException.class, () -> mottattMelding.getKryptertStream()).getMessage());
+        assertEquals(MottattMelding.NO_PAYLOAD_MESSAGE, assertThrows(IllegalStateException.class, () -> mottattMelding.writeDekryptertZip(tempDirectory)).getMessage());
+        assertEquals(MottattMelding.NO_PAYLOAD_MESSAGE, assertThrows(IllegalStateException.class, () -> mottattMelding.writeKryptertZip(tempDirectory)).getMessage());
+        Files.delete(tempDirectory);
+    }
+
     @DisplayName("Bygger mottatt melding inkludert headers")
     @Test
     void fromMottattMeldingMetadataMedHeaders() {

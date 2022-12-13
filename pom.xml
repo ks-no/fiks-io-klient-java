@@ -5,11 +5,11 @@
   <parent>
     <groupId>no.ks.fiks.pom</groupId>
     <artifactId>fiks-ekstern-super-pom</artifactId>
-    <version>1.0.18</version>
+    <version>1.0.19</version>
   </parent>
   <groupId>no.ks.fiks</groupId>
   <artifactId>fiks-io-klient-java</artifactId>
-  <version>2.0.7-SNAPSHOT</version>
+  <version>2.0.11-SNAPSHOT</version>
   <name>FIKS IO Java-klient</name>
   <description>Klient for integrasjoner mot Fiks IO. Håndterer sending, mottak, kryptering, dekryptering og signering</description>
   <url>https://github.com/ks-no/fiks-io-klient-java</url>
@@ -25,35 +25,35 @@
     <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
     <difi-commons-asic.version>0.11.0</difi-commons-asic.version>
     <guava.version>31.1-jre</guava.version>
-    <jackson.version>2.13.4.20221013</jackson.version>
+    <jackson.version>2.14.1</jackson.version>
     <download-maven-plugin.version>1.6.8</download-maven-plugin.version>
-    <fiks-dokumentlager-klient.version>1.9.1</fiks-dokumentlager-klient.version>
-    <openapi-generator-maven-plugin.version>6.2.0</openapi-generator-maven-plugin.version>
+    <fiks-dokumentlager-klient.version>1.9.2</fiks-dokumentlager-klient.version>
+    <openapi-generator-maven-plugin.version>6.2.1</openapi-generator-maven-plugin.version>
     <slf4j.version>1.7.36</slf4j.version>
-    <fiks-io-send-klient.version>2.1.0</fiks-io-send-klient.version>
+    <fiks-io-send-klient.version>2.1.2</fiks-io-send-klient.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spec.location>https://ks-no.github.io/api/</spec.location>
     <spec.name>fiksio-katalog-api-v1</spec.name>
-    <fiks-maskinporten-client.version>2.1.2</fiks-maskinporten-client.version>
+    <fiks-maskinporten-client.version>2.1.3</fiks-maskinporten-client.version>
     <commons-io.version>2.11.0</commons-io.version>
-    <logback.version>1.4.4</logback.version>
-    <swagger-core-version>1.6.8</swagger-core-version>
+    <logback.version>1.4.5</logback.version>
+    <swagger-core-version>1.6.9</swagger-core-version>
     <kryptering.version>1.3.0</kryptering.version>
     <java.version>11</java.version>
     <maven.compiler.release>${java.version}</maven.compiler.release>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <enforcer.jdk.version>${java.version}</enforcer.jdk.version>
-    <fiks-io-commons.version>1.4.3</fiks-io-commons.version>
-    <mockito.version>4.8.0</mockito.version>
-    <feign-version>11.10</feign-version>
+    <fiks-io-commons.version>1.4.4</fiks-io-commons.version>
+    <mockito.version>4.9.0</mockito.version>
+    <feign-version>12.1</feign-version>
     <lombok.version>1.18.24</lombok.version>
     <spec.postfix>json</spec.postfix>
     <junit-jupiter.version>5.9.1</junit-jupiter.version>
     <maven-surefire-plugin.version>3.0.0-M7</maven-surefire-plugin.version>
-    <jackson-databind-nullable.version>0.2.3</jackson-databind-nullable.version>
+    <jackson-databind-nullable.version>0.2.4</jackson-databind-nullable.version>
     <fiks-io-asice-handler.version>1.2.3</fiks-io-asice-handler.version>
-    <scribejava.version>8.3.2</scribejava.version>
+    <scribejava.version>8.3.3</scribejava.version>
   </properties>
   <dependencyManagement>
     <dependencies>
