@@ -45,7 +45,7 @@
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <enforcer.jdk.version>${java.version}</enforcer.jdk.version>
     <fiks-io-commons.version>1.4.4</fiks-io-commons.version>
-    <mockito.version>4.11.0</mockito.version>
+    <mockito.version>5.1.0</mockito.version>
     <feign-version>12.1</feign-version>
     <lombok.version>1.18.24</lombok.version>
     <spec.postfix>json</spec.postfix>
