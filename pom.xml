@@ -47,7 +47,7 @@
     <fiks-io-commons.version>1.4.4</fiks-io-commons.version>
     <mockito.version>5.1.1</mockito.version>
     <feign-version>12.1</feign-version>
-    <lombok.version>1.18.24</lombok.version>
+    <lombok.version>1.18.26</lombok.version>
     <spec.postfix>json</spec.postfix>
     <junit-jupiter.version>5.9.2</junit-jupiter.version>
     <maven-surefire-plugin.version>3.0.0-M7</maven-surefire-plugin.version>
