@@ -34,7 +34,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spec.location>https://ks-no.github.io/api/</spec.location>
     <spec.name>fiksio-katalog-api-v1</spec.name>
-    <fiks-maskinporten-client.version>2.1.5</fiks-maskinporten-client.version>
+    <fiks-maskinporten-client.version>2.2.0</fiks-maskinporten-client.version>
     <commons-io.version>2.11.0</commons-io.version>
     <logback.version>1.4.5</logback.version>
     <swagger-core-version>1.6.9</swagger-core-version>
