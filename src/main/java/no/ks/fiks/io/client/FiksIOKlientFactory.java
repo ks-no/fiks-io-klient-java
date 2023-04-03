@@ -20,6 +20,7 @@ import no.ks.fiks.io.client.model.KontoId;
 import no.ks.fiks.io.client.send.FiksIOSender;
 import no.ks.fiks.io.client.send.FiksIOSenderClientWrapper;
 import no.ks.fiks.io.klient.FiksIOUtsendingKlient;
+import no.ks.fiks.maskinporten.AccessTokenRequest;
 import no.ks.fiks.maskinporten.Maskinportenklient;
 import no.ks.fiks.maskinporten.MaskinportenklientProperties;
 
@@ -132,7 +133,7 @@ public class FiksIOKlientFactory {
         return Feign.builder()
             .decoder(new JacksonDecoder(objectMapper))
             .encoder(new JacksonEncoder(objectMapper))
-            .requestInterceptor(RequestInterceptors.accessToken(() -> maskinportenklient.getAccessToken(MASKINPORTEN_KS_SCOPE)))
+            .requestInterceptor(RequestInterceptors.accessToken(() -> maskinportenklient.getAccessToken(AccessTokenRequest.builder().scope(MASKINPORTEN_KS_SCOPE).build())))
             .requestInterceptor(RequestInterceptors.integrasjon(
                 konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
                 konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
