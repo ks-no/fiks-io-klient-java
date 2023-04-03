@@ -22,7 +22,7 @@
     <rabbitmq-amqp-client.version>5.17.0</rabbitmq-amqp-client.version>
     <feign-form-version>3.8.0</feign-form-version>
     <fiks-feign-interceptors.version>1.1.3</fiks-feign-interceptors.version>
-    <difi-commons-asic.version>0.11.0</difi-commons-asic.version>
+    <ks-commons-asic.version>1.0.0</ks-commons-asic.version>
     <guava.version>31.1-jre</guava.version>
     <jackson.version>2.14.2</jackson.version>
     <download-maven-plugin.version>1.6.8</download-maven-plugin.version>
@@ -51,7 +51,7 @@
     <junit-jupiter.version>5.9.2</junit-jupiter.version>
     <maven-surefire-plugin.version>3.0.0</maven-surefire-plugin.version>
     <jackson-databind-nullable.version>0.2.6</jackson-databind-nullable.version>
-    <fiks-io-asice-handler.version>1.2.5</fiks-io-asice-handler.version>
+    <fiks-io-asice-handler.version>2.0.0</fiks-io-asice-handler.version>
     <scribejava.version>8.3.3</scribejava.version>
     <jakarta.annotation-api.version>2.1.1</jakarta.annotation-api.version>
   </properties>
@@ -101,9 +101,9 @@
       <version>${fiks-feign-interceptors.version}</version>
     </dependency>
     <dependency>
-      <groupId>no.difi.commons</groupId>
+      <groupId>no.ks.fiks</groupId>
       <artifactId>commons-asic</artifactId>
-      <version>${difi-commons-asic.version}</version>
+      <version>${ks-commons-asic.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.bouncycastle</groupId>
@@ -253,7 +253,6 @@
     <plugins>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${maven-surefire-plugin.version}</version>
       </plugin>
       <plugin>
         <groupId>com.googlecode.maven-download-plugin</groupId>
