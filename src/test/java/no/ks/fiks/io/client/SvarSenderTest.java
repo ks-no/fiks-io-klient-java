@@ -28,6 +28,7 @@ import java.util.zip.ZipInputStream;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("unchecked")
 @DisplayName("SvarSender")
 @ExtendWith(MockitoExtension.class)
 class SvarSenderTest {
