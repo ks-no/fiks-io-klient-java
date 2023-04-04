@@ -15,6 +15,9 @@ import java.util.function.Consumer;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
+/**
+ * Standard implementasjon av {@link FiksIOKlient}
+ */
 public class FiksIOKlientImpl implements FiksIOKlient {
 
     private final KontoId kontoId;

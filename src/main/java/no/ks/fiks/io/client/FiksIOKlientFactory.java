@@ -47,6 +47,10 @@ public class FiksIOKlientFactory {
         this.publicKeyProvider = null;
     }
 
+    /**
+     * Opprett FiksIOKlient
+     * @return ny {@link FiksIOKlient} instans basert på den konfigurasjonen som ble gitt
+     */
     public FiksIOKlient build() {
         settDefaults(fiksIOKonfigurasjon);
         log.info("Setter opp FIKS-IO klient med følgende konfigurasjon: {}", fiksIOKonfigurasjon);
