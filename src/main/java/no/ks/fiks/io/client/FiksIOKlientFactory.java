@@ -60,10 +60,9 @@ public class FiksIOKlientFactory {
 
             final FiksIoKatalogApi katalogApi = getFiksIOKatalogApi(fiksIOKonfigurasjon, maskinportenklient);
 
-
             AsicHandler asicHandler = AsicHandler.builder()
                 .withExecutorService(fiksIOKonfigurasjon.getExecutor())
-                .withPrivatNokkel(fiksIOKonfigurasjon.getKontoKonfigurasjon().getPrivatNokkler())
+                .withPrivateNokler(fiksIOKonfigurasjon.getKontoKonfigurasjon().getPrivateNokler())
                 .withKeyStoreHolder(toKeyStoreHolder(fiksIOKonfigurasjon.getVirksomhetssertifikatKonfigurasjon()))
                 .build();
 

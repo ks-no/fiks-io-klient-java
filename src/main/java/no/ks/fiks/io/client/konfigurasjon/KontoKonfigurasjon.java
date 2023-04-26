@@ -24,7 +24,7 @@ public class KontoKonfigurasjon {
      * Påkrevd felt. Privat nøkkel som matcher det offentlige sertifikatet som er spesifisert for kontoen i fiks-konfigurasjon. Benyttes for å dekryptere inkommende meldinger.
      */
     @NonNull
-    List<PrivateKey> privatNokkler;
+    List<PrivateKey> privateNokler;
 
     @Override
     public String toString() {
