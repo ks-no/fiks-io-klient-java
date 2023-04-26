@@ -54,7 +54,7 @@
     <fiks-io-asice-handler.version>2.0.0</fiks-io-asice-handler.version>
     <scribejava.version>8.3.3</scribejava.version>
     <jakarta.annotation-api.version>2.1.1</jakarta.annotation-api.version>
-    <jacoco-maven-plugin.version>0.8.9</jacoco-maven-plugin.version>
+    <jacoco-maven-plugin.version>0.8.10</jacoco-maven-plugin.version>
   </properties>
   <dependencyManagement>
     <dependencies>
