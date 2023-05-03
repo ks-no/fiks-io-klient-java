@@ -5,7 +5,7 @@
   <parent>
     <groupId>no.ks.fiks.pom</groupId>
     <artifactId>fiks-ekstern-super-pom</artifactId>
-    <version>1.0.21</version>
+    <version>1.1.1</version>
   </parent>
   <groupId>no.ks.fiks</groupId>
   <artifactId>fiks-io-klient-java</artifactId>
@@ -26,7 +26,7 @@
     <guava.version>31.1-jre</guava.version>
     <jackson.version>2.14.2</jackson.version>
     <download-maven-plugin.version>1.6.8</download-maven-plugin.version>
-    <fiks-dokumentlager-klient.version>2.1.0</fiks-dokumentlager-klient.version>
+    <fiks-dokumentlager-klient.version>2.2.0</fiks-dokumentlager-klient.version>
     <openapi-generator-maven-plugin.version>6.5.0</openapi-generator-maven-plugin.version>
     <slf4j.version>2.0.7</slf4j.version>
     <fiks-io-send-klient.version>3.0.1</fiks-io-send-klient.version>
