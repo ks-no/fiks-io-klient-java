@@ -18,7 +18,8 @@ class FiksIOKonfigurasjonTest {
         final String clientId = UUID.randomUUID().toString();
         final UUID integrationId = UUID.randomUUID();
         final String integrationPassword = UUID.randomUUID().toString();
-        final PrivateKey privateKey = TestUtil.generatePrivateKey();
+        final PrivateKey privateKey1 = TestUtil.generatePrivateKey();
+        final PrivateKey privateKey2 = TestUtil.generateDifferentPrivateKey();
         final UUID kontoId = UUID.randomUUID();
         final String keyStorePassword = UUID.randomUUID().toString();
         final String keyAlias = UUID.randomUUID().toString();
@@ -31,7 +32,8 @@ class FiksIOKonfigurasjonTest {
             integrationPassword,
             KontoKonfigurasjon.builder()
                 .kontoId(new KontoId(kontoId))
-                .privateNokler(Arrays.asList(privateKey))
+                .privateNokler(Arrays.asList(privateKey1))
+                .privatNokkel(privateKey2)
                 .build(),
             VirksomhetssertifikatKonfigurasjon.builder()
                 .keyAlias(keyAlias)
@@ -43,7 +45,8 @@ class FiksIOKonfigurasjonTest {
         assertEquals(clientId, fiksIOKonfigurasjon.getFiksIntegrasjonKonfigurasjon().getIdPortenKonfigurasjon().getKlientId());
         assertEquals(integrationId, fiksIOKonfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId());
         assertEquals(integrationPassword, fiksIOKonfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord());
-        assertEquals(privateKey, fiksIOKonfigurasjon.getKontoKonfigurasjon().getPrivateNokler().get(0));
+        assertEquals(privateKey1, fiksIOKonfigurasjon.getKontoKonfigurasjon().getPrivateNokler().get(0));
+        assertEquals(privateKey2, fiksIOKonfigurasjon.getKontoKonfigurasjon().getPrivateNokler().get(1));
         assertEquals(kontoId, fiksIOKonfigurasjon.getKontoKonfigurasjon().getKontoId().getUuid());
         assertEquals(keyStorePassword, fiksIOKonfigurasjon.getVirksomhetssertifikatKonfigurasjon().getKeyStorePassword());
         assertEquals(keyAlias, fiksIOKonfigurasjon.getVirksomhetssertifikatKonfigurasjon().getKeyAlias());
@@ -74,7 +77,7 @@ class FiksIOKonfigurasjonTest {
             integrationPassword,
             KontoKonfigurasjon.builder()
                 .kontoId(new KontoId(kontoId))
-                .privateNokler(Arrays.asList(privateKey))
+                .privatNokkel(privateKey)
                 .build(),
             VirksomhetssertifikatKonfigurasjon.builder()
                 .keyAlias(keyAlias)

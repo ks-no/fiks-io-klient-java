@@ -2,6 +2,7 @@ package no.ks.fiks.io.client.konfigurasjon;
 
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import no.ks.fiks.io.client.model.KontoId;
 
@@ -24,6 +25,7 @@ public class KontoKonfigurasjon {
      * Påkrevd felt. Privat nøkkel som matcher det offentlige sertifikatet som er spesifisert for kontoen i fiks-konfigurasjon. Benyttes for å dekryptere inkommende meldinger.
      */
     @NonNull
+    @Singular("privatNokkel")
     List<PrivateKey> privateNokler;
 
     @Override
