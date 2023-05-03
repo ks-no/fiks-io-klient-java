@@ -20,9 +20,13 @@ Ved å bruke denne klienten blir disse detaljene skjult og forenkler sending og 
 
 
 ## Ta i bruk
-### Forutsetninger
+## Versjoner
+Versjon 3.x krever Java 17 eller høyere. Har du ikke mulighet for å bruke det må du holde deg på v. 2.x
 
-  - Java 11 eller høyere
+| Versjon | Java baseline | Spring Boot versjon | Status      |
+|---------|---------------|---------------------|-------------|
+| 3.x     | Java 17       | 3.X                 | Aktiv       |
+| 2.X     | Java 11       | 2.X                 | Vedlikehold |
 
 ### Maven
 Legg til følgende i POM-filen din:
@@ -31,7 +35,7 @@ Legg til følgende i POM-filen din:
        <dependency>
             <groupId>no.ks.fiks</groupId>
             <artifactId>fiks-io-klient-java</artifactId>
-            <version>2.0.0</version>
+            <version>3.0.0</version>
        </dependency>
     </dependencies>
 
