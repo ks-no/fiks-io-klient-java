@@ -67,7 +67,7 @@ public class FiksIOKlientFactory {
 
             AsicHandler asicHandler = AsicHandler.builder()
                 .withExecutorService(fiksIOKonfigurasjon.getExecutor())
-                .withPrivatNokkel(fiksIOKonfigurasjon.getKontoKonfigurasjon().getPrivatNokkel())
+                .withPrivateNokler(fiksIOKonfigurasjon.getKontoKonfigurasjon().getPrivateNokler())
                 .withKeyStoreHolder(toKeyStoreHolder(fiksIOKonfigurasjon.getVirksomhetssertifikatKonfigurasjon()))
                 .build();
 

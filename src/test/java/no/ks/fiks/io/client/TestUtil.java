@@ -18,13 +18,30 @@ import java.security.spec.PKCS8EncodedKeySpec;
 
 public class TestUtil {
     public static PrivateKey generatePrivateKey() {
-        try (final InputStream keyStream = TestUtil.class.getResourceAsStream("/alice.key");
-             final Reader keyReader = new InputStreamReader(keyStream, StandardCharsets.UTF_8)) {
-            final Object pemKeyInfo = new PEMParser(keyReader).readObject();
-            return KeyFactory.getInstance("RSA")
-                             .generatePrivate(
-                                 new PKCS8EncodedKeySpec(((PrivateKeyInfo) pemKeyInfo).getEncoded()));
+        try (final InputStream keyStream = TestUtil.class.getResourceAsStream("/alice.key")) {
+            assert keyStream != null;
+            try (final Reader keyReader = new InputStreamReader(keyStream, StandardCharsets.UTF_8)) {
+                final Object pemKeyInfo = new PEMParser(keyReader).readObject();
+                return KeyFactory.getInstance("RSA")
+                                 .generatePrivate(
+                                     new PKCS8EncodedKeySpec(((PrivateKeyInfo) pemKeyInfo).getEncoded()));
 
+            }
+        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new IllegalStateException("Kunne ikke generere privatnøkkel", e);
+        }
+    }
+
+    public static PrivateKey generateDifferentPrivateKey() {
+        try (final InputStream keyStream = TestUtil.class.getResourceAsStream("/bob.key")) {
+            assert keyStream != null;
+            try (final Reader keyReader = new InputStreamReader(keyStream, StandardCharsets.UTF_8)) {
+                final Object pemKeyInfo = new PEMParser(keyReader).readObject();
+                return KeyFactory.getInstance("RSA")
+                                 .generatePrivate(
+                                     new PKCS8EncodedKeySpec(((PrivateKeyInfo) pemKeyInfo).getEncoded()));
+
+            }
         } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException e) {
             throw new IllegalStateException("Kunne ikke generere privatnøkkel", e);
         }
@@ -32,6 +49,7 @@ public class TestUtil {
 
     public static KeyStore readAliceVirksomhetssertifikat() {
         try (final InputStream inputStream = TestUtil.class.getResourceAsStream("/" + "alice-virksomhetssertifikat.p12")) {
+            assert inputStream != null;
             return readP12(inputStream, "PASSWORD");
         } catch (IOException e) {
             throw new IllegalStateException("Kunne ikke laste virksomhetssertifikat", e);

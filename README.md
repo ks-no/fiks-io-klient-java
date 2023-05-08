@@ -95,9 +95,23 @@ final FiksIOKonfigurasjon fiksIOKonfigurasjon = FiksIOKonfigurasjon.defaultProdC
         .keyStorePassword(keyStorePassword)
         .build());
 ```
+KontoKonfigurasjon.builder() kan ta inn flere private nøkler. De kan legges til en og en eller som en liste:
+```java
+KontoKonfigurasjon.builder()
+        .kontoId(new KontoId(kontoId))
+        .privatNokkel(privateKey1)
+        .privatNokkel(privateKey2)
+        .build(),
+```
+```java
+KontoKonfigurasjon.builder()
+        .kontoId(new KontoId(kontoId))
+        .privateNokler(Arrays.asList(privateKey1, privateKey2))
+        .privatNokkel(privateKey3)
+        .build(),
+```
 
-
-**privatNokkel**: `privatNokkel` property forventer en private key i PKCS#8 format. En privat nøkkel som har PKCS#1 format vil føre til en exception. En PKCS#1 nøkkel kan bli konvertert ved hjelp av denne kommandoen:
+**privateNokler**: `privateNokler` property forventer en eller flere private key i PKCS#8 format. En privat nøkkel som har PKCS#1 format vil føre til en exception. En PKCS#1 nøkkel kan bli konvertert ved hjelp av denne kommandoen:
 ```powershell
 openssl pkcs8 -topk8 -nocrypt -in <pkcs#1 key file> -out <pkcs#8 key file>
 ```
