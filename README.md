@@ -107,7 +107,7 @@ KontoKonfigurasjon.builder()
 KontoKonfigurasjon.builder()
         .kontoId(new KontoId(kontoId))
         .privateNokler(Arrays.asList(privateKey1, privateKey2))
-        .privatNokkel(privateKey2)
+        .privatNokkel(privateKey3)
         .build(),
 ```
 
