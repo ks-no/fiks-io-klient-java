@@ -36,7 +36,7 @@
     <fiks-maskinporten-client.version>3.0.0</fiks-maskinporten-client.version>
     <commons-io.version>2.12.0</commons-io.version>
     <logback.version>1.4.6</logback.version>
-    <swagger-core-version>1.6.10</swagger-core-version>
+    <swagger-core-version>1.6.11</swagger-core-version>
     <kryptering.version>1.3.1</kryptering.version>
     <java.version>17</java.version>
     <maven.compiler.release>${java.version}</maven.compiler.release>
