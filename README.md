@@ -42,7 +42,7 @@ final FiksIOKonfigurasjon fiksIOKonfigurasjon = FiksIOKonfigurasjon.builder()
                                             // sett konfig
                                             .build();
 final FiksIOKlientFactory fiksIOKlientFactory = new FiksIOKlientFactory(fiksIOKonfigurasjon);
-//FiksIOKlientFactory bruker [Fiks Maskinporten klient](https://github.com/ks-no/fiks-maskinporten) som standard, men en kan bruke egen supplier for generering av AccessToken utstedt fra maskinporten. NB Krever skope "ks:fiks"
+//FiksIOKlientFactory bruker [Fiks Maskinporten klient](https://github.com/ks-no/fiks-maskinporten) som standard, men en kan bruke egen klient for generering av AccessToken utstedt fra maskinporten. NB! Krever skope "ks:fiks"
 fiksIOKlientFactory.setMaskinportenAccessTokenSupplier(maskinportenAccessTokenSupplier)
 final FiksIOKlient fiksIOKlient = fiksIOKlientFactory.build();
 // Lytte på meldinger
