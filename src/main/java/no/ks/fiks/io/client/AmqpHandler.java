@@ -50,7 +50,7 @@ class AmqpHandler implements Closeable {
                 @NonNull FiksIntegrasjonKonfigurasjon intKonf,
                 @NonNull FiksIOHandler fiksIOHandler,
                 @NonNull AsicHandler asicHandler,
-                Supplier<String> maskinportenklient,
+                @NonNull Supplier<String> maskinportenklient,
                 @NonNull KontoId kontoId,
                 @NonNull DokumentlagerKlient dokumentlagerKlient) {
         this.fiksIOHandler = fiksIOHandler;
