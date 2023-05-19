@@ -19,10 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipInputStream;
 
@@ -44,7 +41,7 @@ class FiksIOHandlerTest {
     @Mock
     private X509Certificate x509Certificate;
 
-    private KontoId kontoId = new KontoId(UUID.randomUUID());
+    private final KontoId kontoId = new KontoId(UUID.randomUUID());
 
     private FiksIOHandler fiksIOHandler;
 
@@ -54,6 +51,7 @@ class FiksIOHandlerTest {
         this.fiksIOHandler = new FiksIOHandler(kontoId, utsendingKlient, katalogHandler, asicHandler, publicKeyProvider);
     }
 
+    @SuppressWarnings("unchecked")
     @Nested
     @DisplayName("Send")
     class Send {
@@ -72,7 +70,7 @@ class FiksIOHandlerTest {
                 .avsenderKontoId(UUID.randomUUID())
                 .mottakerKontoId(mottakerKontoId)
                 .meldingType("type")
-                .ttl(meldingRequest.getTtl()
+                .ttl(Objects.requireNonNull(meldingRequest.getTtl())
                     .toMillis())
                 .headere(meldingRequest.getHeadere())
                 .build();
@@ -169,6 +167,7 @@ class FiksIOHandlerTest {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Nested
     @DisplayName("Send rådata")
     class SendRaw {
@@ -188,7 +187,7 @@ class FiksIOHandlerTest {
                 .avsenderKontoId(UUID.randomUUID())
                 .mottakerKontoId(mottakerKontoId)
                 .meldingType(meldingsprotokoll)
-                .ttl(meldingRequest.getTtl()
+                .ttl(Objects.requireNonNull(meldingRequest.getTtl())
                     .toMillis())
                 .headere(Collections.emptyMap())
                 .build();

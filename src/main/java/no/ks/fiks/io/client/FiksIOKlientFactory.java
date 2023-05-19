@@ -10,7 +10,6 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import no.ks.fiks.dokumentlager.klient.DokumentlagerApiImpl;
 import no.ks.fiks.dokumentlager.klient.DokumentlagerKlient;
-import no.ks.fiks.dokumentlager.klient.authentication.AuthenticationStrategy;
 import no.ks.fiks.dokumentlager.klient.authentication.IntegrasjonAuthenticationStrategy;
 import no.ks.fiks.feign.RequestInterceptors;
 import no.ks.fiks.fiksio.client.api.katalog.api.FiksIoKatalogApi;
@@ -21,15 +20,12 @@ import no.ks.fiks.io.client.model.KontoId;
 import no.ks.fiks.io.client.send.FiksIOSender;
 import no.ks.fiks.io.client.send.FiksIOSenderClientWrapper;
 import no.ks.fiks.io.klient.FiksIOUtsendingKlient;
-import no.ks.fiks.maskinporten.AccessTokenRequest;
 import no.ks.fiks.maskinporten.AccessTokenRequestBuilder;
 import no.ks.fiks.maskinporten.Maskinportenklient;
 import no.ks.fiks.maskinporten.MaskinportenklientProperties;
-import org.eclipse.jetty.client.api.Request;
 
 import java.io.IOException;
 import java.util.Optional;
-import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
 
@@ -58,6 +54,10 @@ public class FiksIOKlientFactory {
         return this;
     }
 
+    /**
+     * Opprett FiksIOKlient
+     * @return ny {@link FiksIOKlient} instans basert på den konfigurasjonen som ble gitt
+     */
     public FiksIOKlient build() {
         settDefaults(fiksIOKonfigurasjon);
         log.info("Setter opp FIKS-IO klient med følgende konfigurasjon: {}", fiksIOKonfigurasjon);
@@ -78,7 +78,7 @@ public class FiksIOKlientFactory {
 
             AsicHandler asicHandler = AsicHandler.builder()
                 .withExecutorService(fiksIOKonfigurasjon.getExecutor())
-                .withPrivatNokkel(fiksIOKonfigurasjon.getKontoKonfigurasjon().getPrivatNokkel())
+                .withPrivateNokler(fiksIOKonfigurasjon.getKontoKonfigurasjon().getPrivateNokler())
                 .withKeyStoreHolder(toKeyStoreHolder(fiksIOKonfigurasjon.getVirksomhetssertifikatKonfigurasjon()))
                 .build();
 
@@ -164,12 +164,11 @@ public class FiksIOKlientFactory {
             .api(DokumentlagerApiImpl.builder()
                 .uploadBaseUrl(konfigurasjon.getDokumentlagerKonfigurasjon().getUrl())
                 .downloadBaseUrl(konfigurasjon.getDokumentlagerKonfigurasjon().getUrl())
-                .authenticationStrategy(
-                    request -> {
-                        request.header("Authorization", "Bearer " + maskinportenAccessTokenSupplier.get())
-                            .header("IntegrasjonId", konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId().toString())
-                            .header("IntegrasjonPassord", konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord());
-                    })
+                .authenticationStrategy(request -> {
+                    request.header("Authorization", "Bearer " + maskinportenAccessTokenSupplier.get())
+                        .header("IntegrasjonId", konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId().toString())
+                        .header("IntegrasjonPassord", konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord());
+                })
                 .requestInterceptor(Optional.ofNullable(konfigurasjon.getDokumentlagerKonfigurasjon().getRequestInterceptor()).orElseGet(() -> r -> r))
                 .build())
             .build();

@@ -2,10 +2,12 @@ package no.ks.fiks.io.client.konfigurasjon;
 
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import no.ks.fiks.io.client.model.KontoId;
 
 import java.security.PrivateKey;
+import java.util.List;
 
 /**
  * Konfigurer Fiks IO kontoen som skal benyttes for å sende meldinger.
@@ -23,7 +25,8 @@ public class KontoKonfigurasjon {
      * Påkrevd felt. Privat nøkkel som matcher det offentlige sertifikatet som er spesifisert for kontoen i fiks-konfigurasjon. Benyttes for å dekryptere inkommende meldinger.
      */
     @NonNull
-    PrivateKey privatNokkel;
+    @Singular("privatNokkel")
+    List<PrivateKey> privateNokler;
 
     @Override
     public String toString() {

@@ -20,9 +20,13 @@ Ved å bruke denne klienten blir disse detaljene skjult og forenkler sending og 
 
 
 ## Ta i bruk
-### Forutsetninger
+## Versjoner
+Versjon 3.x krever Java 17 eller høyere. Har du ikke mulighet for å bruke det må du holde deg på v. 2.x
 
-  - Java 11 eller høyere
+| Versjon | Java baseline | Spring Boot versjon | Status      |
+|---------|---------------|---------------------|-------------|
+| 3.x     | Java 17       | 3.X                 | Aktiv       |
+| 2.X     | Java 11       | 2.X                 | Vedlikehold |
 
 ### Maven
 Legg til følgende i POM-filen din:
@@ -31,7 +35,7 @@ Legg til følgende i POM-filen din:
        <dependency>
             <groupId>no.ks.fiks</groupId>
             <artifactId>fiks-io-klient-java</artifactId>
-            <version>2.0.0</version>
+            <version>3.0.0</version>
        </dependency>
     </dependencies>
 
@@ -93,9 +97,23 @@ final FiksIOKonfigurasjon fiksIOKonfigurasjon = FiksIOKonfigurasjon.defaultProdC
         .keyStorePassword(keyStorePassword)
         .build());
 ```
+KontoKonfigurasjon.builder() kan ta inn flere private nøkler. De kan legges til en og en eller som en liste:
+```java
+KontoKonfigurasjon.builder()
+        .kontoId(new KontoId(kontoId))
+        .privatNokkel(privateKey1)
+        .privatNokkel(privateKey2)
+        .build(),
+```
+```java
+KontoKonfigurasjon.builder()
+        .kontoId(new KontoId(kontoId))
+        .privateNokler(Arrays.asList(privateKey1, privateKey2))
+        .privatNokkel(privateKey3)
+        .build(),
+```
 
-
-**privatNokkel**: `privatNokkel` property forventer en private key i PKCS#8 format. En privat nøkkel som har PKCS#1 format vil føre til en exception. En PKCS#1 nøkkel kan bli konvertert ved hjelp av denne kommandoen:
+**privateNokler**: `privateNokler` property forventer en eller flere private key i PKCS#8 format. En privat nøkkel som har PKCS#1 format vil føre til en exception. En PKCS#1 nøkkel kan bli konvertert ved hjelp av denne kommandoen:
 ```powershell
 openssl pkcs8 -topk8 -nocrypt -in <pkcs#1 key file> -out <pkcs#8 key file>
 ```

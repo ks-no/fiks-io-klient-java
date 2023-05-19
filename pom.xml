@@ -5,11 +5,11 @@
   <parent>
     <groupId>no.ks.fiks.pom</groupId>
     <artifactId>fiks-ekstern-super-pom</artifactId>
-    <version>1.0.19</version>
+    <version>1.1.1</version>
   </parent>
   <groupId>no.ks.fiks</groupId>
   <artifactId>fiks-io-klient-java</artifactId>
-  <version>2.0.12-SNAPSHOT</version>
+  <version>3.1.1-SNAPSHOT</version>
   <name>FIKS IO Java-klient</name>
   <description>Klient for integrasjoner mot Fiks IO. Håndterer sending, mottak, kryptering, dekryptering og signering</description>
   <url>https://github.com/ks-no/fiks-io-klient-java</url>
@@ -19,41 +19,42 @@
     <url>https://github.com/ks-no/fiks-io-klient-java</url>
   </scm>
   <properties>
-    <rabbitmq-amqp-client.version>5.16.0</rabbitmq-amqp-client.version>
+    <rabbitmq-amqp-client.version>5.17.0</rabbitmq-amqp-client.version>
     <feign-form-version>3.8.0</feign-form-version>
-    <fiks-feign-interceptors.version>1.1.2</fiks-feign-interceptors.version>
-    <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
-    <difi-commons-asic.version>0.11.0</difi-commons-asic.version>
+    <fiks-feign-interceptors.version>1.1.3</fiks-feign-interceptors.version>
+    <ks-commons-asic.version>1.0.0</ks-commons-asic.version>
     <guava.version>31.1-jre</guava.version>
-    <jackson.version>2.14.1</jackson.version>
+    <jackson.version>2.14.2</jackson.version>
     <download-maven-plugin.version>1.6.8</download-maven-plugin.version>
-    <fiks-dokumentlager-klient.version>1.9.2</fiks-dokumentlager-klient.version>
-    <openapi-generator-maven-plugin.version>6.2.1</openapi-generator-maven-plugin.version>
-    <slf4j.version>1.7.36</slf4j.version>
-    <fiks-io-send-klient.version>2.1.3</fiks-io-send-klient.version>
+    <fiks-dokumentlager-klient.version>2.2.0</fiks-dokumentlager-klient.version>
+    <openapi-generator-maven-plugin.version>6.5.0</openapi-generator-maven-plugin.version>
+    <slf4j.version>2.0.7</slf4j.version>
+    <fiks-io-send-klient.version>3.0.1</fiks-io-send-klient.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spec.location>https://ks-no.github.io/api/</spec.location>
     <spec.name>fiksio-katalog-api-v1</spec.name>
-    <fiks-maskinporten-client.version>2.1.3</fiks-maskinporten-client.version>
+    <fiks-maskinporten-client.version>3.0.0</fiks-maskinporten-client.version>
     <commons-io.version>2.11.0</commons-io.version>
-    <logback.version>1.4.5</logback.version>
-    <swagger-core-version>1.6.9</swagger-core-version>
-    <kryptering.version>1.3.0</kryptering.version>
-    <java.version>11</java.version>
+    <logback.version>1.4.6</logback.version>
+    <swagger-core-version>1.6.10</swagger-core-version>
+    <kryptering.version>1.3.1</kryptering.version>
+    <java.version>17</java.version>
     <maven.compiler.release>${java.version}</maven.compiler.release>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <enforcer.jdk.version>${java.version}</enforcer.jdk.version>
-    <fiks-io-commons.version>1.4.4</fiks-io-commons.version>
-    <mockito.version>4.9.0</mockito.version>
-    <feign-version>12.1</feign-version>
-    <lombok.version>1.18.24</lombok.version>
+    <fiks-io-commons.version>1.4.6</fiks-io-commons.version>
+    <mockito.version>5.2.0</mockito.version>
+    <feign-version>12.3</feign-version>
+    <lombok.version>1.18.26</lombok.version>
     <spec.postfix>json</spec.postfix>
-    <junit-jupiter.version>5.9.1</junit-jupiter.version>
-    <maven-surefire-plugin.version>3.0.0-M7</maven-surefire-plugin.version>
-    <jackson-databind-nullable.version>0.2.4</jackson-databind-nullable.version>
-    <fiks-io-asice-handler.version>1.2.3</fiks-io-asice-handler.version>
+    <junit-jupiter.version>5.9.2</junit-jupiter.version>
+    <maven-surefire-plugin.version>3.0.0</maven-surefire-plugin.version>
+    <jackson-databind-nullable.version>0.2.6</jackson-databind-nullable.version>
+    <fiks-io-asice-handler.version>2.1.0</fiks-io-asice-handler.version>
     <scribejava.version>8.3.3</scribejava.version>
+    <jakarta.annotation-api.version>2.1.1</jakarta.annotation-api.version>
+    <jacoco-maven-plugin.version>0.8.9</jacoco-maven-plugin.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -101,9 +102,9 @@
       <version>${fiks-feign-interceptors.version}</version>
     </dependency>
     <dependency>
-      <groupId>no.difi.commons</groupId>
+      <groupId>no.ks.fiks</groupId>
       <artifactId>commons-asic</artifactId>
-      <version>${difi-commons-asic.version}</version>
+      <version>${ks-commons-asic.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.bouncycastle</groupId>
@@ -210,9 +211,9 @@
       <version>${jackson-databind-nullable.version}</version>
     </dependency>
     <dependency>
-      <groupId>javax.annotation</groupId>
-      <artifactId>javax.annotation-api</artifactId>
-      <version>${javax.annotation-api.version}</version>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+      <version>${jakarta.annotation-api.version}</version>
     </dependency>
     <dependency>
       <groupId>com.github.scribejava</groupId>
@@ -253,7 +254,6 @@
     <plugins>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${maven-surefire-plugin.version}</version>
       </plugin>
       <plugin>
         <groupId>com.googlecode.maven-download-plugin</groupId>
@@ -291,6 +291,7 @@
                 <dateLibrary>java8</dateLibrary>
                 <feignVersion>10.x</feignVersion>
                 <java8>true</java8>
+                <useJakartaEe>true</useJakartaEe>
               </configOptions>
               <modelPackage>${project.groupId}.fiksio.client.api.katalog.model</modelPackage>
               <apiPackage>${project.groupId}.fiksio.client.api.katalog.api</apiPackage>
@@ -307,7 +308,7 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.8.8</version>
+        <version>${jacoco-maven-plugin.version}</version>
         <configuration>
           <excludes>
             <exclude>**/katalog/*/*</exclude>

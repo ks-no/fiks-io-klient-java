@@ -3,9 +3,7 @@ package no.ks.fiks.io.client.konfigurasjon;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import no.ks.fiks.io.client.model.KontoId;
 
-import java.security.PrivateKey;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -13,8 +11,14 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 @Value
 @Builder
+/**
+ * Konfigurasjon for {@link no.ks.fiks.io.client.FiksIOKlient}
+ */
 public class FiksIOKonfigurasjon {
 
+    /**
+     * Standard størrelse på trådpool
+     */
     public static final int DEFAULT_THREADPOOL_SIZE = 6;
 
     /**
