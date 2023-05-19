@@ -15,8 +15,6 @@ import no.ks.fiks.io.client.model.MottattMelding;
 import no.ks.fiks.io.commons.FiksIOHeaders;
 import no.ks.fiks.io.commons.FiksIOMeldingParser;
 import no.ks.fiks.io.commons.MottattMeldingMetadata;
-import no.ks.fiks.maskinporten.AccessTokenRequest;
-import no.ks.fiks.maskinporten.MaskinportenklientOperations;
 import org.apache.commons.io.IOUtils;
 
 import javax.net.ssl.SSLContext;
@@ -52,7 +50,7 @@ class AmqpHandler implements Closeable {
                 @NonNull FiksIntegrasjonKonfigurasjon intKonf,
                 @NonNull FiksIOHandler fiksIOHandler,
                 @NonNull AsicHandler asicHandler,
-                @NonNull MaskinportenklientOperations maskinportenklient,
+                Supplier<String> maskinportenklient,
                 @NonNull KontoId kontoId,
                 @NonNull DokumentlagerKlient dokumentlagerKlient) {
         this.fiksIOHandler = fiksIOHandler;
@@ -169,7 +167,7 @@ class AmqpHandler implements Closeable {
         return getDokumentlagerId(m) != null;
     }
 
-    private ConnectionFactory getConnectionFactory(AmqpKonfigurasjon amqpKonf, FiksIntegrasjonKonfigurasjon intKonf, MaskinportenklientOperations maskinportenklient) {
+    private ConnectionFactory getConnectionFactory(AmqpKonfigurasjon amqpKonf, FiksIntegrasjonKonfigurasjon intKonf, Supplier<String> maskinportenklient) {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(amqpKonf.getHost());
         factory.setPort(amqpKonf.getPort());
@@ -190,7 +188,7 @@ class AmqpHandler implements Closeable {
 
             @Override
             public String getPassword() {
-                return String.format("%s %s", intKonf.getIntegrasjonPassord(), maskinportenklient.getAccessToken(AccessTokenRequest.builder().scope(FiksIOKlientFactory.MASKINPORTEN_KS_SCOPE).build()));
+                return String.format("%s %s", intKonf.getIntegrasjonPassord(), maskinportenklient.get());
             }
         });
         return factory;

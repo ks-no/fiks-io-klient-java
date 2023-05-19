@@ -10,6 +10,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import no.ks.fiks.dokumentlager.klient.DokumentlagerApiImpl;
 import no.ks.fiks.dokumentlager.klient.DokumentlagerKlient;
+import no.ks.fiks.dokumentlager.klient.authentication.AuthenticationStrategy;
 import no.ks.fiks.dokumentlager.klient.authentication.IntegrasjonAuthenticationStrategy;
 import no.ks.fiks.feign.RequestInterceptors;
 import no.ks.fiks.fiksio.client.api.katalog.api.FiksIoKatalogApi;
@@ -20,11 +21,16 @@ import no.ks.fiks.io.client.model.KontoId;
 import no.ks.fiks.io.client.send.FiksIOSender;
 import no.ks.fiks.io.client.send.FiksIOSenderClientWrapper;
 import no.ks.fiks.io.klient.FiksIOUtsendingKlient;
+import no.ks.fiks.maskinporten.AccessTokenRequest;
+import no.ks.fiks.maskinporten.AccessTokenRequestBuilder;
 import no.ks.fiks.maskinporten.Maskinportenklient;
 import no.ks.fiks.maskinporten.MaskinportenklientProperties;
+import org.eclipse.jetty.client.api.Request;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 
 
 @Slf4j
@@ -35,6 +41,7 @@ public class FiksIOKlientFactory {
     private final PublicKeyProvider publicKeyProvider;
 
     private final FiksIOKonfigurasjon fiksIOKonfigurasjon;
+    private Supplier<String> maskinportenAccessTokenSupplier;
 
     public FiksIOKlientFactory(@NonNull FiksIOKonfigurasjon fiksIOKonfigurasjon, @NonNull PublicKeyProvider publicKeyProvider) {
         this.fiksIOKonfigurasjon = fiksIOKonfigurasjon;
@@ -46,19 +53,28 @@ public class FiksIOKlientFactory {
         this.publicKeyProvider = null;
     }
 
+    public FiksIOKlientFactory setMaskinportenAccessTokenSupplier(Supplier<String> maskinportenAccessTokenSupplier) {
+        this.maskinportenAccessTokenSupplier = maskinportenAccessTokenSupplier;
+        return this;
+    }
+
     public FiksIOKlient build() {
         settDefaults(fiksIOKonfigurasjon);
         log.info("Setter opp FIKS-IO klient med følgende konfigurasjon: {}", fiksIOKonfigurasjon);
 
-        Maskinportenklient maskinportenklient = getMaskinportenKlient(fiksIOKonfigurasjon);
+
+        if(this.maskinportenAccessTokenSupplier == null) {
+            Maskinportenklient maskinportenKlient = getMaskinportenKlient(fiksIOKonfigurasjon);
+            this.maskinportenAccessTokenSupplier = () -> maskinportenKlient.getAccessToken(new AccessTokenRequestBuilder().scope(MASKINPORTEN_KS_SCOPE).build());
+        }
 
         DokumentlagerKlient dokumentlagerKlient = null;
         FiksIOUtsendingKlient utsendingKlient = null;
         try {
-            dokumentlagerKlient = getDokumentlagerKlient(fiksIOKonfigurasjon, maskinportenklient);
-            utsendingKlient = getFiksIOUtsendingKlient(fiksIOKonfigurasjon, maskinportenklient);
+            dokumentlagerKlient = getDokumentlagerKlient(fiksIOKonfigurasjon, maskinportenAccessTokenSupplier);
+            utsendingKlient = getFiksIOUtsendingKlient(fiksIOKonfigurasjon, maskinportenAccessTokenSupplier);
 
-            final FiksIoKatalogApi katalogApi = getFiksIOKatalogApi(fiksIOKonfigurasjon, maskinportenklient);
+            final FiksIoKatalogApi katalogApi = getFiksIOKatalogApi(fiksIOKonfigurasjon, maskinportenAccessTokenSupplier);
 
             AsicHandler asicHandler = AsicHandler.builder()
                 .withExecutorService(fiksIOKonfigurasjon.getExecutor())
@@ -78,7 +94,7 @@ public class FiksIOKlientFactory {
                 kontoId,
                 new AmqpHandler(fiksIOKonfigurasjon.getAmqpKonfigurasjon(),
                     fiksIOKonfigurasjon.getFiksIntegrasjonKonfigurasjon(), fiksIOHandler, asicHandler,
-                    maskinportenklient, kontoId, dokumentlagerKlient),
+                    maskinportenAccessTokenSupplier, kontoId, dokumentlagerKlient),
                 katalogHandler,
                 fiksIOHandler
             );
@@ -110,7 +126,7 @@ public class FiksIOKlientFactory {
             .build();
     }
 
-    private static FiksIOUtsendingKlient getFiksIOUtsendingKlient(@NonNull FiksIOKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
+    private static FiksIOUtsendingKlient getFiksIOUtsendingKlient(@NonNull FiksIOKonfigurasjon konfigurasjon, Supplier<String> maskinportenAccessTokenSupplier) {
         final SendMeldingKonfigurasjon sendMeldingKonfigurasjon = konfigurasjon.getSendMeldingKonfigurasjon();
         return FiksIOUtsendingKlient.builder()
             .withScheme(sendMeldingKonfigurasjon
@@ -118,21 +134,23 @@ public class FiksIOKlientFactory {
             .withHostName(sendMeldingKonfigurasjon.getHost())
             .withPortNumber(sendMeldingKonfigurasjon.getPort())
             .withObjectMapper(new ObjectMapper().findAndRegisterModules().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES))
-            .withAuthenticationStrategy(new no.ks.fiks.io.klient.IntegrasjonAuthenticationStrategy(maskinportenklient,
-                konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
-                konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
+            .withAuthenticationStrategy( request -> {
+                request.header("Authorization", "Bearer " + maskinportenAccessTokenSupplier.get())
+                    .header("IntegrasjonId", konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId().toString())
+                    .header("IntegrasjonPassord", konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord());
+            })
             .withRequestInterceptor(konfigurasjon.getSendMeldingKonfigurasjon().getRequestInterceptor() == null ? r -> r : konfigurasjon.getSendMeldingKonfigurasjon().getRequestInterceptor())
             .build();
     }
 
-    private static FiksIoKatalogApi getFiksIOKatalogApi(@NonNull FiksIOKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
+    private static FiksIoKatalogApi getFiksIOKatalogApi(@NonNull FiksIOKonfigurasjon konfigurasjon, Supplier<String> maskinportenAccessTokenSupplier) {
         ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         return Feign.builder()
             .decoder(new JacksonDecoder(objectMapper))
             .encoder(new JacksonEncoder(objectMapper))
-            .requestInterceptor(RequestInterceptors.accessToken(() -> maskinportenklient.getAccessToken(MASKINPORTEN_KS_SCOPE)))
+            .requestInterceptor(RequestInterceptors.accessToken(maskinportenAccessTokenSupplier))
             .requestInterceptor(RequestInterceptors.integrasjon(
                 konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
                 konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
@@ -141,16 +159,17 @@ public class FiksIOKlientFactory {
             .target(FiksIoKatalogApi.class, konfigurasjon.getKatalogKonfigurasjon().getUrl());
     }
 
-    private static DokumentlagerKlient getDokumentlagerKlient(@NonNull FiksIOKonfigurasjon konfigurasjon, Maskinportenklient maskinportenklient) {
+    private static DokumentlagerKlient getDokumentlagerKlient(@NonNull FiksIOKonfigurasjon konfigurasjon, Supplier<String> maskinportenAccessTokenSupplier) {
         return DokumentlagerKlient.builder()
             .api(DokumentlagerApiImpl.builder()
                 .uploadBaseUrl(konfigurasjon.getDokumentlagerKonfigurasjon().getUrl())
                 .downloadBaseUrl(konfigurasjon.getDokumentlagerKonfigurasjon().getUrl())
                 .authenticationStrategy(
-                    new IntegrasjonAuthenticationStrategy(
-                        maskinportenklient,
-                        konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
-                        konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
+                    request -> {
+                        request.header("Authorization", "Bearer " + maskinportenAccessTokenSupplier.get())
+                            .header("IntegrasjonId", konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId().toString())
+                            .header("IntegrasjonPassord", konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord());
+                    })
                 .requestInterceptor(Optional.ofNullable(konfigurasjon.getDokumentlagerKonfigurasjon().getRequestInterceptor()).orElseGet(() -> r -> r))
                 .build())
             .build();
