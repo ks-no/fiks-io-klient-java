@@ -25,7 +25,7 @@
     <ks-commons-asic.version>1.0.0</ks-commons-asic.version>
     <guava.version>31.1-jre</guava.version>
     <jackson.version>2.15.2</jackson.version>
-    <download-maven-plugin.version>1.6.8</download-maven-plugin.version>
+    <download-maven-plugin.version>1.7.1</download-maven-plugin.version>
     <fiks-dokumentlager-klient.version>2.3.2</fiks-dokumentlager-klient.version>
     <openapi-generator-maven-plugin.version>6.6.0</openapi-generator-maven-plugin.version>
     <slf4j.version>2.0.7</slf4j.version>
