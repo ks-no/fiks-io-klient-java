@@ -99,7 +99,7 @@ public class FiksIOKonfigurasjon {
             .fiksApiKonfigurasjon(FiksApiKonfigurasjon.TEST)
             .amqpKonfigurasjon(AmqpKonfigurasjon.TEST)
             .fiksIntegrasjonKonfigurasjon(FiksIntegrasjonKonfigurasjon.builder()
-                .idPortenKonfigurasjon(IdPortenKonfigurasjon.VER2
+                .idPortenKonfigurasjon(IdPortenKonfigurasjon.TEST
                     .klientId(klientId)
                     .build())
                 .integrasjonId(integrasjonId)
