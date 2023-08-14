@@ -51,7 +51,7 @@
     <junit-jupiter.version>5.9.2</junit-jupiter.version>
     <maven-surefire-plugin.version>3.0.0</maven-surefire-plugin.version>
     <jackson-databind-nullable.version>0.2.6</jackson-databind-nullable.version>
-    <fiks-io-asice-handler.version>2.1.0</fiks-io-asice-handler.version>
+    <fiks-io-asice-handler.version>2.1.1</fiks-io-asice-handler.version>
     <scribejava.version>8.3.3</scribejava.version>
     <jakarta.annotation-api.version>2.1.1</jakarta.annotation-api.version>
     <jacoco-maven-plugin.version>0.8.9</jacoco-maven-plugin.version>
