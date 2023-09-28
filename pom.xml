@@ -9,7 +9,7 @@
   </parent>
   <groupId>no.ks.fiks</groupId>
   <artifactId>fiks-io-klient-java</artifactId>
-  <version>3.2.3-SNAPSHOT</version>
+  <version>3.2.3</version>
   <name>FIKS IO Java-klient</name>
   <description>Klient for integrasjoner mot Fiks IO. Håndterer sending, mottak, kryptering, dekryptering og signering</description>
   <url>https://github.com/ks-no/fiks-io-klient-java</url>
