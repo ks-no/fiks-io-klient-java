@@ -47,6 +47,7 @@ class FiksIOHandler implements Closeable {
                 @NotNull
                 @Override
                 public X509Certificate load(@NotNull KontoId kontoId) {
+                    log.info("Henter public key eksternt for konto {}", kontoId.getUuid());
                     return publicKeyProvider.getPublicKey(kontoId);
                 }
             });
