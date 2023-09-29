@@ -104,7 +104,7 @@ class FiksIOHandler implements Closeable {
     }
 
     private X509Certificate getPublicKey(final KontoId kontoId) {
-        log.debug("Henter offentlig nøkkel for konto \"{}\"", kontoId);
+        log.info("Henter offentlig nøkkel for konto fra cache \"{}\"", kontoId);
         return publicKeyCache.getUnchecked(kontoId);
     }
 
