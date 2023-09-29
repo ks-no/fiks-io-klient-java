@@ -1,5 +1,8 @@
 package no.ks.fiks.io.client;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import no.ks.fiks.io.asice.AsicHandler;
@@ -7,6 +10,7 @@ import no.ks.fiks.io.client.model.*;
 import no.ks.fiks.io.client.send.FiksIOSender;
 import no.ks.fiks.io.klient.MeldingSpesifikasjonApiModel;
 import no.ks.fiks.io.klient.SendtMeldingApiModel;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -20,23 +24,32 @@ import java.util.stream.Collectors;
 
 @Slf4j
 class FiksIOHandler implements Closeable {
-    private KontoId kontoId;
-    private FiksIOSender utsendingKlient;
-    private final KatalogHandler katalogHandler;
+    private final KontoId kontoId;
+    private final FiksIOSender utsendingKlient;
     private final AsicHandler asic;
-    private final PublicKeyProvider publicKeyProvider;
+
+
+    private final LoadingCache<KontoId, X509Certificate> publicKeyCache;
 
     FiksIOHandler(@NonNull KontoId kontoId,
                   @NonNull FiksIOSender utsendingKlient,
-                  @NonNull KatalogHandler katalogHandler,
                   @NonNull AsicHandler asicHandler,
                   @NonNull PublicKeyProvider publicKeyProvider) {
         this.kontoId = kontoId;
 
         this.utsendingKlient = utsendingKlient;
-        this.katalogHandler = katalogHandler;
         this.asic = asicHandler;
-        this.publicKeyProvider = publicKeyProvider;
+
+        publicKeyCache = CacheBuilder.newBuilder()
+            .expireAfterWrite(Duration.ofMinutes(10))
+            .maximumSize(100)
+            .build(new CacheLoader<>() {
+                @NotNull
+                @Override
+                public X509Certificate load(@NotNull KontoId kontoId) {
+                    return publicKeyProvider.getPublicKey(kontoId);
+                }
+            });
     }
 
     SendtMelding send(@NonNull MeldingRequest request, @NonNull List<Payload> payload) {
@@ -92,7 +105,7 @@ class FiksIOHandler implements Closeable {
 
     private X509Certificate getPublicKey(final KontoId kontoId) {
         log.debug("Henter offentlig nøkkel for konto \"{}\"", kontoId);
-        return publicKeyProvider.getPublicKey(kontoId);
+        return publicKeyCache.getUnchecked(kontoId);
     }
 
     @Override

@@ -88,7 +88,7 @@ public class FiksIOKlientFactory {
             FiksIOHandler fiksIOHandler = new FiksIOHandler(
                 kontoId,
                 getFiksIOSender(utsendingKlient),
-                katalogHandler, asicHandler, publicKeyProvider != null ? publicKeyProvider : new KatalogPublicKeyProvider(katalogHandler));
+                asicHandler, publicKeyProvider != null ? publicKeyProvider : new KatalogPublicKeyProvider(katalogHandler));
 
             return new FiksIOKlientImpl(
                 kontoId,

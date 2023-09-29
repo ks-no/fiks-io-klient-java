@@ -48,7 +48,7 @@ class FiksIOHandlerTest {
     @BeforeEach
     void setUp() {
         final PublicKeyProvider publicKeyProvider = new KatalogPublicKeyProvider(katalogHandler);
-        this.fiksIOHandler = new FiksIOHandler(kontoId, utsendingKlient, katalogHandler, asicHandler, publicKeyProvider);
+        this.fiksIOHandler = new FiksIOHandler(kontoId, utsendingKlient, asicHandler, publicKeyProvider);
     }
 
     @SuppressWarnings("unchecked")
@@ -133,6 +133,61 @@ class FiksIOHandlerTest {
             MeldingSpesifikasjonApiModel meldingRequestCaptorValue = meldingRequestCaptor.getValue();
             assertEquals(ttl.toMillis(), meldingRequestCaptorValue.getTtl());
         }
+    }
+
+    @DisplayName("Henter public key fra cache")
+    @Test
+    void harPayload() {
+        final UUID mottakerKontoId = UUID.randomUUID();
+        Duration ttl = Duration.ofDays(5L);
+        final MeldingRequest meldingRequest = MeldingRequest.builder()
+            .meldingType("meldingsprotokoll")
+            .mottakerKontoId(new KontoId(mottakerKontoId))
+            .ttl(ttl)
+            .build();
+        final SendtMeldingApiModel sendtMeldingApiModel = SendtMeldingApiModel.builder()
+            .meldingId(UUID.randomUUID())
+            .avsenderKontoId(UUID.randomUUID())
+            .meldingType(meldingRequest.getMeldingType())
+            .mottakerKontoId(mottakerKontoId)
+            .ttl(meldingRequest.getTtl()
+                .toMillis())
+            .headere(meldingRequest.getHeadere())
+            .build();
+        when(utsendingKlient.send(isA(MeldingSpesifikasjonApiModel.class), isA(Optional.class))).thenReturn(sendtMeldingApiModel);
+        when(katalogHandler.getPublicKey(eq(meldingRequest.getMottakerKontoId()))).thenReturn(x509Certificate);
+        when(asicHandler.encrypt(same(x509Certificate), isA(List.class))).thenReturn(new ByteArrayInputStream(new byte[]{0, 1, 0, 1}));
+
+        final SendtMelding sendtMelding = fiksIOHandler.send(meldingRequest,
+            Collections.singletonList(new StringPayload("Test 1,2,3", "filnavn.txt")));
+        assertAll(
+            () -> assertEquals(meldingRequest.getMottakerKontoId()
+                .getUuid(), sendtMelding.getMottakerKontoId()
+                .getUuid()),
+            () -> assertEquals(TimeUnit.DAYS.toMillis(5L), sendtMelding.getTtl()
+                .toMillis())
+        );
+
+        final SendtMelding sendtMelding2 = fiksIOHandler.send(meldingRequest,
+            Collections.singletonList(new StringPayload("Test 1,2,3", "filnavn.txt")));
+        assertAll(
+            () -> assertEquals(meldingRequest.getMottakerKontoId()
+                .getUuid(), sendtMelding.getMottakerKontoId()
+                .getUuid()),
+            () -> assertEquals(TimeUnit.DAYS.toMillis(5L), sendtMelding.getTtl()
+                .toMillis())
+        );
+
+        final ArgumentCaptor<MeldingSpesifikasjonApiModel> meldingRequestCaptor = ArgumentCaptor.forClass(MeldingSpesifikasjonApiModel.class);
+        verify(utsendingKlient, times(2)).send(meldingRequestCaptor.capture(), isA(Optional.class));
+
+
+        verify(katalogHandler, times(1)).getPublicKey(eq(meldingRequest.getMottakerKontoId()));
+        verify(asicHandler, times(2)).encrypt(same(x509Certificate), isA(List.class));
+        verifyNoMoreInteractions(utsendingKlient, asicHandler, x509Certificate, katalogHandler);
+
+        MeldingSpesifikasjonApiModel meldingRequestCaptorValue = meldingRequestCaptor.getValue();
+        assertEquals(ttl.toMillis(), meldingRequestCaptorValue.getTtl());
     }
 
     @Nested
