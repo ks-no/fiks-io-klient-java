@@ -43,7 +43,7 @@
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <enforcer.jdk.version>${java.version}</enforcer.jdk.version>
-    <fiks-io-commons.version>1.4.6</fiks-io-commons.version>
+    <fiks-io-commons.version>2.0.0</fiks-io-commons.version>
     <mockito.version>5.5.0</mockito.version>
     <feign-version>12.5</feign-version>
     <lombok.version>1.18.30</lombok.version>
