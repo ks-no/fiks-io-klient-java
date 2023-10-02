@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import feign.Feign;
+import feign.hc5.ApacheHttp5Client;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import lombok.NonNull;
@@ -19,11 +20,14 @@ import no.ks.fiks.io.client.model.KontoId;
 import no.ks.fiks.io.client.send.FiksIOSender;
 import no.ks.fiks.io.client.send.FiksIOSenderClientWrapper;
 import no.ks.fiks.io.klient.FiksIOUtsendingKlient;
+import no.ks.fiks.io.klient.IntegrasjonAuthenticationStrategy;
 import no.ks.fiks.maskinporten.AccessTokenRequestBuilder;
 import no.ks.fiks.maskinporten.Maskinportenklient;
 import no.ks.fiks.maskinporten.MaskinportenklientProperties;
 
 import java.io.IOException;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -134,11 +138,11 @@ public class FiksIOKlientFactory {
             .withHostName(sendMeldingKonfigurasjon.getHost())
             .withPortNumber(sendMeldingKonfigurasjon.getPort())
             .withObjectMapper(new ObjectMapper().findAndRegisterModules().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES))
-            .withAuthenticationStrategy(request -> {
-                request.header("Authorization", "Bearer " + maskinportenAccessTokenSupplier.get())
-                    .header("IntegrasjonId", konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId().toString())
-                    .header("IntegrasjonPassord", konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord());
-            })
+            .withAuthenticationStrategy(
+                new IntegrasjonAuthenticationStrategy(
+                    maskinportenAccessTokenSupplier,
+                    konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
+                    konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
             .withRequestInterceptor(konfigurasjon.getSendMeldingKonfigurasjon().getRequestInterceptor() == null ? r -> r : konfigurasjon.getSendMeldingKonfigurasjon().getRequestInterceptor())
             .build();
     }
@@ -160,6 +164,7 @@ public class FiksIOKlientFactory {
     private static Feign.Builder baseKatalogApiKlientBuilder(FiksIOKonfigurasjon konfigurasjon) {
         final var objectMapper = getObjectMapper();
         return Feign.builder()
+            .client(new ApacheHttp5Client())
             .decoder(new JacksonDecoder(objectMapper))
             .encoder(new JacksonEncoder(objectMapper))
             .requestInterceptor(konfigurasjon.getKatalogKonfigurasjon().getRequestInterceptor() == null ? r -> {
@@ -204,11 +209,12 @@ public class FiksIOKlientFactory {
             .build();
 
         try {
-            return new Maskinportenklient(
-                konfigurasjon.getVirksomhetssertifikatKonfigurasjon().getKeyStore(),
-                konfigurasjon.getVirksomhetssertifikatKonfigurasjon().getKeyAlias(),
-                konfigurasjon.getVirksomhetssertifikatKonfigurasjon().getKeyPassword().toCharArray(),
-                maskinportenklientProperties);
+            final var keyStore = konfigurasjon.getVirksomhetssertifikatKonfigurasjon().getKeyStore();
+            return Maskinportenklient.builder()
+                .withPrivateKey((PrivateKey) keyStore.getKey(konfigurasjon.getVirksomhetssertifikatKonfigurasjon().getKeyAlias(), konfigurasjon.getVirksomhetssertifikatKonfigurasjon().getKeyPassword().toCharArray()))
+                .usingVirksomhetssertifikat((X509Certificate) keyStore.getCertificate(konfigurasjon.getVirksomhetssertifikatKonfigurasjon().getKeyAlias()))
+                .withProperties(maskinportenklientProperties)
+                .build();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
