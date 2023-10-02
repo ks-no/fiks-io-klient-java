@@ -10,7 +10,6 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import no.ks.fiks.dokumentlager.klient.DokumentlagerApiImpl;
 import no.ks.fiks.dokumentlager.klient.DokumentlagerKlient;
-import no.ks.fiks.dokumentlager.klient.authentication.IntegrasjonAuthenticationStrategy;
 import no.ks.fiks.feign.RequestInterceptors;
 import no.ks.fiks.fiksio.client.api.katalog.api.FiksIoKatalogApi;
 import no.ks.fiks.io.asice.AsicHandler;
@@ -56,6 +55,7 @@ public class FiksIOKlientFactory {
 
     /**
      * Opprett FiksIOKlient
+     *
      * @return ny {@link FiksIOKlient} instans basert på den konfigurasjonen som ble gitt
      */
     public FiksIOKlient build() {
@@ -63,7 +63,7 @@ public class FiksIOKlientFactory {
         log.info("Setter opp FIKS-IO klient med følgende konfigurasjon: {}", fiksIOKonfigurasjon);
 
 
-        if(this.maskinportenAccessTokenSupplier == null) {
+        if (this.maskinportenAccessTokenSupplier == null) {
             Maskinportenklient maskinportenKlient = getMaskinportenKlient(fiksIOKonfigurasjon);
             this.maskinportenAccessTokenSupplier = () -> maskinportenKlient.getAccessToken(new AccessTokenRequestBuilder().scope(MASKINPORTEN_KS_SCOPE).build());
         }
@@ -74,18 +74,18 @@ public class FiksIOKlientFactory {
             dokumentlagerKlient = getDokumentlagerKlient(fiksIOKonfigurasjon, maskinportenAccessTokenSupplier);
             utsendingKlient = getFiksIOUtsendingKlient(fiksIOKonfigurasjon, maskinportenAccessTokenSupplier);
 
-            final FiksIoKatalogApi katalogApi = getFiksIOKatalogApi(fiksIOKonfigurasjon, maskinportenAccessTokenSupplier);
-
-            AsicHandler asicHandler = AsicHandler.builder()
+            final AsicHandler asicHandler = AsicHandler.builder()
                 .withExecutorService(fiksIOKonfigurasjon.getExecutor())
                 .withPrivateNokler(fiksIOKonfigurasjon.getKontoKonfigurasjon().getPrivateNokler())
                 .withKeyStoreHolder(toKeyStoreHolder(fiksIOKonfigurasjon.getVirksomhetssertifikatKonfigurasjon()))
                 .build();
 
-            KatalogHandler katalogHandler = new KatalogHandler(katalogApi);
+            final KatalogHandler katalogHandler = new KatalogHandler(
+                getFiksIOKatalogApi(fiksIOKonfigurasjon, maskinportenAccessTokenSupplier),
+                getPublicFiksIOKatalogApi(fiksIOKonfigurasjon));
 
-            KontoId kontoId = fiksIOKonfigurasjon.getKontoKonfigurasjon().getKontoId();
-            FiksIOHandler fiksIOHandler = new FiksIOHandler(
+            final KontoId kontoId = fiksIOKonfigurasjon.getKontoKonfigurasjon().getKontoId();
+            final FiksIOHandler fiksIOHandler = new FiksIOHandler(
                 kontoId,
                 getFiksIOSender(utsendingKlient),
                 katalogHandler, asicHandler, publicKeyProvider != null ? publicKeyProvider : new KatalogPublicKeyProvider(katalogHandler));
@@ -134,7 +134,7 @@ public class FiksIOKlientFactory {
             .withHostName(sendMeldingKonfigurasjon.getHost())
             .withPortNumber(sendMeldingKonfigurasjon.getPort())
             .withObjectMapper(new ObjectMapper().findAndRegisterModules().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES))
-            .withAuthenticationStrategy( request -> {
+            .withAuthenticationStrategy(request -> {
                 request.header("Authorization", "Bearer " + maskinportenAccessTokenSupplier.get())
                     .header("IntegrasjonId", konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId().toString())
                     .header("IntegrasjonPassord", konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord());
@@ -144,20 +144,35 @@ public class FiksIOKlientFactory {
     }
 
     private static FiksIoKatalogApi getFiksIOKatalogApi(@NonNull FiksIOKonfigurasjon konfigurasjon, Supplier<String> maskinportenAccessTokenSupplier) {
-        ObjectMapper objectMapper = new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        return Feign.builder()
-            .decoder(new JacksonDecoder(objectMapper))
-            .encoder(new JacksonEncoder(objectMapper))
+        return baseKatalogApiKlientBuilder(konfigurasjon)
             .requestInterceptor(RequestInterceptors.accessToken(maskinportenAccessTokenSupplier))
             .requestInterceptor(RequestInterceptors.integrasjon(
                 konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
                 konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
-            .requestInterceptor(konfigurasjon.getKatalogKonfigurasjon().getRequestInterceptor() == null ? r -> {
-            } : konfigurasjon.getKatalogKonfigurasjon().getRequestInterceptor())
             .target(FiksIoKatalogApi.class, konfigurasjon.getKatalogKonfigurasjon().getUrl());
     }
+
+
+    private static FiksIoKatalogApi getPublicFiksIOKatalogApi(FiksIOKonfigurasjon konfigurasjon) {
+        return baseKatalogApiKlientBuilder(konfigurasjon).target(FiksIoKatalogApi.class, konfigurasjon.getKatalogKonfigurasjon().getUrl());
+    }
+
+    private static Feign.Builder baseKatalogApiKlientBuilder(FiksIOKonfigurasjon konfigurasjon) {
+        final var objectMapper = getObjectMapper();
+        return Feign.builder()
+            .decoder(new JacksonDecoder(objectMapper))
+            .encoder(new JacksonEncoder(objectMapper))
+            .requestInterceptor(konfigurasjon.getKatalogKonfigurasjon().getRequestInterceptor() == null ? r -> {
+            } : konfigurasjon.getKatalogKonfigurasjon().getRequestInterceptor());
+
+    }
+
+    private static ObjectMapper getObjectMapper() {
+        return new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+    }
+
 
     private static DokumentlagerKlient getDokumentlagerKlient(@NonNull FiksIOKonfigurasjon konfigurasjon, Supplier<String> maskinportenAccessTokenSupplier) {
         return DokumentlagerKlient.builder()

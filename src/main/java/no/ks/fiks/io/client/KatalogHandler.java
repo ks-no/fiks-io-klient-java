@@ -17,11 +17,13 @@ import java.util.Optional;
 
 @Slf4j
 public class KatalogHandler {
-    private FiksIoKatalogApi katalogApi;
+    private final FiksIoKatalogApi katalogApi;
+    private final FiksIoKatalogApi publicKatalogApi;
     private CertificateFactory cf;
 
-    public KatalogHandler(@NonNull FiksIoKatalogApi katalogApi) {
-        this.katalogApi = katalogApi;
+    public KatalogHandler(@NonNull FiksIoKatalogApi katalogApiAuth, @NonNull FiksIoKatalogApi publicKatalogApi) {
+        this.katalogApi = katalogApiAuth;
+        this.publicKatalogApi = publicKatalogApi;
     }
 
     public Optional<Konto> lookup(@NonNull LookupRequest request) {
@@ -46,7 +48,7 @@ public class KatalogHandler {
             if (cf == null)
                 cf = CertificateFactory.getInstance("X.509");
 
-            return (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(katalogApi.getOffentligNokkel(mottakerKontoId.getUuid()).getNokkel().getBytes()));
+            return (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(publicKatalogApi.getOffentligNokkel(mottakerKontoId.getUuid()).getNokkel().getBytes()));
         } catch (CertificateException e) {
             throw new RuntimeException(String.format("Feil under generering av offentlig sertifikat for mottaker %s", mottakerKontoId), e);
         }
