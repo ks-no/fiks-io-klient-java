@@ -75,16 +75,9 @@ class FiksIOHandler implements Closeable {
         final UUID mottagerKontoId = request.getMottakerKontoId()
             .getUuid();
         log.debug("Sender melding til \"{}\"", mottagerKontoId);
-        final long lagSpesifikkasjonStart = System.currentTimeMillis();
-        MeldingSpesifikasjonApiModel metadata = lagMeldingSpesifikasjon(request);
-        log.info("Laget spesifikkasjon på {}ms", System.currentTimeMillis()-lagSpesifikkasjonStart);
-        Optional<InputStream> data = Optional.of(payload).filter(p -> !p.isEmpty()).map(p -> encrypt(p, request.getMottakerKontoId()));
-        final long startSend = System.currentTimeMillis();
-        SendtMeldingApiModel send = utsendingKlient.send(
-            metadata,
-            data);
-        log.info("Sendte melding på {}ms", System.currentTimeMillis()-startSend);
-        return send;
+        return utsendingKlient.send(
+            lagMeldingSpesifikasjon(request),
+            Optional.of(payload).filter(p -> ! p.isEmpty()).map(p -> encrypt(p, request.getMottakerKontoId())));
     }
 
     private MeldingSpesifikasjonApiModel lagMeldingSpesifikasjon(@NonNull MeldingRequest request) {
@@ -108,18 +101,11 @@ class FiksIOHandler implements Closeable {
 
     private InputStream encrypt(@NonNull final List<Payload> payload, final KontoId kontoId) {
         log.debug("Krypterer melding til konto \"{}\"", kontoId);
-        final long startEncrypt = System.currentTimeMillis();
-        InputStream encrypt = asic.encrypt(getPublicKey(kontoId), payload.stream().map(Payload::toContent).collect(Collectors.toList()));
-        log.info("Krypterte melding på {}ms", System.currentTimeMillis()-startEncrypt);
-        return encrypt;
+        return asic.encrypt(getPublicKey(kontoId), payload.stream().map(Payload::toContent).collect(Collectors.toList()));
     }
 
     private X509Certificate getPublicKey(final KontoId kontoId) {
-        log.info("Henter offentlig nøkkel for konto fra cache \"{}\"", kontoId);
-        final long startHentKey = System.currentTimeMillis();
-        X509Certificate unchecked = publicKeyCache.getUnchecked(kontoId);
-        log.info("Hentet nøkkel på {}ms", System.currentTimeMillis()-startHentKey);
-        return unchecked;
+        return publicKeyCache.getUnchecked(kontoId);
     }
 
     @Override
