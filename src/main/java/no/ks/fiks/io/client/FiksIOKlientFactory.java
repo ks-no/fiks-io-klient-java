@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import feign.Feign;
+import feign.hc5.ApacheHttp5Client;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import lombok.NonNull;
@@ -19,11 +20,20 @@ import no.ks.fiks.io.client.model.KontoId;
 import no.ks.fiks.io.client.send.FiksIOSender;
 import no.ks.fiks.io.client.send.FiksIOSenderClientWrapper;
 import no.ks.fiks.io.klient.FiksIOUtsendingKlient;
+import no.ks.fiks.io.klient.IntegrasjonAuthenticationStrategy;
 import no.ks.fiks.maskinporten.AccessTokenRequestBuilder;
 import no.ks.fiks.maskinporten.Maskinportenklient;
 import no.ks.fiks.maskinporten.MaskinportenklientProperties;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.util.TimeValue;
+import org.apache.hc.core5.util.VersionInfo;
 
 import java.io.IOException;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
+import java.time.Duration;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -70,9 +80,11 @@ public class FiksIOKlientFactory {
 
         DokumentlagerKlient dokumentlagerKlient = null;
         FiksIOUtsendingKlient utsendingKlient = null;
+
         try {
+            final var httpClient = httpClient();
             dokumentlagerKlient = getDokumentlagerKlient(fiksIOKonfigurasjon, maskinportenAccessTokenSupplier);
-            utsendingKlient = getFiksIOUtsendingKlient(fiksIOKonfigurasjon, maskinportenAccessTokenSupplier);
+            utsendingKlient = getFiksIOUtsendingKlient(fiksIOKonfigurasjon, httpClient, maskinportenAccessTokenSupplier);
 
             final AsicHandler asicHandler = AsicHandler.builder()
                 .withExecutorService(fiksIOKonfigurasjon.getExecutor())
@@ -81,8 +93,8 @@ public class FiksIOKlientFactory {
                 .build();
 
             final KatalogHandler katalogHandler = new KatalogHandler(
-                getFiksIOKatalogApi(fiksIOKonfigurasjon, maskinportenAccessTokenSupplier),
-                getPublicFiksIOKatalogApi(fiksIOKonfigurasjon));
+                getFiksIOKatalogApi(fiksIOKonfigurasjon, maskinportenAccessTokenSupplier, httpClient),
+                getPublicFiksIOKatalogApi(fiksIOKonfigurasjon, httpClient));
 
             final KontoId kontoId = fiksIOKonfigurasjon.getKontoKonfigurasjon().getKontoId();
             final FiksIOHandler fiksIOHandler = new FiksIOHandler(
@@ -126,25 +138,26 @@ public class FiksIOKlientFactory {
             .build();
     }
 
-    private static FiksIOUtsendingKlient getFiksIOUtsendingKlient(@NonNull FiksIOKonfigurasjon konfigurasjon, Supplier<String> maskinportenAccessTokenSupplier) {
+    private static FiksIOUtsendingKlient getFiksIOUtsendingKlient(@NonNull FiksIOKonfigurasjon konfigurasjon, final CloseableHttpClient httpClient, Supplier<String> maskinportenAccessTokenSupplier) {
         final SendMeldingKonfigurasjon sendMeldingKonfigurasjon = konfigurasjon.getSendMeldingKonfigurasjon();
         return FiksIOUtsendingKlient.builder()
+            .withHttpClient(httpClient)
             .withScheme(sendMeldingKonfigurasjon
                 .getScheme())
             .withHostName(sendMeldingKonfigurasjon.getHost())
             .withPortNumber(sendMeldingKonfigurasjon.getPort())
             .withObjectMapper(new ObjectMapper().findAndRegisterModules().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES))
-            .withAuthenticationStrategy(request -> {
-                request.header("Authorization", "Bearer " + maskinportenAccessTokenSupplier.get())
-                    .header("IntegrasjonId", konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId().toString())
-                    .header("IntegrasjonPassord", konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord());
-            })
+            .withAuthenticationStrategy(
+                new IntegrasjonAuthenticationStrategy(
+                    maskinportenAccessTokenSupplier,
+                    konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
+                    konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
             .withRequestInterceptor(konfigurasjon.getSendMeldingKonfigurasjon().getRequestInterceptor() == null ? r -> r : konfigurasjon.getSendMeldingKonfigurasjon().getRequestInterceptor())
             .build();
     }
 
-    private static FiksIoKatalogApi getFiksIOKatalogApi(@NonNull FiksIOKonfigurasjon konfigurasjon, Supplier<String> maskinportenAccessTokenSupplier) {
-        return baseKatalogApiKlientBuilder(konfigurasjon)
+    private static FiksIoKatalogApi getFiksIOKatalogApi(@NonNull FiksIOKonfigurasjon konfigurasjon, Supplier<String> maskinportenAccessTokenSupplier, final CloseableHttpClient httpClient) {
+        return baseKatalogApiKlientBuilder(konfigurasjon, httpClient)
             .requestInterceptor(RequestInterceptors.accessToken(maskinportenAccessTokenSupplier))
             .requestInterceptor(RequestInterceptors.integrasjon(
                 konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
@@ -153,18 +166,28 @@ public class FiksIOKlientFactory {
     }
 
 
-    private static FiksIoKatalogApi getPublicFiksIOKatalogApi(FiksIOKonfigurasjon konfigurasjon) {
-        return baseKatalogApiKlientBuilder(konfigurasjon).target(FiksIoKatalogApi.class, konfigurasjon.getKatalogKonfigurasjon().getUrl());
+    private static FiksIoKatalogApi getPublicFiksIOKatalogApi(FiksIOKonfigurasjon konfigurasjon, final CloseableHttpClient httpClient) {
+        return baseKatalogApiKlientBuilder(konfigurasjon, httpClient).target(FiksIoKatalogApi.class, konfigurasjon.getKatalogKonfigurasjon().getUrl());
     }
 
-    private static Feign.Builder baseKatalogApiKlientBuilder(FiksIOKonfigurasjon konfigurasjon) {
+    private static Feign.Builder baseKatalogApiKlientBuilder(FiksIOKonfigurasjon konfigurasjon, final CloseableHttpClient httpClient) {
         final var objectMapper = getObjectMapper();
         return Feign.builder()
+            .client(new ApacheHttp5Client(httpClient))
             .decoder(new JacksonDecoder(objectMapper))
             .encoder(new JacksonEncoder(objectMapper))
             .requestInterceptor(konfigurasjon.getKatalogKonfigurasjon().getRequestInterceptor() == null ? r -> {
             } : konfigurasjon.getKatalogKonfigurasjon().getRequestInterceptor());
 
+    }
+
+    private static CloseableHttpClient httpClient() {
+        return HttpClients.custom()
+            .useSystemProperties()
+            .evictIdleConnections(TimeValue.of(Duration.ofMinutes(1L)))
+            .setUserAgent("fiks-io-klient %s %s".formatted(Meta.VERSJON, VersionInfo.getSoftwareInfo("Apache-HttpClient",
+                    "org.apache.hc.client5", HttpClientBuilder.class)))
+            .build();
     }
 
     private static ObjectMapper getObjectMapper() {
@@ -204,11 +227,12 @@ public class FiksIOKlientFactory {
             .build();
 
         try {
-            return new Maskinportenklient(
-                konfigurasjon.getVirksomhetssertifikatKonfigurasjon().getKeyStore(),
-                konfigurasjon.getVirksomhetssertifikatKonfigurasjon().getKeyAlias(),
-                konfigurasjon.getVirksomhetssertifikatKonfigurasjon().getKeyPassword().toCharArray(),
-                maskinportenklientProperties);
+            final var keyStore = konfigurasjon.getVirksomhetssertifikatKonfigurasjon().getKeyStore();
+            return Maskinportenklient.builder()
+                .withPrivateKey((PrivateKey) keyStore.getKey(konfigurasjon.getVirksomhetssertifikatKonfigurasjon().getKeyAlias(), konfigurasjon.getVirksomhetssertifikatKonfigurasjon().getKeyPassword().toCharArray()))
+                .usingVirksomhetssertifikat((X509Certificate) keyStore.getCertificate(konfigurasjon.getVirksomhetssertifikatKonfigurasjon().getKeyAlias()))
+                .withProperties(maskinportenklientProperties)
+                .build();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
