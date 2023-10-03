@@ -2,7 +2,7 @@ package no.ks.fiks.io.client.konfigurasjon;
 
 import lombok.Builder;
 import lombok.Data;
-import org.eclipse.jetty.client.api.Request;
+import org.apache.hc.core5.http.ClassicHttpRequest;
 
 import java.util.function.Function;
 
@@ -28,5 +28,5 @@ public class SendMeldingKonfigurasjon implements HostKonfigurasjon{
     /**
      * Ikke påkrevd felt. Gir mulighet for å intercepte request mot fiksio-service.
      */
-    private Function<Request, Request> requestInterceptor;
+    private Function<ClassicHttpRequest, ClassicHttpRequest> requestInterceptor;
 }
