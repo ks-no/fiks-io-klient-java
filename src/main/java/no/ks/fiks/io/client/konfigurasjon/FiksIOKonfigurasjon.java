@@ -5,9 +5,6 @@ import lombok.NonNull;
 import lombok.Value;
 
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 @Value
 @Builder
@@ -17,9 +14,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class FiksIOKonfigurasjon {
 
     /**
-     * Standard størrelse på trådpool
+     * Ikke påkrevd. Størrelse på krypterings trådpool, default = 6
      */
-    public static final int DEFAULT_THREADPOOL_SIZE = 6;
+    @Builder.Default private int encryptionPoolSize = 6;
 
     /**
      * Påkrevd felt. Se {@link KontoKonfigurasjon}
@@ -60,11 +57,6 @@ public class FiksIOKonfigurasjon {
       * Ikke påkrevd. Kan brukes for å overkjøre defaults for endepunkt for å sende meldinger til SvarInn. Se {@link SendMeldingKonfigurasjon}
       */
     @Builder.Default private SendMeldingKonfigurasjon sendMeldingKonfigurasjon = SendMeldingKonfigurasjon.builder().build();
-
-    /**
-     * Ikke påkrevd. Som standard opprettes en {@link ThreadPoolExecutor} med det antallet tråder som er angitt i {@link #DEFAULT_THREADPOOL_SIZE}
-     */
-    @NonNull @Builder.Default private ExecutorService executor = Executors.newFixedThreadPool(DEFAULT_THREADPOOL_SIZE);
 
     public static FiksIOKonfigurasjon defaultProdConfiguration(
         final String klientId,
