@@ -63,7 +63,7 @@ final SendtMelding sendtMelding = fiksIoKonto.map(konto -> fiksIOKlient.send(...
 ```
 
 ### Konfigurasjon av klienten
-FiksIO klienten er default satt opp med 6 tråder for kryptering. Størrelsen kan overstyres ved behov.
+FiksIO klienten er default satt opp med 6 tråder for kryptering. Størrelsen kan overstyres ved behov. For å overstyre må en spesifisere FiksIOKonfigurasjon.executor
 FiksIO klienten er default satt opp med HttpClient connection pool, med maks 5 requests pr route og 25 totalt. En kan overstyre denne med å konfigurere egen http klient.
 
 NB!! med parallellisering oppnår en ikke raskere prosessering om man kjører med flere enn 5 parallelle tråder pr FiksIO klient, om en ikke samtidig øker størrelse på krypterings og http klient pool
