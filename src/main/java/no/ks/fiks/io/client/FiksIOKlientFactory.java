@@ -35,6 +35,7 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.Optional;
+import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 
 
@@ -48,14 +49,20 @@ public class FiksIOKlientFactory {
     private final FiksIOKonfigurasjon fiksIOKonfigurasjon;
     private Supplier<String> maskinportenAccessTokenSupplier;
 
-    public FiksIOKlientFactory(@NonNull FiksIOKonfigurasjon fiksIOKonfigurasjon, @NonNull PublicKeyProvider publicKeyProvider) {
+    private CloseableHttpClient httpClient;
+
+    public FiksIOKlientFactory(@NonNull FiksIOKonfigurasjon fiksIOKonfigurasjon, PublicKeyProvider publicKeyProvider, @NonNull CloseableHttpClient httpClient) {
         this.fiksIOKonfigurasjon = fiksIOKonfigurasjon;
         this.publicKeyProvider = publicKeyProvider;
+        this.httpClient = httpClient;
+    }
+
+    public FiksIOKlientFactory(@NonNull FiksIOKonfigurasjon fiksIOKonfigurasjon, PublicKeyProvider publicKeyProvider) {
+        this(fiksIOKonfigurasjon, publicKeyProvider, httpClient());
     }
 
     public FiksIOKlientFactory(@NonNull FiksIOKonfigurasjon fiksIOKonfigurasjon) {
-        this.fiksIOKonfigurasjon = fiksIOKonfigurasjon;
-        this.publicKeyProvider = null;
+        this(fiksIOKonfigurasjon, null);
     }
 
     public FiksIOKlientFactory setMaskinportenAccessTokenSupplier(Supplier<String> maskinportenAccessTokenSupplier) {
@@ -82,12 +89,11 @@ public class FiksIOKlientFactory {
         FiksIOUtsendingKlient utsendingKlient = null;
 
         try {
-            final var httpClient = httpClient();
             dokumentlagerKlient = getDokumentlagerKlient(fiksIOKonfigurasjon, maskinportenAccessTokenSupplier);
             utsendingKlient = getFiksIOUtsendingKlient(fiksIOKonfigurasjon, httpClient, maskinportenAccessTokenSupplier);
 
             final AsicHandler asicHandler = AsicHandler.builder()
-                .withExecutorService(fiksIOKonfigurasjon.getExecutor())
+                .withExecutorService(Executors.newFixedThreadPool(fiksIOKonfigurasjon.getEncryptionPoolSize()))
                 .withPrivateNokler(fiksIOKonfigurasjon.getKontoKonfigurasjon().getPrivateNokler())
                 .withKeyStoreHolder(toKeyStoreHolder(fiksIOKonfigurasjon.getVirksomhetssertifikatKonfigurasjon()))
                 .build();
