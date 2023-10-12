@@ -19,7 +19,7 @@ public class FiksIOKonfigurasjon {
     /**
      * Standard størrelse på trådpool
      */
-    public static final int DEFAULT_THREADPOOL_SIZE = 6;
+    public static final int DEFAULT_THREADPOOL_SIZE = 5;
 
     /**
      * Påkrevd felt. Se {@link KontoKonfigurasjon}
