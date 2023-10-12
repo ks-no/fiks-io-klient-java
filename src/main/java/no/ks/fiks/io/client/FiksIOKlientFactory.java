@@ -49,7 +49,7 @@ public class FiksIOKlientFactory {
     private final FiksIOKonfigurasjon fiksIOKonfigurasjon;
     private Supplier<String> maskinportenAccessTokenSupplier;
 
-    private CloseableHttpClient httpClient;
+    private final CloseableHttpClient httpClient;
 
     public FiksIOKlientFactory(@NonNull FiksIOKonfigurasjon fiksIOKonfigurasjon, PublicKeyProvider publicKeyProvider, @NonNull CloseableHttpClient httpClient) {
         this.fiksIOKonfigurasjon = fiksIOKonfigurasjon;
@@ -93,7 +93,7 @@ public class FiksIOKlientFactory {
             utsendingKlient = getFiksIOUtsendingKlient(fiksIOKonfigurasjon, httpClient, maskinportenAccessTokenSupplier);
 
             final AsicHandler asicHandler = AsicHandler.builder()
-                .withExecutorService(Executors.newFixedThreadPool(fiksIOKonfigurasjon.getEncryptionPoolSize()))
+                .withExecutorService(fiksIOKonfigurasjon.getExecutor())
                 .withPrivateNokler(fiksIOKonfigurasjon.getKontoKonfigurasjon().getPrivateNokler())
                 .withKeyStoreHolder(toKeyStoreHolder(fiksIOKonfigurasjon.getVirksomhetssertifikatKonfigurasjon()))
                 .build();
