@@ -192,7 +192,7 @@ public class FiksIOKlientFactory {
             .useSystemProperties()
             .evictIdleConnections(TimeValue.of(Duration.ofMinutes(1L)))
             .setUserAgent("fiks-io-klient %s %s".formatted(Meta.VERSJON, VersionInfo.getSoftwareInfo("Apache-HttpClient",
-                    "org.apache.hc.client5", HttpClientBuilder.class)))
+                "org.apache.hc.client5", HttpClientBuilder.class)))
             .build();
     }
 
@@ -208,11 +208,11 @@ public class FiksIOKlientFactory {
             .api(DokumentlagerApiImpl.builder()
                 .uploadBaseUrl(konfigurasjon.getDokumentlagerKonfigurasjon().getUrl())
                 .downloadBaseUrl(konfigurasjon.getDokumentlagerKonfigurasjon().getUrl())
-                .authenticationStrategy(request -> {
-                    request.header("Authorization", "Bearer " + maskinportenAccessTokenSupplier.get())
-                        .header("IntegrasjonId", konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId().toString())
-                        .header("IntegrasjonPassord", konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord());
-                })
+                .authenticationStrategy(request ->
+                    request.headers(c ->
+                        c.add("Authorization", "Bearer " + maskinportenAccessTokenSupplier.get())
+                            .add("IntegrasjonId", konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId().toString())
+                            .add("IntegrasjonPassord", konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord())))
                 .requestInterceptor(Optional.ofNullable(konfigurasjon.getDokumentlagerKonfigurasjon().getRequestInterceptor()).orElseGet(() -> r -> r))
                 .build())
             .build();
