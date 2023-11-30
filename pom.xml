@@ -28,7 +28,7 @@
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <enforcer.jdk.version>${java.version}</enforcer.jdk.version>
 
-    <commons-io.version>2.15.0</commons-io.version>
+    <commons-io.version>2.15.1</commons-io.version>
     <download-maven-plugin.version>1.7.1</download-maven-plugin.version>
     <feign-form-version>3.8.0</feign-form-version>
     <feign-version>13.0</feign-version>
