@@ -5,7 +5,7 @@
   <parent>
     <groupId>no.ks.fiks.pom</groupId>
     <artifactId>fiks-ekstern-super-pom</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.2</version>
   </parent>
   <groupId>no.ks.fiks</groupId>
   <artifactId>fiks-io-klient-java</artifactId>
@@ -28,29 +28,29 @@
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <enforcer.jdk.version>${java.version}</enforcer.jdk.version>
 
-    <commons-io.version>2.15.0</commons-io.version>
+    <commons-io.version>2.15.1</commons-io.version>
     <download-maven-plugin.version>1.7.1</download-maven-plugin.version>
     <feign-form-version>3.8.0</feign-form-version>
-    <feign-version>13.0</feign-version>
+    <feign-version>13.1</feign-version>
     <fiks-dokumentlager-klient.version>2.3.2</fiks-dokumentlager-klient.version>
-    <fiks-feign-interceptors.version>1.1.4</fiks-feign-interceptors.version>
+    <fiks-feign-interceptors.version>1.1.5</fiks-feign-interceptors.version>
     <fiks-io-asice-handler.version>2.1.3</fiks-io-asice-handler.version>
     <fiks-io-commons.version>2.0.2</fiks-io-commons.version>
     <fiks-io-send-klient.version>3.2.2</fiks-io-send-klient.version>
-    <fiks-maskinporten-client.version>3.1.7</fiks-maskinporten-client.version>
+    <fiks-maskinporten-client.version>3.1.8</fiks-maskinporten-client.version>
     <guava.version>32.1.3-jre</guava.version>
     <jackson-databind-nullable.version>0.2.6</jackson-databind-nullable.version>
-    <jackson.version>2.15.3</jackson.version>
+    <jackson.version>2.16.0</jackson.version>
     <jacoco-maven-plugin.version>0.8.11</jacoco-maven-plugin.version>
     <jakarta.annotation-api.version>2.1.1</jakarta.annotation-api.version>
     <junit-jupiter.version>5.10.1</junit-jupiter.version>
-    <kryptering.version>2.0.2</kryptering.version>
+    <kryptering.version>2.0.3</kryptering.version>
     <ks-commons-asic.version>1.0.1</ks-commons-asic.version>
-    <logback.version>1.4.11</logback.version>
+    <logback.version>1.4.14</logback.version>
     <lombok.version>1.18.30</lombok.version>
     <maven-surefire-plugin.version>3.0.0</maven-surefire-plugin.version>
     <mockito.version>5.7.0</mockito.version>
-    <openapi-generator-maven-plugin.version>7.0.1</openapi-generator-maven-plugin.version>
+    <openapi-generator-maven-plugin.version>7.1.0</openapi-generator-maven-plugin.version>
     <rabbitmq-amqp-client.version>5.20.0</rabbitmq-amqp-client.version>
     <scribejava.version>8.3.3</scribejava.version>
     <slf4j.version>2.0.7</slf4j.version>
