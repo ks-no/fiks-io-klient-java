@@ -2,7 +2,7 @@ package no.ks.fiks.io.client.konfigurasjon;
 
 import lombok.Builder;
 import lombok.Data;
-import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.Request;
 
 import java.util.function.Function;
 
