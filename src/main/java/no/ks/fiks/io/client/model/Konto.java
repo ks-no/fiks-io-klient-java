@@ -12,6 +12,7 @@ public class Konto {
     @NonNull private String kontoNavn;
     @NonNull private FiksOrgId fiksOrgId;
     @NonNull private String fiksOrgNavn;
+    private String kommuneNummer;
     private boolean isGyldigAvsender;
     private boolean isGyldigMottaker;
 
@@ -21,6 +22,7 @@ public class Konto {
             .kontoNavn(konto.getKontoNavn())
             .fiksOrgId(new FiksOrgId(konto.getFiksOrgId()))
             .fiksOrgNavn(konto.getFiksOrgNavn())
+            .kommuneNummer(konto.getKommuneNummer())
             .isGyldigAvsender(konto.getStatus().getGyldigAvsender())
             .isGyldigMottaker(konto.getStatus().getGyldigMottaker())
             .build();
