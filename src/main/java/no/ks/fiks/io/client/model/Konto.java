@@ -8,13 +8,14 @@ import no.ks.fiks.fiksio.client.api.katalog.model.KatalogKonto;
 @Builder
 @Value
 public class Konto {
-    @NonNull private KontoId kontoId;
-    @NonNull private String kontoNavn;
-    @NonNull private FiksOrgId fiksOrgId;
-    @NonNull private String fiksOrgNavn;
-    private String kommuneNummer;
-    private boolean isGyldigAvsender;
-    private boolean isGyldigMottaker;
+    @NonNull KontoId kontoId;
+    @NonNull String kontoNavn;
+    @NonNull FiksOrgId fiksOrgId;
+    @NonNull String fiksOrgNavn;
+    @NonNull String orgNummer;
+    String kommuneNummer;
+    boolean isGyldigAvsender;
+    boolean isGyldigMottaker;
 
     public static Konto fromKatalogModel(@NonNull KatalogKonto konto) {
         return Konto.builder()
@@ -22,6 +23,7 @@ public class Konto {
             .kontoNavn(konto.getKontoNavn())
             .fiksOrgId(new FiksOrgId(konto.getFiksOrgId()))
             .fiksOrgNavn(konto.getFiksOrgNavn())
+            .orgNummer(konto.getOrganisasjonsnummer())
             .kommuneNummer(konto.getKommuneNummer())
             .isGyldigAvsender(konto.getStatus().getGyldigAvsender())
             .isGyldigMottaker(konto.getStatus().getGyldigMottaker())
