@@ -28,6 +28,14 @@ public interface FiksIOKlient extends Closeable {
     Optional<Konto> lookup(LookupRequest request);
 
     /**
+     * Brukes til å finne konto basert på konto id
+     *
+     * @param kontoId for kontooppslag {@link KontoId}
+     * @return Optional som enten er tom eller inneholder et {@link Konto} objekt
+     */
+    Optional<Konto> getKonto(KontoId kontoId);
+
+    /**
      * Lager Asic-E pakke, krypterer den og sender den via Fiks-IO
      *
      * @param request informasjon om mottager
