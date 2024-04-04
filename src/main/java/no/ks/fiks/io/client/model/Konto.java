@@ -12,7 +12,7 @@ public class Konto {
     @NonNull String kontoNavn;
     @NonNull FiksOrgId fiksOrgId;
     @NonNull String fiksOrgNavn;
-    @NonNull String orgNummer;
+    String orgNummer;
     String kommuneNummer;
     boolean isGyldigAvsender;
     boolean isGyldigMottaker;
