@@ -24,7 +24,7 @@ public class Konto {
             .fiksOrgId(new FiksOrgId(konto.getFiksOrgId()))
             .fiksOrgNavn(konto.getFiksOrgNavn())
             .orgNummer(konto.getOrganisasjonsnummer())
-            .kommuneNummer(konto.getKommuneNummer())
+            .kommuneNummer(konto.getKommunenummer())
             .isGyldigAvsender(konto.getStatus().getGyldigAvsender())
             .isGyldigMottaker(konto.getStatus().getGyldigMottaker())
             .build();
