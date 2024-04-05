@@ -43,6 +43,17 @@ public class KatalogHandler {
         }
     }
 
+    public Optional<Konto> getKonto(@NonNull KontoId kontoId) {
+        try {
+            return Optional.ofNullable(katalogApi.getKonto(kontoId.getUuid())).map(Konto::fromKatalogModel);
+        } catch (FeignException e) {
+            if (e.status() == 404)
+                return Optional.empty();
+            else
+                throw e;
+        }
+    }
+
     X509Certificate getPublicKey(@NonNull KontoId mottakerKontoId) {
         try {
             if (cf == null)

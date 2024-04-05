@@ -43,6 +43,11 @@ public class FiksIOKlientImpl implements FiksIOKlient {
     }
 
     @Override
+    public Optional<Konto> getKonto(@NonNull KontoId kontoId) {
+        return katalogHandler.getKonto(kontoId);
+    }
+
+    @Override
     public SendtMelding send(@NonNull MeldingRequest request, @NonNull List<Payload> payload) {
         return fiksIOHandler.send(request, payload);
     }
