@@ -41,13 +41,13 @@ Legg til følgende i POM-filen din:
 
 ## Bruk
 
+### Oppsett
+
 ```java
 final FiksIOKonfigurasjon fiksIOKonfigurasjon = FiksIOKonfigurasjon.builder()
-                                            // sett konfig
+                                            // Bygg konfigurasjon - se mer under "Konfigurasjon av klienten"
                                             .build();
 final FiksIOKlientFactory fiksIOKlientFactory = new FiksIOKlientFactory(fiksIOKonfigurasjon);
-//FiksIOKlientFactory bruker [Fiks Maskinporten klient](https://github.com/ks-no/fiks-maskinporten) som standard, men en kan bruke egen klient for generering av AccessToken utstedt fra maskinporten. NB! Krever skope "ks:fiks"
-fiksIOKlientFactory.setMaskinportenAccessTokenSupplier(maskinportenAccessTokenSupplier)
 final FiksIOKlient fiksIOKlient = fiksIOKlientFactory.build();
 // Lytte på meldinger
 fiksIOKlient.newSubscription((motattMelding, svarSender) -> {
@@ -62,6 +62,15 @@ final Optional<Konto> fiksIoKonto = fiksIOKlient.lookup(...);
 final SendtMelding sendtMelding = fiksIoKonto.map(konto -> fiksIOKlient.send(...)).orElseThrow(() -> new IllegalStateException("Kunne ikke sende til Fiks IO"));
 ```
 
+##### Oppsett med egen Maskinporten klient
+FiksIOKlientFactory bruker [Fiks Maskinporten klient](https://github.com/ks-no/fiks-maskinporten) som standard, men en kan bruke egen klient for generering av AccessToken utstedt fra maskinporten.
+
+NB! Krever skope "ks:fiks"
+```java
+// sett din egen maskinportenAccessTokenSupplier
+fiksIOKlientFactory.setMaskinportenAccessTokenSupplier(maskinportenAccessTokenSupplier)
+```
+
 ### Konfigurasjon av klienten
 FiksIO klienten er default satt opp med 5 tråder for kryptering. Størrelsen kan overstyres ved behov. For å overstyre må en spesifisere FiksIOKonfigurasjon.executor
 FiksIO klienten er default satt opp med HttpClient connection pool, med maks 5 requests pr route og 25 totalt. En kan overstyre denne med å konfigurere egen http klient.
@@ -69,7 +78,8 @@ FiksIO klienten er default satt opp med HttpClient connection pool, med maks 5 r
 NB!! med parallellisering oppnår en ikke raskere prosessering om man kjører med flere enn 5 parallelle tråder pr FiksIO klient, om en ikke samtidig øker størrelse på krypterings og http klient pool
 
 
-For å konfigurere klienten, trengs en instans av `FiksIOKonfigurasjon`. Den har en tilhørende *builder* som kan benyttes til å angi all konfigurasjon. Eksempel:
+For å konfigurere klienten, trengs en instans av `FiksIOKonfigurasjon`. Den har en tilhørende *builder* som kan benyttes til å angi all konfigurasjon.
+Forkortet eksempel:
 ```java
 FiksIoKonfigurasjon konfigurasjon = FiksIOKonfigurasjon.builder()
     .fiksApiKonfigurasjon(FiksApiKonfigurasjon.builder()
@@ -81,9 +91,27 @@ FiksIoKonfigurasjon konfigurasjon = FiksIOKonfigurasjon.builder()
         .host("io.fiks.ks.no")
         .port(5671)
         .build())
+    .fiksIntegrasjonsKonfigurasjon(FiksIntegrasjonKonfigurasjon.builder()
+        .integrasjonId("din integrasjonsid")
+        .integrasjonPassord("ditt integrasjonspassord")
+        .idPortenKonfigurasjon( createMaskinportenKonfigurasjon() ) // Dette er Maskinporten konfigurasjonen! Se eksempel under.
+        .build())
     // Resten av konfigurasjonen...
     .build();
 ```
+
+#### Maskinporten konfigurasjon
+IdPortenKonfigurasjon brukes for konfigurasjon av Maskinporten klienten
+```java
+private static IdPortenKonfigurasjon createMaskinportenPortenKonfigurasjon() {
+    return IdPortenKonfigurasjon.builder()
+        .accessTokenUri("https://test.maskinporten.no/token")
+        .idPortenAudience("https://test.maskinporten.no/")
+        .klientId("din klientid")
+        .build();
+}
+```
+
 
 For å gjøre det enklere å sette opp standard konfigurasjon for *test* og *prod* miljøene, finnes det i tillegg to funksjoner `defaultProdConfiguration` og `defaultTestConfiguration` for å lage default konfigurasjon. Påkrevde felter angis som argument, slik:
 ```java
