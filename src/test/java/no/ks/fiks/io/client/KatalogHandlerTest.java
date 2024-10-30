@@ -79,6 +79,7 @@ class KatalogHandlerTest {
                                      .fiksOrgNavn("OrgNavn")
                                      .isGyldigAvsender(true)
                                      .isGyldigMottaker(true)
+                                     .antallKonsumenter(0)
                                      .build();
             when(fiksIoKatalogApi.lookup(eq(sammensattIdentifikator), eq(meldingType), eq(sikkerhetsNiva))).thenReturn(new KatalogKonto().fiksOrgId(
                 konto.getFiksOrgId()
@@ -95,7 +96,8 @@ class KatalogHandlerTest {
                                                                                                                                                   .gyldigAvsender(
                                                                                                                                                       true)
                                                                                                                                                   .gyldigMottaker(
-                                                                                                                                                      true)));
+                                                                                                                                                      true)
+                                                                                                                                                  .antallKonsumenter(konto.getAntallKonsumenter())));
             final Optional<Konto> funnetKonto = katalogHandler.lookup(LookupRequest.builder()
                                                                                    .identifikator(new Identifikator(identifikatorType, identifikator))
                                                                                    .sikkerhetsNiva(sikkerhetsNiva)
