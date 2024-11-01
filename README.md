@@ -35,7 +35,7 @@ Legg til følgende i POM-filen din:
        <dependency>
             <groupId>no.ks.fiks</groupId>
             <artifactId>fiks-io-klient-java</artifactId>
-            <version>3.3.2</version>
+            <version>x.x.x</version>
        </dependency>
     </dependencies>
 
