@@ -38,7 +38,7 @@
     <fiks-io-commons.version>2.0.3</fiks-io-commons.version>
     <fiks-io-send-klient.version>3.3.0</fiks-io-send-klient.version>
     <fiks-maskinporten-client.version>3.3.1</fiks-maskinporten-client.version>
-    <guava.version>33.3.1-jre</guava.version>
+    <guava.version>33.4.0-jre</guava.version>
     <jackson-databind-nullable.version>0.2.6</jackson-databind-nullable.version>
     <jackson.version>2.18.1</jackson.version>
     <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
