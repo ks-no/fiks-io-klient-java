@@ -16,6 +16,7 @@ public class Konto {
     String kommuneNummer;
     boolean isGyldigAvsender;
     boolean isGyldigMottaker;
+    long antallKonsumenter;
 
     public static Konto fromKatalogModel(@NonNull KatalogKonto konto) {
         return Konto.builder()
@@ -27,6 +28,7 @@ public class Konto {
             .kommuneNummer(konto.getKommunenummer())
             .isGyldigAvsender(konto.getStatus().getGyldigAvsender())
             .isGyldigMottaker(konto.getStatus().getGyldigMottaker())
+            .antallKonsumenter(konto.getStatus().getAntallKonsumenter())
             .build();
     }
 }
