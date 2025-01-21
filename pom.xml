@@ -33,7 +33,7 @@
     <feign-form-version>3.8.0</feign-form-version>
     <feign-version>13.5</feign-version>
     <fiks-dokumentlager-klient.version>3.0.3</fiks-dokumentlager-klient.version>
-    <fiks-feign-interceptors.version>1.1.5</fiks-feign-interceptors.version>
+    <fiks-feign-interceptors.version>1.2.0</fiks-feign-interceptors.version>
     <fiks-io-asice-handler.version>2.2.0</fiks-io-asice-handler.version>
     <fiks-io-commons.version>2.0.3</fiks-io-commons.version>
     <fiks-io-send-klient.version>3.3.0</fiks-io-send-klient.version>
