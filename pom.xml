@@ -40,7 +40,7 @@
     <fiks-maskinporten-client.version>3.4.0</fiks-maskinporten-client.version>
     <guava.version>33.4.0-jre</guava.version>
     <jackson-databind-nullable.version>0.2.6</jackson-databind-nullable.version>
-    <jackson.version>2.18.2</jackson.version>
+    <jackson.version>2.18.3</jackson.version>
     <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
     <jakarta.annotation-api.version>3.0.0</jakarta.annotation-api.version>
     <junit-jupiter.version>5.12.0</junit-jupiter.version>
