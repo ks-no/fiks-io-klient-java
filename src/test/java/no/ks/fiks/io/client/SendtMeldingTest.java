@@ -1,6 +1,7 @@
 package no.ks.fiks.io.client;
 
 import com.google.common.collect.ImmutableMap;
+import no.ks.fiks.io.client.model.KlientKorrelasjonId;
 import no.ks.fiks.io.client.model.Melding;
 import no.ks.fiks.io.client.model.MeldingId;
 import no.ks.fiks.io.client.model.SendtMelding;
@@ -8,7 +9,6 @@ import no.ks.fiks.io.klient.SendtMeldingApiModel;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -39,8 +39,11 @@ class SendtMeldingTest {
     }
 
     @Test
-    void fromSendResponseWithKlientMeldingId() {
+    void fromSendResponseWithKlientMeldingIdAndKorrelasjonId() {
         final MeldingId klientMeldingId = new MeldingId(UUID.randomUUID());
+        final KlientKorrelasjonId klientKorrelasjonsId = new KlientKorrelasjonId((UUID.randomUUID().toString()));
+        assertNotNull(klientKorrelasjonsId.getKlientKorrelasjonId());
+
         final SendtMeldingApiModel sendtMeldingApiModel = SendtMeldingApiModel.builder()
             .meldingId(UUID.randomUUID())
             .mottakerKontoId(UUID.randomUUID())
@@ -49,7 +52,9 @@ class SendtMeldingTest {
             .svarPaMelding(UUID.randomUUID())
             .dokumentlagerId(UUID.randomUUID())
             .ttl(TimeUnit.DAYS.toMillis(5L))
-            .headere(ImmutableMap.of(Melding.HeaderKlientMeldingId, klientMeldingId.toString()))
+            .headere(ImmutableMap.of(Melding.HeaderKlientMeldingId, klientMeldingId.toString(),
+                 Melding.HeaderKlientKorrelasjonId, klientKorrelasjonsId.getKlientKorrelasjonId()
+                ))
             .build();
         final SendtMelding sendtMelding = SendtMelding.fromSendResponse(sendtMeldingApiModel);
         assertAll(
@@ -58,7 +63,8 @@ class SendtMeldingTest {
             () -> assertEquals(sendtMeldingApiModel.getAvsenderKontoId(), sendtMelding.getAvsenderKontoId().getUuid()),
             () -> assertEquals(sendtMeldingApiModel.getSvarPaMelding(), sendtMelding.getSvarPaMelding().getUuid()),
             () -> assertEquals(sendtMeldingApiModel.getTtl(), sendtMelding.getTtl().toMillis()),
-            () -> assertEquals(sendtMeldingApiModel.getHeadere().get(Melding.HeaderKlientMeldingId), sendtMelding.getKlientMeldingId().toString())
+            () -> assertEquals(sendtMeldingApiModel.getHeadere().get(Melding.HeaderKlientMeldingId), sendtMelding.getKlientMeldingId().toString()),
+            () -> assertEquals(sendtMeldingApiModel.getHeadere().get(Melding.HeaderKlientKorrelasjonId), sendtMelding.getKlientKorrelasjonId().getKlientKorrelasjonId())
         );
     }
 

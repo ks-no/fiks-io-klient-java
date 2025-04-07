@@ -50,6 +50,8 @@ public class MottattMelding implements Melding {
 
     private MeldingId klientMeldingId;
 
+    private KlientKorrelasjonId klientKorrelasjonId;
+
     public static MottattMelding fromMottattMeldingMetadata(
         MottattMeldingMetadata melding,
         boolean harPaylod,
@@ -66,6 +68,7 @@ public class MottattMelding implements Melding {
             .ttl(Optional.ofNullable(melding.getTtl()).map(Duration::ofMillis).orElse(null))
             .svarPaMelding(melding.getSvarPaMelding() != null ? new MeldingId(melding.getSvarPaMelding()) : null)
             .klientMeldingId(getKlientMeldingIdFromHeader(melding))
+            .klientKorrelasjonId(getKorrelasjonsIdFromHeader(melding))
             .headere(melding.getHeadere() != null ? melding.getHeadere() : Collections.emptyMap())
             .resendt(melding.isResendt())
                 .writeKryptertZip(writeKryptertZip)
@@ -112,6 +115,17 @@ public class MottattMelding implements Melding {
         if(melding.getHeadere() != null && melding.getHeadere().get(HeaderKlientMeldingId) != null) {
             try {
                 return new MeldingId(UUID.fromString(melding.getHeadere().get(HeaderKlientMeldingId)));
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    private static KlientKorrelasjonId getKorrelasjonsIdFromHeader(MottattMeldingMetadata melding) {
+        if(melding.getHeadere() != null && melding.getHeadere().get(HeaderKlientKorrelasjonId) != null) {
+            try {
+                return new KlientKorrelasjonId(melding.getHeadere().get(HeaderKlientKorrelasjonId));
             } catch (IllegalArgumentException e) {
                 return null;
             }

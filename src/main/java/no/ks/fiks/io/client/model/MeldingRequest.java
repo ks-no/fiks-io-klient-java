@@ -19,6 +19,7 @@ public class MeldingRequest implements MeldingSpesifikasjon {
     @Nullable private MeldingId svarPaMelding;
     @Nullable private MeldingId klientMeldingId;
     @Nullable private Map<String, String> headere;
+    @Nullable private KlientKorrelasjonId korrelasjonsId;
 
     // Definerer denne for å hjelpe javadoc. Blir fylt ut av lombok pga Builder-annotasjon.
     public static class MeldingRequestBuilder {}
@@ -46,6 +47,17 @@ public class MeldingRequest implements MeldingSpesifikasjon {
                     copyHeadere.put(Melding.HeaderKlientMeldingId, klientMeldingId.getUuid().toString());
                 } else if(!Objects.equals(klientMeldingId.getUuid().toString(), headerKlientMeldingId)) {
                     throw new IllegalArgumentException(String.format("Property klientMeldingId er ulik %s-entry angitt via headere-property.", Melding.HeaderKlientMeldingId));
+                }
+            }
+
+            final KlientKorrelasjonId korrelasjonsId = super.korrelasjonsId;
+            if(null != korrelasjonsId) {
+                final String headerKorrelasjonsId = copyHeadere.get(Melding.HeaderKlientKorrelasjonId);
+
+                if(null == headerKorrelasjonsId) {
+                    copyHeadere.put(Melding.HeaderKlientKorrelasjonId, korrelasjonsId.getKlientKorrelasjonId());
+                } else if(!Objects.equals(korrelasjonsId.getKlientKorrelasjonId(), headerKorrelasjonsId)) {
+                    throw new IllegalArgumentException(String.format("Property korrelasjonsId er ulik %s-entry angitt via headere-property.", Melding.HeaderKlientKorrelasjonId));
                 }
             }
 

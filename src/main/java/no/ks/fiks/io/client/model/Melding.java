@@ -1,13 +1,11 @@
 package no.ks.fiks.io.client.model;
 
-import no.ks.fiks.io.klient.SendtMeldingApiModel;
-
 import java.util.Map;
-import java.util.UUID;
 
 public interface Melding {
 
     static final String HeaderKlientMeldingId = "klientMeldingId";
+    static final String HeaderKlientKorrelasjonId = "klientKorrelasjonId" ;
 
     MeldingId getMeldingId();
 
@@ -24,4 +22,6 @@ public interface Melding {
     Map<String, String> getHeadere();
 
     MeldingId getKlientMeldingId();
+
+    KlientKorrelasjonId getKlientKorrelasjonId();
 }
