@@ -1,10 +1,10 @@
 package no.ks.fiks.io.client.model;
 
+import jakarta.annotation.Nullable;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
