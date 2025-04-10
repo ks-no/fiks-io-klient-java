@@ -64,7 +64,7 @@ class SendtMeldingTest {
             () -> assertEquals(sendtMeldingApiModel.getSvarPaMelding(), sendtMelding.getSvarPaMelding().getUuid()),
             () -> assertEquals(sendtMeldingApiModel.getTtl(), sendtMelding.getTtl().toMillis()),
             () -> assertEquals(sendtMeldingApiModel.getHeadere().get(Melding.HeaderKlientMeldingId), sendtMelding.getKlientMeldingId().toString()),
-            () -> assertEquals(sendtMeldingApiModel.getHeadere().get(Melding.HeaderKlientKorrelasjonId), sendtMelding.getKlientKorrelasjonId().getKlientKorrelasjonId())
+            () -> assertEquals(sendtMeldingApiModel.getHeadere().get(Melding.HeaderKlientKorrelasjonId), sendtMelding.getKlientKorrelasjonId().toString())
         );
     }
 

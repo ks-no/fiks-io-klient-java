@@ -134,7 +134,7 @@ class SvarSenderTest {
             final SendtMelding sendtMelding = svarSender.svar(mottattMelding.getMeldingType());
 
             assertNotNull(sendtMelding);
-            assertEquals(mottattMelding.getKlientKorrelasjonId().getKlientKorrelasjonId(), sendtMelding.getKlientKorrelasjonId().getKlientKorrelasjonId());
+            assertEquals(mottattMelding.getKlientKorrelasjonId().toString(), sendtMelding.getKlientKorrelasjonId().toString());
             verify(fiksIOSender).send(isA(MeldingSpesifikasjonApiModel.class), isA(Optional.class));
             verifyNoMoreInteractions(fiksIOSender);
         }

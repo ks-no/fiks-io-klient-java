@@ -7,4 +7,9 @@ import lombok.Value;
 public class KlientKorrelasjonId {
     @Nullable
     String klientKorrelasjonId;
+
+    @Override
+    public String toString() {
+        return klientKorrelasjonId;
+    }
 }

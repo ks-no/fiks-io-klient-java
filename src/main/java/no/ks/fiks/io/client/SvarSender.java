@@ -90,9 +90,9 @@ public class SvarSender {
         ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
 
         if (meldingSomSkalKvitteres.getKlientKorrelasjonId() != null &&
-            meldingSomSkalKvitteres.getKlientKorrelasjonId().getKlientKorrelasjonId() != null) {
+            meldingSomSkalKvitteres.getKlientKorrelasjonId().toString() != null) {
             builder.put(Melding.HeaderKlientKorrelasjonId,
-                meldingSomSkalKvitteres.getKlientKorrelasjonId().getKlientKorrelasjonId());
+                meldingSomSkalKvitteres.getKlientKorrelasjonId().toString());
         }
 
         return builder.build();
