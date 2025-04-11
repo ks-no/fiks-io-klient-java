@@ -163,6 +163,13 @@ Om man ikke angir en egen implemtasjon av `PublicKeyProvider`, vil klienten bli 
 vil hente offentlig nøkkel fra katalogtjenesten. Man kaller da konstruktøren til FiksIOKlientFactory med kun 1 argument slik:
 `public FiksIOKlientFactory(@NonNull FiksIOKonfigurasjon fiksIOKonfigurasjon)`
 
+### Bruk av klientKorrelasjonId
+
+Klienten støtter bruk av `klientKorrelasjonId`, en egendefinert header som kan benyttes ved behov. Dette gjør det enklere å identifisere og følge alle meldinger som inngår i en bestemt dialog.
+Les mer om dette i [Fiks IO dokumentasjonen](https://developers.fiks.ks.no/tjenester/fiksprotokoll/fiksio/#:~:text=en%20egendefinert%20header.-,KlientKorrelasjonsID,-Dette%20er%20en).
+
+
+
 ## Dokumentasjon for tjeneste:
 
  * [FIKS IO](https://ks-no.github.io/fiks-platform/tjenester/fiksio/)
