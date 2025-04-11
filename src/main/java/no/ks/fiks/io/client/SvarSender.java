@@ -86,11 +86,25 @@ public class SvarSender {
         amqpChannelFeedbackHandler.getHandleNackWithRequeue().run();
     }
 
+    private ImmutableMap<String, String> genererEgendefinerteHeadere() {
+        ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
+
+        if (meldingSomSkalKvitteres.getKlientKorrelasjonId() != null &&
+            meldingSomSkalKvitteres.getKlientKorrelasjonId().toString() != null) {
+            builder.put(Melding.HeaderKlientKorrelasjonId,
+                meldingSomSkalKvitteres.getKlientKorrelasjonId().toString());
+        }
+
+        return builder.build();
+    }
+
     private MeldingSpesifikasjonApiModel.MeldingSpesifikasjonApiModelBuilder fellesBuilder(String meldingType) {
+
         return MeldingSpesifikasjonApiModel.builder()
             .avsenderKontoId(meldingSomSkalKvitteres.getMottakerKontoId().getUuid())
             .mottakerKontoId(meldingSomSkalKvitteres.getAvsenderKontoId().getUuid())
             .svarPaMelding(meldingSomSkalKvitteres.getMeldingId().getUuid())
-            .meldingType(meldingType);
+            .meldingType(meldingType)
+            .headere(genererEgendefinerteHeadere());
     }
 }

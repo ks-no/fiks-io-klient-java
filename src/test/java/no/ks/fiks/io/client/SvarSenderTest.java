@@ -56,7 +56,7 @@ class SvarSenderTest {
 
         final byte[] buf = {0, 1, 0, 1};
         try (final InputStream inputStream = new ByteArrayInputStream(buf)) {
-            final MottattMelding mottattMelding = createMottattMelding(buf, inputStream);
+            final MottattMelding mottattMelding = createMottattMelding(buf, inputStream, false);
 
             final SvarSender svarSender = createSvarSender(buf, mottattMelding);
             when(fiksIOSender.send(isA(MeldingSpesifikasjonApiModel.class), isA(Optional.class)))
@@ -85,7 +85,7 @@ class SvarSenderTest {
 
         final byte[] buf = {0, 1, 0, 1};
         try (final InputStream inputStream = new ByteArrayInputStream(buf)) {
-            final MottattMelding mottattMelding = createMottattMelding(buf, inputStream);
+            final MottattMelding mottattMelding = createMottattMelding(buf, inputStream, false);
             final MeldingId klientMeldingId = new MeldingId(UUID.randomUUID());
             final SvarSender svarSender = createSvarSender(buf, mottattMelding);
             when(fiksIOSender.send(isA(MeldingSpesifikasjonApiModel.class), isA(Optional.class)))
@@ -110,12 +110,67 @@ class SvarSenderTest {
         }
     }
 
+    @DisplayName("Sender svar med klientKorrelasjonId")
+    @Test
+    void svarWithKlientkorrelasjonId() throws IOException {
+        final byte[] buf = {0, 1, 0, 1};
+        try (final InputStream inputStream = new ByteArrayInputStream(buf)) {
+            final MottattMelding mottattMelding = createMottattMelding(buf, inputStream,true);
+            final SvarSender svarSender = createSvarSender(buf, mottattMelding);
+
+            when(fiksIOSender.send(isA(MeldingSpesifikasjonApiModel.class), isA(Optional.class)))
+                .thenAnswer((Answer<SendtMeldingApiModel>) invocation -> {
+                    MeldingSpesifikasjonApiModel meldingSpesifikasjonApiModel = invocation.getArgument(0);
+                    return SendtMeldingApiModel.builder()
+                        .avsenderKontoId(meldingSpesifikasjonApiModel.getAvsenderKontoId())
+                        .meldingId(UUID.randomUUID())
+                        .mottakerKontoId(meldingSpesifikasjonApiModel.getMottakerKontoId())
+                        .ttl(Duration.ofHours(1L).toMillis())
+                        .meldingType(MELDING_TYPE)
+                        .headere(ImmutableMap.of(Melding.HeaderKlientKorrelasjonId, meldingSpesifikasjonApiModel.getHeadere().get(Melding.HeaderKlientKorrelasjonId)))
+                        .build();
+                });
+
+            final SendtMelding sendtMelding = svarSender.svar(mottattMelding.getMeldingType());
+
+            assertNotNull(sendtMelding);
+            assertEquals(mottattMelding.getKlientKorrelasjonId().toString(), sendtMelding.getKlientKorrelasjonId().toString());
+            verify(fiksIOSender).send(isA(MeldingSpesifikasjonApiModel.class), isA(Optional.class));
+            verifyNoMoreInteractions(fiksIOSender);
+        }
+    }
+
+    @DisplayName("Sender svar uten klientKorrelasjonId")
+    @Test
+    void svarWithoutKlientkorrelasjonId() throws IOException {
+        final byte[] buf = {0, 1, 0, 1};
+        try (final InputStream inputStream = new ByteArrayInputStream(buf)) {
+            final MottattMelding mottattMelding = createMottattMelding(buf, inputStream, false);
+            final SvarSender svarSender = createSvarSender(buf, mottattMelding);
+
+            when(fiksIOSender.send(any(), any())).thenAnswer(invocation -> {
+                MeldingSpesifikasjonApiModel spesifikasjon = invocation.getArgument(0);
+                return SendtMeldingApiModel.builder()
+                    .avsenderKontoId(spesifikasjon.getAvsenderKontoId())
+                    .meldingId(UUID.randomUUID())
+                    .mottakerKontoId(spesifikasjon.getMottakerKontoId())
+                    .ttl(Duration.ofHours(1L).toMillis())
+                    .meldingType(MELDING_TYPE)
+                    .headere(spesifikasjon.getHeadere())
+                    .build();
+            });
+
+            SendtMelding sendtMelding = svarSender.svar(mottattMelding.getMeldingType());
+            assertNull(sendtMelding.getKlientKorrelasjonId());
+        }
+    }
+
     @DisplayName("Ack")
     @Test
     void ack() throws IOException {
         final byte[] buf = {0, 1, 0, 1};
         try (final InputStream inputStream = new ByteArrayInputStream(buf)) {
-            final MottattMelding mottattMelding = createMottattMelding(buf, inputStream);
+            final MottattMelding mottattMelding = createMottattMelding(buf, inputStream, false);
             final SvarSender svarSender = createSvarSender(buf, mottattMelding);
             svarSender.ack();
             assertTrue(ackCompleted.get());
@@ -128,7 +183,7 @@ class SvarSenderTest {
     void nack() throws IOException {
         final byte[] buf = {0, 1, 0, 1};
         try (final InputStream inputStream = new ByteArrayInputStream(buf)) {
-            final MottattMelding mottattMelding = createMottattMelding(buf, inputStream);
+            final MottattMelding mottattMelding = createMottattMelding(buf, inputStream, false);
             final SvarSender svarSender = createSvarSender(buf, mottattMelding);
             svarSender.nack();
             assertTrue(nacked.get());
@@ -141,7 +196,7 @@ class SvarSenderTest {
     void nackWithRequeue() throws IOException {
         final byte[] buf = {0, 1, 0, 1};
         try (final InputStream inputStream = new ByteArrayInputStream(buf)) {
-            final MottattMelding mottattMelding = createMottattMelding(buf, inputStream);
+            final MottattMelding mottattMelding = createMottattMelding(buf, inputStream, false);
             final SvarSender svarSender = createSvarSender(buf, mottattMelding);
             svarSender.nackWithRequeue();
             assertTrue(nackedWithRequeue.get());
@@ -167,13 +222,17 @@ class SvarSenderTest {
             .build();
     }
 
-    private MottattMelding createMottattMelding(final byte[] buf, final InputStream inputStream) {
+    private MottattMelding createMottattMelding(final byte[] buf, final InputStream inputStream, boolean medKorrelasjonID) {
+
+        final KlientKorrelasjonId klientKorrelasjonId = medKorrelasjonID ? new KlientKorrelasjonId(UUID.randomUUID().toString()) : null;
+
         return MottattMelding.builder()
             .meldingId(new MeldingId(UUID.randomUUID()))
             .meldingType(MELDING_TYPE)
             .avsenderKontoId(new KontoId(UUID.randomUUID()))
             .mottakerKontoId(new KontoId(UUID.randomUUID()))
             .ttl(Duration.ofHours(1L))
+            .klientKorrelasjonId(klientKorrelasjonId)
             .headere(Collections.emptyMap())
             .writeDekryptertZip(p -> LOGGER.info("Dekryptert '{}'", p))
             .writeKryptertZip(p -> LOGGER.info("Kryptert '{}'", p))

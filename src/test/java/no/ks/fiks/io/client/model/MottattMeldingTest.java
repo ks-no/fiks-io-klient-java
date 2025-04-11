@@ -154,4 +154,35 @@ class MottattMeldingTest {
             () -> new NullInputStream(0L), () -> new ZipInputStream(new NullInputStream(100L)));
         assertEquals(klientMeldingId, mottattMelding.getKlientMeldingId());
     }
+
+    @DisplayName("Bygger mottatt melding inkludert korrelasjonsId")
+    @Test
+    void fromMottattMeldingMetadataMedKorrelasjonsId() {
+        final KlientKorrelasjonId korrelasjonsId = new KlientKorrelasjonId(UUID.randomUUID().toString());
+        final MeldingId klientKorrelasjonId = new MeldingId(UUID.randomUUID());
+        assertNotNull(korrelasjonsId.getKlientKorrelasjonId());
+
+        final MottattMeldingMetadata mottattMeldingMetadata = MottattMeldingMetadata.builder()
+            .avsenderKontoId(UUID.randomUUID())
+            .meldingId(UUID.randomUUID())
+            .meldingType("meldingType")
+            .mottakerKontoId(UUID.randomUUID())
+            .svarPaMelding(UUID.randomUUID())
+            .deliveryTag(Long.MAX_VALUE)
+            .ttl(Duration.ofMinutes(22L).toMillis())
+            .headere(ImmutableMap.of(Melding.HeaderKlientMeldingId, klientKorrelasjonId.toString(),
+                Melding.HeaderKlientKorrelasjonId, korrelasjonsId.getKlientKorrelasjonId()))
+            .build();
+
+        final MottattMelding mottattMelding = MottattMelding.fromMottattMeldingMetadata(
+            mottattMeldingMetadata,
+            true, path -> {
+            },
+            path -> {
+            },
+            () -> new NullInputStream(0L), () -> new ZipInputStream(new NullInputStream(100L)));
+
+        assertEquals(korrelasjonsId, mottattMelding.getKlientKorrelasjonId());
+        assertEquals(klientKorrelasjonId, mottattMelding.getKlientMeldingId());
+    }
 }

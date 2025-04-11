@@ -22,6 +22,7 @@ public class SendtMelding implements Melding {
     private Map<String, String> headere;
     private MeldingId svarPaMelding;
     private MeldingId klientMeldingId;
+    private KlientKorrelasjonId klientKorrelasjonId;
 
     public static SendtMelding fromSendResponse(@NonNull SendtMeldingApiModel melding) {
         return SendtMelding.builder()
@@ -33,6 +34,7 @@ public class SendtMelding implements Melding {
             .headere(melding.getHeadere() != null ? melding.getHeadere() : Collections.emptyMap())
             .svarPaMelding(melding.getSvarPaMelding() != null ? new MeldingId(melding.getSvarPaMelding()) : null)
             .klientMeldingId(getKlientMeldingIdFromHeader(melding))
+            .klientKorrelasjonId(getKorrelasjonsIdFromHeader(melding))
             .build();
     }
 
@@ -40,6 +42,17 @@ public class SendtMelding implements Melding {
         if(melding.getHeadere() != null && melding.getHeadere().get(HeaderKlientMeldingId) != null) {
             try {
                 return new MeldingId(UUID.fromString(melding.getHeadere().get(HeaderKlientMeldingId)));
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    private static KlientKorrelasjonId getKorrelasjonsIdFromHeader(SendtMeldingApiModel melding) {
+        if (melding.getHeadere() != null && melding.getHeadere().get(HeaderKlientKorrelasjonId) != null) {
+            try {
+                return new KlientKorrelasjonId(melding.getHeadere().get(HeaderKlientKorrelasjonId));
             } catch (IllegalArgumentException e) {
                 return null;
             }
