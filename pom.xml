@@ -31,7 +31,7 @@
     <commons-io.version>2.18.0</commons-io.version>
     <download-maven-plugin.version>1.13.0</download-maven-plugin.version>
     <feign-form-version>3.8.0</feign-form-version>
-    <feign-version>13.5</feign-version>
+    <feign-version>13.6</feign-version>
     <fiks-dokumentlager-klient.version>3.1.0</fiks-dokumentlager-klient.version>
     <fiks-feign-interceptors.version>1.2.0</fiks-feign-interceptors.version>
     <fiks-io-asice-handler.version>2.2.0</fiks-io-asice-handler.version>
