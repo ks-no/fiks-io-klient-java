@@ -39,7 +39,7 @@
     <fiks-io-send-klient.version>3.3.2</fiks-io-send-klient.version>
     <fiks-maskinporten-client.version>3.4.5</fiks-maskinporten-client.version>
     <guava.version>33.4.8-jre</guava.version>
-    <jackson-databind-nullable.version>0.2.6</jackson-databind-nullable.version>
+    <jackson-databind-nullable.version>0.2.7</jackson-databind-nullable.version>
     <jackson.version>2.19.2</jackson.version>
     <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
     <jakarta.annotation-api.version>3.0.0</jakarta.annotation-api.version>
