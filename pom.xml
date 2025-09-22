@@ -49,7 +49,7 @@
     <logback.version>1.5.18</logback.version>
     <lombok.version>1.18.40</lombok.version>
     <maven-surefire-plugin.version>3.0.0</maven-surefire-plugin.version>
-    <mockito.version>5.19.0</mockito.version>
+    <mockito.version>5.20.0</mockito.version>
     <openapi-generator-maven-plugin.version>7.15.0</openapi-generator-maven-plugin.version>
     <rabbitmq-amqp-client.version>5.26.0</rabbitmq-amqp-client.version>
     <scribejava.version>8.3.3</scribejava.version>
