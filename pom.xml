@@ -46,7 +46,7 @@
     <junit-jupiter.version>5.13.4</junit-jupiter.version>
     <kryptering.version>2.0.8</kryptering.version>
     <ks-commons-asic.version>1.0.2</ks-commons-asic.version>
-    <logback.version>1.5.18</logback.version>
+    <logback.version>1.5.19</logback.version>
     <lombok.version>1.18.42</lombok.version>
     <maven-surefire-plugin.version>3.0.0</maven-surefire-plugin.version>
     <mockito.version>5.20.0</mockito.version>
