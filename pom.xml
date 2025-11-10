@@ -35,7 +35,7 @@
     <fiks-dokumentlager-klient.version>3.2.1</fiks-dokumentlager-klient.version>
     <fiks-feign-interceptors.version>1.2.2</fiks-feign-interceptors.version>
     <fiks-io-asice-handler.version>2.2.4</fiks-io-asice-handler.version>
-    <fiks-io-commons.version>2.0.6</fiks-io-commons.version>
+    <fiks-io-commons.version>2.0.7</fiks-io-commons.version>
     <fiks-io-send-klient.version>3.3.4</fiks-io-send-klient.version>
     <fiks-maskinporten-client.version>3.5.2</fiks-maskinporten-client.version>
     <guava.version>33.5.0-jre</guava.version>
