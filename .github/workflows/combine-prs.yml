@@ -1,0 +1,25 @@
+name: Oppdatering av pakker
+
+on:
+  schedule:
+    - cron: '0 4 * * 3'
+  workflow_dispatch:
+
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+
+jobs:
+  combine-prs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: combine-prs
+        id: combine-prs
+        uses: github/combine-prs@v5.2.0
+        with:
+          labels: combined-pr
+          pr_title: Oppdatering av pakker
+          branch_prefix: dependabot
