@@ -20,14 +20,6 @@ public interface FiksIOKlient extends Closeable {
     KontoId getKontoId();
 
     /**
-     * Brukes til å finne konto basert på adresse
-     *
-     * @param request parametre for kontooppslag {@link LookupRequest}
-     * @return Optional som enten er tom eller inneholder et {@link Konto} objekt
-     */
-    Optional<Konto> lookup(LookupRequest request);
-
-    /**
      * Brukes til å finne konto basert på konto id
      *
      * @param kontoId for kontooppslag {@link KontoId}

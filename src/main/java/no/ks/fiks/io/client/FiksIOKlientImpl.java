@@ -38,11 +38,6 @@ public class FiksIOKlientImpl implements FiksIOKlient {
     }
 
     @Override
-    public Optional<Konto> lookup(@NonNull LookupRequest request) {
-        return katalogHandler.lookup(request);
-    }
-
-    @Override
     public Optional<Konto> getKonto(@NonNull KontoId kontoId) {
         return katalogHandler.getKonto(kontoId);
     }

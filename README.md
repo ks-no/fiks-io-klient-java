@@ -54,10 +54,6 @@ fiksIOKlient.newSubscription((motattMelding, svarSender) -> {
                          // Gjør noe med mottatt melding
                      });
 
-// Slå opp konto
-final Optional<Konto> fiksIoKonto = fiksIOKlient.lookup(...);
-
-
 // Sende melding
 final SendtMelding sendtMelding = fiksIoKonto.map(konto -> fiksIOKlient.send(...)).orElseThrow(() -> new IllegalStateException("Kunne ikke sende til Fiks IO"));
 ```
