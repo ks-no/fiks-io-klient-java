@@ -5,7 +5,6 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import no.ks.fiks.io.client.model.Konto;
 import no.ks.fiks.io.client.model.KontoId;
-import no.ks.fiks.io.client.model.LookupRequest;
 import no.ks.fiks.fiksio.client.api.katalog.api.FiksIoKatalogApi;
 
 import java.io.ByteArrayInputStream;
@@ -24,23 +23,6 @@ public class KatalogHandler {
     public KatalogHandler(@NonNull FiksIoKatalogApi katalogApiAuth, @NonNull FiksIoKatalogApi publicKatalogApi) {
         this.katalogApi = katalogApiAuth;
         this.publicKatalogApi = publicKatalogApi;
-    }
-
-    public Optional<Konto> lookup(@NonNull LookupRequest request) {
-        try {
-            return Optional.ofNullable(katalogApi.lookup(
-                request.getIdentifikator()
-                    .getIdentifikatorType()
-                    .name() + "." + request.getIdentifikator()
-                    .getIdentifikator(),
-                request.getMeldingsprotokoll(), request.getSikkerhetsNiva()))
-                .map(Konto::fromKatalogModel);
-        } catch (FeignException e) {
-            if (e.status() == 404)
-                return Optional.empty();
-            else
-                throw e;
-        }
     }
 
     public Optional<Konto> getKonto(@NonNull KontoId kontoId) {
