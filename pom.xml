@@ -50,7 +50,7 @@
     <lombok.version>1.18.42</lombok.version>
     <maven-surefire-plugin.version>3.0.0</maven-surefire-plugin.version>
     <mockito.version>5.21.0</mockito.version>
-    <openapi-generator-maven-plugin.version>7.18.0</openapi-generator-maven-plugin.version>
+    <openapi-generator-maven-plugin.version>7.19.0</openapi-generator-maven-plugin.version>
     <rabbitmq-amqp-client.version>5.28.0</rabbitmq-amqp-client.version>
     <scribejava.version>8.3.3</scribejava.version>
     <slf4j.version>2.0.7</slf4j.version>
