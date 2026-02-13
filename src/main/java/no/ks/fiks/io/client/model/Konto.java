@@ -17,6 +17,7 @@ public class Konto {
     boolean isGyldigAvsender;
     boolean isGyldigMottaker;
     long antallKonsumenter;
+    long antallUavhentedeMeldinger;
 
     public static Konto fromKatalogModel(@NonNull KatalogKonto konto) {
         return Konto.builder()
@@ -29,6 +30,7 @@ public class Konto {
             .isGyldigAvsender(konto.getStatus().getGyldigAvsender())
             .isGyldigMottaker(konto.getStatus().getGyldigMottaker())
             .antallKonsumenter(konto.getStatus().getAntallKonsumenter())
+            .antallUavhentedeMeldinger(konto.getStatus().getAntallUavhentedeMeldinger())
             .build();
     }
 }
