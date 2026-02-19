@@ -107,13 +107,16 @@ public class FiksIOKlientFactory {
                 getFiksIOSender(utsendingKlient),
                 asicHandler, publicKeyProvider != null ? publicKeyProvider : new KatalogPublicKeyProvider(katalogHandler));
 
+            final KeyValidatorHandler keyValidatorHandler = new KeyValidatorHandler(katalogHandler, fiksIOKonfigurasjon.getKontoKonfigurasjon());
+
             return new FiksIOKlientImpl(
                 kontoId,
                 new AmqpHandler(fiksIOKonfigurasjon.getAmqpKonfigurasjon(),
                     fiksIOKonfigurasjon.getFiksIntegrasjonKonfigurasjon(), fiksIOHandler, asicHandler,
                     maskinportenAccessTokenSupplier, kontoId, dokumentlagerKlient),
                 katalogHandler,
-                fiksIOHandler
+                fiksIOHandler,
+                keyValidatorHandler
             );
         } catch (Exception e) {
             if (dokumentlagerKlient != null) {

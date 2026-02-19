@@ -97,4 +97,12 @@ public interface FiksIOKlient extends Closeable {
      */
     void newSubscription(BiConsumer<MottattMelding, SvarSender> onMelding,
                          Consumer<ShutdownSignalException> onClose);
+
+
+    /**
+     * Sjekker at den offentlige nøkkelen som er registrert i Fiks-IO katalogen for kontoen matcher den private nøkkelen som er konfigurert i klienten.
+     *
+     * @return true dersom nøklene matcher, false ved mismatch
+     */
+    Boolean validerOffentligNokkelMotPrivateKey();
 }

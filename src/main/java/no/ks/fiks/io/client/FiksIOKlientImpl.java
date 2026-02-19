@@ -24,12 +24,14 @@ public class FiksIOKlientImpl implements FiksIOKlient {
     private final AmqpHandler amqpHandler;
     private final KatalogHandler katalogHandler;
     private final FiksIOHandler fiksIOHandler;
+    private final KeyValidatorHandler keyValidatorHandler;
 
-    public FiksIOKlientImpl(@NonNull KontoId kontoId, @NonNull AmqpHandler amqpHandler, @NonNull KatalogHandler katalogHandler, @NonNull FiksIOHandler fiksIOHandler) {
+    public FiksIOKlientImpl(@NonNull KontoId kontoId, @NonNull AmqpHandler amqpHandler, @NonNull KatalogHandler katalogHandler, @NonNull FiksIOHandler fiksIOHandler, @NonNull KeyValidatorHandler keyValidatorHandler) {
         this.kontoId = kontoId;
         this.amqpHandler = amqpHandler;
         this.katalogHandler = katalogHandler;
         this.fiksIOHandler = fiksIOHandler;
+        this.keyValidatorHandler = keyValidatorHandler;
     }
 
     @Override
@@ -80,6 +82,11 @@ public class FiksIOKlientImpl implements FiksIOKlient {
     @Override
     public void newSubscription(@NonNull BiConsumer<MottattMelding, SvarSender> onMelding, @NonNull Consumer<ShutdownSignalException> onClose) {
         amqpHandler.newConsume(onMelding, onClose);
+    }
+
+    @Override
+    public Boolean validerOffentligNokkelMotPrivateKey() {
+        return keyValidatorHandler.validerOffentligNokkelMotPrivateKey();
     }
 
     public void close() throws IOException {
