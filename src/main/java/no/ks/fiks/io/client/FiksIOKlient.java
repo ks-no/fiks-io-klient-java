@@ -102,7 +102,7 @@ public interface FiksIOKlient extends Closeable {
     /**
      * Sjekker at den offentlige nøkkelen som er registrert i Fiks-IO katalogen for kontoen matcher den private nøkkelen som er konfigurert i klienten.
      *
-     * @return Den offentlige nøkkelen matcher den private nøkkelen, eller false hvis det er en mismatch.
+     * @return true dersom nøklene matcher, false ved mismatch
      */
     Boolean validerOffentligNokkelMotPrivateKey();
 }
