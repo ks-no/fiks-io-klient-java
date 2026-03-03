@@ -13,6 +13,19 @@
     <version>3.6.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
+    <name>FIKS IO Java-klient</name>
+    <description>Klient for integrasjoner mot Fiks IO. Håndterer sending, mottak, kryptering, dekryptering og
+        signering
+    </description>
+
+    <url>https://github.com/ks-no/fiks-io-klient-java</url>
+
+    <scm>
+        <connection>scm:git:git@github.com:ks-no/fiks-io-klient-java.git</connection>
+        <developerConnection>scm:git:git@github.com:ks-no/fiks-io-klient-java.git</developerConnection>
+        <url>https://github.com/ks-no/fiks-io-klient-java</url>
+    </scm>
+
     <modules>
         <module>fiks-io-klient-java</module>
     </modules>
