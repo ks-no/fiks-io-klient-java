@@ -8,5 +8,6 @@ class MetaTest {
     @Test
     void testLastVersjonnummer() {
         assertNotNull(Meta.VERSJON);
+        assertNotEquals("${project.version}", Meta.VERSJON);
     }
 }
