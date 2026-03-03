@@ -1,0 +1,3 @@
+maskinporten.audience=https://test.maskinporten.no/
+maskinporten.token-endpoint=https://test.maskinporten.no/token
+klient.id=

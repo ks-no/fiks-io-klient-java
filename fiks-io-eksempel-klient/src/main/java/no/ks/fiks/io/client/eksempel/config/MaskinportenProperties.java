@@ -6,6 +6,8 @@ import java.util.Properties;
 import java.util.UUID;
 
 public record MaskinportenProperties(
+    String audience,
+    String tokenEndpoint,
     UUID klientId
 ) {
     public static MaskinportenProperties loadMaskinportenProperties(String configFile) {
@@ -15,6 +17,8 @@ public record MaskinportenProperties(
                 properties.load(inputStream);
 
                 return new MaskinportenProperties(
+                    properties.getProperty("maskinporten.audience"),
+                    properties.getProperty("maskinporten.token-endpoint"),
                     UUID.fromString(properties.getProperty("klient.id"))
                 );
             }

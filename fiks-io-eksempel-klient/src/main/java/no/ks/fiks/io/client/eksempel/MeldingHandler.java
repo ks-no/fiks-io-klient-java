@@ -20,7 +20,7 @@ public class MeldingHandler {
                 sendPong(meldingId, svarSender);
                 break;
             case "PONG":
-                handlePong(meldingId);
+                handlePong(meldingId, mottattMelding.getSvarPaMelding());
                 break;
             default:
                 logger.warn("Ukjent meldingstype: {}", meldingType);
@@ -39,7 +39,11 @@ public class MeldingHandler {
         }
     }
 
-    private void handlePong(MeldingId meldingId) {
-        logger.info("Mottatt PONG som svar på PING. MeldingId: {}", meldingId);
+    private void handlePong(MeldingId meldingId, MeldingId svarPaMelding) {
+        if(svarPaMelding != null) {
+            logger.info("Mottatt PONG som svar på PING. MeldingId: {}. Svar på {}", meldingId, svarPaMelding);
+        } else {
+            logger.info("Mottatt PONG uten PING. MeldingId: {}", meldingId);
+        }
     }
 }
