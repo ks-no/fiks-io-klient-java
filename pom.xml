@@ -65,7 +65,7 @@
         <openapi-generator-maven-plugin.version>7.20.0</openapi-generator-maven-plugin.version>
         <rabbitmq-amqp-client.version>5.29.0</rabbitmq-amqp-client.version>
         <scribejava.version>8.3.3</scribejava.version>
-        <slf4j.version>2.0.7</slf4j.version>
+        <slf4j.version>2.0.17</slf4j.version>
         <spec.postfix>json</spec.postfix>
         <swagger-core-version>1.6.16</swagger-core-version>
     </properties>
