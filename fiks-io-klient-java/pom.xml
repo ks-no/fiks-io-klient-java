@@ -11,6 +11,19 @@
 
     <artifactId>fiks-io-klient-java</artifactId>
 
+    <name>FIKS IO Java-klient</name>
+    <description>Klient for integrasjoner mot Fiks IO. Håndterer sending, mottak, kryptering, dekryptering og
+        signering
+    </description>
+
+    <url>https://github.com/ks-no/fiks-io-klient-java</url>
+
+    <scm>
+        <connection>scm:git:git@github.com:ks-no/fiks-io-klient-java.git</connection>
+        <developerConnection>scm:git:git@github.com:ks-no/fiks-io-klient-java.git</developerConnection>
+        <url>https://github.com/ks-no/fiks-io-klient-java</url>
+    </scm>
+
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>
