@@ -10,12 +10,23 @@
     </parent>
     <groupId>no.ks.fiks</groupId>
     <artifactId>fiks-io-klient-java-parent</artifactId>
-    <version>3.6.1-SNAPSHOT</version>
+    <version>3.6.2-SNAPSHOT</version>
     <packaging>pom</packaging>
+
+    <name>FIKS IO Java-klient Parent</name>
+    <description>Parent POM for Fiks-IO Java-klient
+    </description>
+
+    <url>https://github.com/ks-no/fiks-io-klient-java</url>
+
+    <scm>
+        <connection>scm:git:git@github.com:ks-no/fiks-io-klient-java.git</connection>
+        <developerConnection>scm:git:git@github.com:ks-no/fiks-io-klient-java.git</developerConnection>
+        <url>https://github.com/ks-no/fiks-io-klient-java</url>
+    </scm>
 
     <modules>
         <module>fiks-io-klient-java</module>
-        <module>fiks-io-eksempel-klient</module>
     </modules>
 
     <properties>
@@ -32,7 +43,7 @@
         <commons-io.version>2.21.0</commons-io.version>
         <download-maven-plugin.version>1.13.0</download-maven-plugin.version>
         <feign-form-version>3.8.0</feign-form-version>
-        <feign-version>13.9</feign-version>
+        <feign-version>13.9.3</feign-version>
         <fiks-dokumentlager-klient.version>4.0.1</fiks-dokumentlager-klient.version>
         <fiks-feign-interceptors.version>1.3.0</fiks-feign-interceptors.version>
         <fiks-io-send-klient.version>3.3.8</fiks-io-send-klient.version>
@@ -50,9 +61,9 @@
         <logback.version>1.5.32</logback.version>
         <lombok.version>1.18.42</lombok.version>
         <maven-surefire-plugin.version>3.0.0</maven-surefire-plugin.version>
-        <mockito.version>5.21.0</mockito.version>
+        <mockito.version>5.22.0</mockito.version>
         <openapi-generator-maven-plugin.version>7.20.0</openapi-generator-maven-plugin.version>
-        <rabbitmq-amqp-client.version>5.28.0</rabbitmq-amqp-client.version>
+        <rabbitmq-amqp-client.version>5.29.0</rabbitmq-amqp-client.version>
         <scribejava.version>8.3.3</scribejava.version>
         <slf4j.version>2.0.7</slf4j.version>
         <spec.postfix>json</spec.postfix>
@@ -81,19 +92,9 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>no.ks.fiks</groupId>
-                <artifactId>fiks-io-eksempel-klient</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson</groupId>
-                <artifactId>jackson-bom</artifactId>
-                <version>${jackson.version}</version>
             </dependency>
             <dependency>
                 <groupId>ch.qos.logback</groupId>
