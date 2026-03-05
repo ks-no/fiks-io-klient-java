@@ -207,5 +207,11 @@ class AmqpHandler implements Closeable {
         if (amqpConnection.isOpen()) {
             amqpConnection.close(30_000);
         }
+
+        try {
+            asicHandler.close();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
