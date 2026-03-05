@@ -27,6 +27,7 @@
 
     <modules>
         <module>fiks-io-klient-java</module>
+        <module>fiks-io-eksempel-klient</module>
     </modules>
 
     <properties>

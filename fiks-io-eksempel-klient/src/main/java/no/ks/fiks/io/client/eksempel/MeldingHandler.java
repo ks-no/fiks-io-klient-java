@@ -6,6 +6,8 @@ import no.ks.fiks.io.client.model.MottattMelding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static no.ks.fiks.io.client.eksempel.AnsiColor.*;
+
 public class MeldingHandler {
     private final Logger logger = LoggerFactory.getLogger(MeldingHandler.class);
 
@@ -13,7 +15,7 @@ public class MeldingHandler {
         final var meldingId = mottattMelding.getMeldingId();
         final var meldingType = mottattMelding.getMeldingType();
 
-        logger.info("Behandler melding. MeldingId: {}, MeldingType: {}", meldingId, meldingType);
+        logger.info(formatMeldingMottatt(meldingId, meldingType));
 
         switch (meldingType) {
             case "PING":
@@ -23,27 +25,78 @@ public class MeldingHandler {
                 handlePong(meldingId, mottattMelding.getSvarPaMelding());
                 break;
             default:
-                logger.warn("Ukjent meldingstype: {}", meldingType);
+                logger.warn(formatUkjentMeldingType(meldingType));
         }
 
         svarSender.ack();
     }
 
     private void sendPong(MeldingId meldingId, SvarSender svarSender) {
-        logger.info("Sender PONG. MeldingId: {}", meldingId);
+        logger.info(formatSenderMelding("PONG", meldingId));
         try {
             svarSender.svar("PONG", "PONG", "pong.txt");
-            logger.info("PONG sendt successfully for MeldingId: {}", meldingId);
+            logger.info(formatMeldingSendt("PONG", meldingId));
         } catch (Exception e) {
-            logger.error("Feil ved sending av PONG for MeldingId: {}", meldingId, e);
+            logger.error(formatFeilSending("PONG", meldingId), e);
         }
     }
 
     private void handlePong(MeldingId meldingId, MeldingId svarPaMelding) {
         if(svarPaMelding != null) {
-            logger.info("Mottatt PONG som svar på PING. MeldingId: {}. Svar på {}", meldingId, svarPaMelding);
+            logger.info(formatMeldingSvarPa("PONG", meldingId, svarPaMelding));
         } else {
-            logger.info("Mottatt PONG uten PING. MeldingId: {}", meldingId);
+            logger.info(formatMeldingUtenSvar("PONG", meldingId));
         }
+    }
+
+    private static String formatMeldingMottatt(MeldingId meldingId, String meldingType) {
+        return String.format("\n%sMELDING MOTTATT%s | %sMeldingType:%s %s%s%s | %sMeldingId:%s %s%s%s",
+                BOLD + MAGENTA, RESET,
+                CYAN, RESET, YELLOW, meldingType, RESET,
+                CYAN, RESET, YELLOW, meldingId, RESET
+        );
+    }
+
+    private static String formatSenderMelding(String meldingType, MeldingId meldingId) {
+        return String.format("\n%sSENDER %s%s | %sMeldingId:%s %s%s%s",
+                BOLD + BLUE, meldingType, RESET,
+                CYAN, RESET, YELLOW, meldingId, RESET
+        );
+    }
+
+    private static String formatMeldingSendt(String meldingType, MeldingId meldingId) {
+        return String.format("\n%s%s SENDT VELLYKKET%s | %sMeldingId:%s %s%s%s",
+                BOLD + GREEN, meldingType, RESET,
+                CYAN, RESET, YELLOW, meldingId, RESET
+        );
+    }
+
+    private static String formatFeilSending(String meldingType, MeldingId meldingId) {
+        return String.format("\n%sFEIL VED SENDING AV %s%s | %sMeldingId:%s %s%s%s",
+                BOLD + RED, meldingType, RESET,
+                CYAN, RESET, YELLOW, meldingId, RESET
+        );
+    }
+
+    private static String formatMeldingSvarPa(String meldingType, MeldingId meldingId, MeldingId svarPaMelding) {
+        return String.format("\n%sMOTTATT %s SOM SVAR%s | %sMeldingId:%s %s%s%s | %sSvar på:%s %s%s%s",
+                BOLD + MAGENTA, meldingType, RESET,
+                CYAN, RESET, YELLOW, meldingId, RESET,
+                CYAN, RESET, YELLOW, svarPaMelding, RESET
+        );
+    }
+
+    private static String formatMeldingUtenSvar(String meldingType, MeldingId meldingId) {
+        return String.format("\n%sMOTTATT %s UTEN PING%s | %sMeldingId:%s %s%s%s",
+                BOLD + MAGENTA, meldingType, RESET,
+                CYAN, RESET, YELLOW, meldingId, RESET
+        );
+    }
+
+    private static String formatUkjentMeldingType(String meldingType) {
+        return String.format("\n%s  UKJENT MELDINGSTYPE%s | %sMeldingType:%s %s%s%s",
+                BOLD + RED, RESET,
+                CYAN, RESET, YELLOW, meldingType, RESET
+        );
     }
 }

@@ -6,12 +6,15 @@ import no.ks.fiks.io.client.eksempel.config.FiksApiProperties;
 import no.ks.fiks.io.client.eksempel.config.FiksIOKlientProperties;
 import no.ks.fiks.io.client.eksempel.config.MaskinportenProperties;
 import no.ks.fiks.io.client.eksempel.utils.JavaClientUtils;
+import no.ks.fiks.io.client.model.Konto;
 import no.ks.fiks.io.client.model.KontoId;
 import no.ks.fiks.io.client.model.MeldingRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Scanner;
+
+import static no.ks.fiks.io.client.eksempel.AnsiColor.*;
 
 public class EksempelApp {
     private static final Logger logger = LoggerFactory.getLogger(EksempelApp.class);
@@ -31,31 +34,37 @@ public class EksempelApp {
     }
 
     private static void runInteractiveConsole(FiksIOKlient javaKlient, KontoId kontoId) {
-        System.out.println("Starter interaktiv konsoll. Trykk på følgende taster:");
+        System.out.println("Starter interaktiv konsoll:");
         System.out.println("  P - Send PING melding");
         System.out.println("  G - Send PONG melding");
+        System.out.println("  K - Hent konto informasjon");
         System.out.println("  Q - Avslutter applikasjonen");
 
         try (Scanner scanner = new Scanner(System.in)) {
             String input = "";
+
             while (scanner.hasNextLine() && !input.equalsIgnoreCase("Q")) {
                 input = scanner.nextLine().trim().toUpperCase();
-
                 switch (input) {
                     case "P":
-                        logger.info("P trykket. Sender PING melding til konto: {}", kontoId);
+                        logger.info(formatCommand("P trykket", "Sender PING melding til konto: " + kontoId));
                         send(javaKlient, kontoId, "PING", "Dette er en PING melding");
                         break;
                     case "G":
-                        logger.info("G trykket. Sender PONG melding til konto: {}", kontoId);
+                        logger.info(formatCommand("G trykket", "Sender PONG melding til konto: " + kontoId));
                         send(javaKlient, kontoId, "PONG", "Dette er en PONG melding");
                         break;
+                    case "K":
+                        logger.info(formatCommand("K trykket", "Henter konto: " + kontoId));
+                        final var konto = javaKlient.getKonto(kontoId);
+                        konto.ifPresent(value -> logger.info(formatKonto(value)));
+                        break;
                     case "Q":
-                        logger.info("Q trykket. Avslutter applikasjon");
+                        logger.info(formatCommand("Q trykket", "Avslutter applikasjon"));
                         return;
                     default:
                         if (!input.isEmpty()) {
-                            logger.info("Ukjent kommando: {}. Prøv P, G eller Q", input);
+                            logger.info(formatCommand("Ukjent kommando", "Prøv P, G, K eller Q"));
                         }
                 }
             }
@@ -64,6 +73,41 @@ public class EksempelApp {
 
     public static void send(FiksIOKlient klient, KontoId kontoId, String meldingType, String innhold) {
         klient.send(MeldingRequest.builder().mottakerKontoId(kontoId).meldingType(meldingType).build(), innhold, "melding.txt");
+    }
+
+    private static String formatCommand(String command, String message) {
+        return String.format("%s[%s]%s %s%s%s",
+                BOLD + AnsiColor.MAGENTA, command, RESET,
+                AnsiColor.WHITE, message, RESET
+        );
+    }
+
+    private static String formatKonto(Konto konto) {
+        return String.format(
+            """
+
+                %s════════════════════════════════════════%s
+                %s  KONTO INFORMASJON%s
+                %s════════════════════════════════════════%s
+                %sKonto ID:%s            %s%s%s
+                %sKonto Navn:%s          %s%s%s
+                %sFiks Org Navn:%s       %s%s%s
+                %sGyldig Avsender:%s     %s%s%s
+                %sGyldig Mottaker:%s     %s%s%s
+                %sUavhentede Meldinger:%s %s%d%s
+                %s════════════════════════════════════════%s
+                """,
+            BOLD + BLUE, RESET,
+            BOLD + GREEN, RESET,
+            BOLD + BLUE, RESET,
+            CYAN, RESET, YELLOW, konto.getKontoId(), RESET,
+            CYAN, RESET, YELLOW, konto.getKontoNavn(), RESET,
+            CYAN, RESET, YELLOW, konto.getFiksOrgNavn(), RESET,
+            CYAN, RESET, YELLOW, konto.isGyldigAvsender(), RESET,
+            CYAN, RESET, YELLOW, konto.isGyldigMottaker(), RESET,
+            CYAN, RESET, YELLOW, konto.getAntallUavhentedeMeldinger(), RESET,
+            BOLD + BLUE, RESET
+        );
     }
 }
 
