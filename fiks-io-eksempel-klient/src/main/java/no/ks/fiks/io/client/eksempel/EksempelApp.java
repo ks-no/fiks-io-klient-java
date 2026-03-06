@@ -6,6 +6,7 @@ import no.ks.fiks.io.client.eksempel.config.FiksApiProperties;
 import no.ks.fiks.io.client.eksempel.config.FiksIOKlientProperties;
 import no.ks.fiks.io.client.eksempel.config.MaskinportenProperties;
 import no.ks.fiks.io.client.eksempel.utils.JavaClientUtils;
+import no.ks.fiks.io.client.eksempel.utils.MeldingType;
 import no.ks.fiks.io.client.model.Konto;
 import no.ks.fiks.io.client.model.KontoId;
 import no.ks.fiks.io.client.model.MeldingRequest;
@@ -15,6 +16,8 @@ import org.slf4j.LoggerFactory;
 import java.util.Scanner;
 
 import static no.ks.fiks.io.client.eksempel.AnsiColor.*;
+import static no.ks.fiks.io.client.eksempel.utils.MeldingType.PING;
+import static no.ks.fiks.io.client.eksempel.utils.MeldingType.PONG;
 
 public class EksempelApp {
     private static final Logger logger = LoggerFactory.getLogger(EksempelApp.class);
@@ -49,11 +52,11 @@ public class EksempelApp {
                 switch (input) {
                     case "P":
                         logger.info(formatCommand("P trykket", "Sender PING melding fra konto: " + avsenderKontoId + " til konto: " + mottakerKontoId));
-                        send(javaKlient, mottakerKontoId, "PING", "Dette er en PING melding");
+                        send(javaKlient, mottakerKontoId, PING, "Dette er en PING melding");
                         break;
                     case "G":
                         logger.info(formatCommand("G trykket", "Sender PONG melding fra konto: " + avsenderKontoId + " til konto: " + mottakerKontoId));
-                        send(javaKlient, mottakerKontoId, "PONG", "Dette er en PONG melding");
+                        send(javaKlient, mottakerKontoId, PONG, "Dette er en PONG melding");
                         break;
                     case "K":
                         logger.info(formatCommand("K trykket", "Henter konto: " + mottakerKontoId));
@@ -72,10 +75,10 @@ public class EksempelApp {
         }
     }
 
-    public static void send(FiksIOKlient klient, KontoId mottakerKontoId, String meldingType, String innhold) {
+    public static void send(FiksIOKlient klient, KontoId mottakerKontoId, MeldingType meldingType, String innhold) {
         final var avsenderKontoId = klient.getKontoId();
         logger.info("Sender melding - Avsender: {}, Mottaker: {}, Type: {}", avsenderKontoId, mottakerKontoId, meldingType);
-        klient.send(MeldingRequest.builder().mottakerKontoId(mottakerKontoId).meldingType(meldingType).build(), innhold, "melding.txt");
+        klient.send(MeldingRequest.builder().mottakerKontoId(mottakerKontoId).meldingType(meldingType.toString()).build(), innhold, "melding.txt");
     }
 
     private static String formatCommand(String command, String message) {
