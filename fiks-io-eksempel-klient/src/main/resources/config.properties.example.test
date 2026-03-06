@@ -7,5 +7,5 @@ privatekey.file=private.key
 
 konto.id=
 
-integasjon.id=
-integasjon.password=PASSWORD
+integrasjon.id=
+integrasjon.password=PASSWORD

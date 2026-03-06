@@ -13,8 +13,8 @@ public record FiksIOKlientProperties(
     String keystorePrivatekeyPassword,
     String privatekeyFile,
     KontoId kontoId,
-    UUID integasjonId,
-    String integasjonPassword
+    UUID integrasjonId,
+    String integrasjonPassword
 ) {
     public static FiksIOKlientProperties loadProperties(String configFile) {
         final var properties = new Properties();
@@ -33,8 +33,8 @@ public record FiksIOKlientProperties(
                 properties.getProperty("keystore.privatekey-password"),
                 properties.getProperty("privatekey.file"),
                 new KontoId(UUID.fromString(properties.getProperty("konto.id"))),
-                UUID.fromString(properties.getProperty("integasjon.id")),
-                properties.getProperty("integasjon.password")
+                UUID.fromString(properties.getProperty("integrasjon.id")),
+                properties.getProperty("integrasjon.password")
             );
         } catch (Exception e) {
             throw new RuntimeException("Feil med properties i " + configFile, e);

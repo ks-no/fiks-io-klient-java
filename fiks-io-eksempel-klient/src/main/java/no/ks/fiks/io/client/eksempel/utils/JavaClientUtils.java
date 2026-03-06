@@ -65,8 +65,8 @@ public class JavaClientUtils {
                     .idPortenAudience(maskinportenProperties.audience())
                     .klientId(maskinportenProperties.klientId().toString())
                     .build())
-                .integrasjonId(klientProperties.integasjonId())
-                .integrasjonPassord(klientProperties.integasjonPassword())
+                .integrasjonId(klientProperties.integrasjonId())
+                .integrasjonPassord(klientProperties.integrasjonPassword())
                 .build())
             .kontoKonfigurasjon(kontoKonfigurasjon)
             .virksomhetssertifikatKonfigurasjon(virksomhetssertifikatKonfigurasjon)
@@ -74,7 +74,11 @@ public class JavaClientUtils {
     }
 
     private static PrivateKey setOppPrivateKey(FiksIOKlientProperties klientProperties) throws InvalidKeySpecException, NoSuchAlgorithmException, IOException {
-        return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(((PrivateKeyInfo) new PEMParser(new FileReader(fileFromResource(klientProperties.privatekeyFile()))).readObject()).getEncoded()));
+        try(var fileReader = new FileReader(fileFromResource(klientProperties.privatekeyFile()))) {
+            try(var pemParser = new PEMParser(fileReader)) {
+                return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(((PrivateKeyInfo) pemParser.readObject()).getEncoded()));
+            }
+        }
     }
 
     private static VirksomhetssertifikatKonfigurasjon settOppVirksomhetssertifikatKonfigurasjon(FiksIOKlientProperties klientProperties) {
