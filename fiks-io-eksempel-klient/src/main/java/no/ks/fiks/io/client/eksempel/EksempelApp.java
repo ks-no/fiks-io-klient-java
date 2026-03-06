@@ -33,11 +33,12 @@ public class EksempelApp {
         }
     }
 
-    private static void runInteractiveConsole(FiksIOKlient javaKlient, KontoId kontoId) {
+    private static void runInteractiveConsole(FiksIOKlient javaKlient, KontoId mottakerKontoId) {
+        final var avsenderKontoId = javaKlient.getKontoId();
         System.out.println("Starter interaktiv konsoll:");
         System.out.println("  P - Send PING melding");
         System.out.println("  G - Send PONG melding");
-        System.out.println("  K - Hent konto informasjon");
+        System.out.println("  K - Hent konto informasjon og status");
         System.out.println("  Q - Avslutter applikasjonen");
 
         try (Scanner scanner = new Scanner(System.in)) {
@@ -47,16 +48,16 @@ public class EksempelApp {
                 input = scanner.nextLine().trim().toUpperCase();
                 switch (input) {
                     case "P":
-                        logger.info(formatCommand("P trykket", "Sender PING melding til konto: " + kontoId));
-                        send(javaKlient, kontoId, "PING", "Dette er en PING melding");
+                        logger.info(formatCommand("P trykket", "Sender PING melding fra konto: " + avsenderKontoId + " til konto: " + mottakerKontoId));
+                        send(javaKlient, mottakerKontoId, "PING", "Dette er en PING melding");
                         break;
                     case "G":
-                        logger.info(formatCommand("G trykket", "Sender PONG melding til konto: " + kontoId));
-                        send(javaKlient, kontoId, "PONG", "Dette er en PONG melding");
+                        logger.info(formatCommand("G trykket", "Sender PONG melding fra konto: " + avsenderKontoId + " til konto: " + mottakerKontoId));
+                        send(javaKlient, mottakerKontoId, "PONG", "Dette er en PONG melding");
                         break;
                     case "K":
-                        logger.info(formatCommand("K trykket", "Henter konto: " + kontoId));
-                        final var konto = javaKlient.getKonto(kontoId);
+                        logger.info(formatCommand("K trykket", "Henter konto: " + mottakerKontoId));
+                        final var konto = javaKlient.getKonto(mottakerKontoId);
                         konto.ifPresent(value -> logger.info(formatKonto(value)));
                         break;
                     case "Q":
@@ -71,8 +72,10 @@ public class EksempelApp {
         }
     }
 
-    public static void send(FiksIOKlient klient, KontoId kontoId, String meldingType, String innhold) {
-        klient.send(MeldingRequest.builder().mottakerKontoId(kontoId).meldingType(meldingType).build(), innhold, "melding.txt");
+    public static void send(FiksIOKlient klient, KontoId mottakerKontoId, String meldingType, String innhold) {
+        final var avsenderKontoId = klient.getKontoId();
+        logger.info("Sender melding - Avsender: {}, Mottaker: {}, Type: {}", avsenderKontoId, mottakerKontoId, meldingType);
+        klient.send(MeldingRequest.builder().mottakerKontoId(mottakerKontoId).meldingType(meldingType).build(), innhold, "melding.txt");
     }
 
     private static String formatCommand(String command, String message) {
