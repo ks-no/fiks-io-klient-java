@@ -13,6 +13,8 @@ import no.ks.fiks.io.client.konfigurasjon.FiksIntegrasjonKonfigurasjon;
 import no.ks.fiks.io.client.konfigurasjon.IdPortenKonfigurasjon;
 import no.ks.fiks.io.client.konfigurasjon.KontoKonfigurasjon;
 import no.ks.fiks.io.client.konfigurasjon.VirksomhetssertifikatKonfigurasjon;
+import no.ks.fiks.maskinporten.Maskinportenklient;
+import no.ks.fiks.maskinporten.MaskinportenklientProperties;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.openssl.PEMParser;
 
@@ -21,6 +23,7 @@ import java.io.IOException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 
@@ -42,8 +45,36 @@ public class JavaClientUtils {
         return new FiksIOKlientFactory(konfigurasjon).build();
     }
 
-    private static KontoKonfigurasjon settOppKontoKonfigurasjon(FiksIOKlientProperties klientProperties, PrivateKey privateKey) {
+    public static TokenProvider lagTokenProvider(MaskinportenProperties maskinportenProperties, FiksIOKlientProperties fiksIOKlientProperties) {
+        final Maskinportenklient maskinportenKlient = getMaskinportenKlient(maskinportenProperties, fiksIOKlientProperties);
+        return new TokenProvider(maskinportenKlient);
+    }
+
+    public static KontoKonfigurasjon settOppKontoKonfigurasjon(FiksIOKlientProperties klientProperties, PrivateKey privateKey) {
         return KontoKonfigurasjon.builder().kontoId(klientProperties.kontoId()).privatNokkel(privateKey).build();
+    }
+
+    private static Maskinportenklient getMaskinportenKlient(MaskinportenProperties maskinportenProperties, FiksIOKlientProperties fiksIOKlientProperties) {
+        MaskinportenklientProperties maskinportenklientProperties = MaskinportenklientProperties.builder()
+            .audience(maskinportenProperties.audience())
+            .issuer(maskinportenProperties.klientId().toString())
+            .tokenEndpoint(maskinportenProperties.tokenEndpoint())
+            .build();
+
+        try {
+            final var virksomhetssertifikatKonfigurasjon = settOppVirksomhetssertifikatKonfigurasjon(fiksIOKlientProperties);
+            final var keyStore = virksomhetssertifikatKonfigurasjon.getKeyStore();
+            final var keyAlias = virksomhetssertifikatKonfigurasjon.getKeyAlias();
+            final var keyPassword = virksomhetssertifikatKonfigurasjon.getKeyPassword().toCharArray();
+
+            return Maskinportenklient.builder()
+                .withPrivateKey((PrivateKey) keyStore.getKey(keyAlias, keyPassword))
+                .usingVirksomhetssertifikat((X509Certificate) keyStore.getCertificate(keyAlias))
+                .withProperties(maskinportenklientProperties)
+                .build();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static FiksIOKonfigurasjon settOppFiksIOKonfigurasjon(FiksIOKlientProperties klientProperties, MaskinportenProperties maskinportenProperties, FiksApiProperties fiksApiProperties, AmqpProperties amqpProperties, KontoKonfigurasjon kontoKonfigurasjon, VirksomhetssertifikatKonfigurasjon virksomhetssertifikatKonfigurasjon) {

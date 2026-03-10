@@ -7,12 +7,15 @@ import no.ks.fiks.io.client.eksempel.config.FiksIOKlientProperties;
 import no.ks.fiks.io.client.eksempel.config.MaskinportenProperties;
 import no.ks.fiks.io.client.eksempel.utils.JavaClientUtils;
 import no.ks.fiks.io.client.eksempel.utils.MeldingType;
+import no.ks.fiks.io.client.eksempel.utils.TokenProvider;
 import no.ks.fiks.io.client.model.Konto;
 import no.ks.fiks.io.client.model.KontoId;
 import no.ks.fiks.io.client.model.MeldingRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Scanner;
 
 import static no.ks.fiks.io.client.eksempel.AnsiColor.*;
@@ -30,18 +33,21 @@ public class EksempelApp {
         final var kontoId = klientProperties.kontoId();
 
         try (var javaKlient = JavaClientUtils.lagJavaKlient(klientProperties, maskinportenProperties, fiksApiProperties, amqpProperties)) {
+            final var tokenProvider = JavaClientUtils.lagTokenProvider(maskinportenProperties, klientProperties);
+
             javaKlient.newSubscription(new MeldingHandler()::behandleMelding);
 
-            runInteractiveConsole(javaKlient, kontoId);
+            runInteractiveConsole(javaKlient, kontoId, tokenProvider);
         }
     }
 
-    private static void runInteractiveConsole(FiksIOKlient javaKlient, KontoId mottakerKontoId) {
+    private static void runInteractiveConsole(FiksIOKlient javaKlient, KontoId mottakerKontoId, TokenProvider tokenProvider) {
         final var avsenderKontoId = javaKlient.getKontoId();
         System.out.println("Starter interaktiv konsoll:");
         System.out.println("  P - Send PING melding");
         System.out.println("  G - Send PONG melding");
         System.out.println("  K - Hent konto informasjon og status");
+        System.out.println("  M - Hent maskinporten token");
         System.out.println("  Q - Avslutter applikasjonen");
 
         try (Scanner scanner = new Scanner(System.in)) {
@@ -63,12 +69,16 @@ public class EksempelApp {
                         final var konto = javaKlient.getKonto(mottakerKontoId);
                         konto.ifPresent(value -> logger.info(formatKonto(value)));
                         break;
+                    case "M":
+                        logger.info(formatCommand("M trykket", "Henter maskinporten token"));
+                        hentOgVisMaskinportenToken(tokenProvider);
+                        break;
                     case "Q":
                         logger.info(formatCommand("Q trykket", "Avslutter applikasjon"));
                         return;
                     default:
                         if (!input.isEmpty()) {
-                            logger.info(formatCommand("Ukjent kommando", "Prøv P, G, K eller Q"));
+                            logger.info(formatCommand("Ukjent kommando", "Prøv P, G, K, M eller Q"));
                         }
                 }
             }
@@ -81,10 +91,45 @@ public class EksempelApp {
         klient.send(MeldingRequest.builder().mottakerKontoId(mottakerKontoId).meldingType(meldingType.toString()).build(), innhold, "melding.txt");
     }
 
+    private static void hentOgVisMaskinportenToken(TokenProvider tokenProvider) {
+        final var token = tokenProvider.getMaskinportenToken();
+        final var tokenLifetimeSeconds = 119;
+        final var expiryTime = System.currentTimeMillis() + (tokenLifetimeSeconds * 1000);
+        logger.info(formatMaskinportenToken(token, tokenLifetimeSeconds, expiryTime));
+    }
+
     private static String formatCommand(String command, String message) {
         return String.format("%s[%s]%s %s%s%s",
                 BOLD + AnsiColor.MAGENTA, command, RESET,
                 AnsiColor.WHITE, message, RESET
+        );
+    }
+
+    private static String formatMaskinportenToken(String token, int lifetimeSeconds, long expiryTimeMillis) {
+        final var expiryDate = new Date(expiryTimeMillis);
+        final var formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        final var expiryTimeFormatted = formatter.format(expiryDate);
+
+        return String.format(
+            """
+
+                %s════════════════════════════════════════%s
+                %s  MASKINPORTEN TOKEN%s
+                %s════════════════════════════════════════%s
+                %sToken:%s
+                %s%s%s
+                %sLevetid:%s              %d sekunder%s
+                %sUtløper:%s              %s%s%s
+                %s════════════════════════════════════════%s
+                """,
+            BOLD + BLUE, RESET,
+            BOLD + GREEN, RESET,
+            BOLD + BLUE, RESET,
+            CYAN, RESET,
+            YELLOW, token, RESET,
+            CYAN, RESET, lifetimeSeconds, RESET,
+            CYAN, RESET, YELLOW, expiryTimeFormatted, RESET,
+            BOLD + BLUE, RESET
         );
     }
 
