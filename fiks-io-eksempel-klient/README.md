@@ -65,8 +65,35 @@ Starter interaktiv konsoll:
   P - Send PING melding
   G - Send PONG melding
   K - Hent konto informasjon og status
+  M - Hent Maskinporten token
   Q - Avslutter applikasjonen
 ```
+
+### Maskinporten Token og API-kall
+
+Fiks IO API bruker Maskinporten for autentisering. Velg alternativ **M** i menyen for å hente en Maskinporten access token. Tokenet er en JWT (JSON Web Token) som genereres basert på din organisasjons virksomhetssertifikat og privatnøkkel.
+
+**Viktig:** Maskinporten token har en levetid på **2 minutter**. Du må hente et nytt token hvis det er gått mer enn 2 minutter siden forrige henting.
+
+#### Eksempel API-kall med curl
+
+Her er et eksempel på hvordan du kan hente konto-informasjon ved å bruke et Maskinporten token:
+
+```bash
+curl -X 'GET' \
+  'https://api.fiks.test.ks.no/fiks-protokoll/katalog/api/v1/kontoer/<kontoid>' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <maskinporten-token>' \
+  -H 'IntegrasjonId: <integrasjonid>' \
+  -H 'IntegrasjonPassord: <integrasjonpassord>'
+```
+
+**Parametre som må byttes:**
+- `<kontoid>`: Din Fiks IO konto-ID
+- `<maskinporten-token>`: Maskinporten access token fra kommando M
+- `<integrasjonid>`: Din integrasjons-ID
+- `<integrasjonpassord>`: Dit integrasjons-passord
+
 
 ## Ressurser
 
