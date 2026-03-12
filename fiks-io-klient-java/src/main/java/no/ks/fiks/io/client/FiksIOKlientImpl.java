@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -25,6 +26,16 @@ public class FiksIOKlientImpl implements FiksIOKlient {
     private final KatalogHandler katalogHandler;
     private final FiksIOHandler fiksIOHandler;
     private final KeyValidatorHandler keyValidatorHandler;
+    private final ExecutorService executor;
+
+    public FiksIOKlientImpl(@NonNull KontoId kontoId, @NonNull AmqpHandler amqpHandler, @NonNull KatalogHandler katalogHandler, @NonNull FiksIOHandler fiksIOHandler, @NonNull KeyValidatorHandler keyValidatorHandler, ExecutorService executor) {
+        this.kontoId = kontoId;
+        this.amqpHandler = amqpHandler;
+        this.katalogHandler = katalogHandler;
+        this.fiksIOHandler = fiksIOHandler;
+        this.keyValidatorHandler = keyValidatorHandler;
+        this.executor = executor;
+    }
 
     public FiksIOKlientImpl(@NonNull KontoId kontoId, @NonNull AmqpHandler amqpHandler, @NonNull KatalogHandler katalogHandler, @NonNull FiksIOHandler fiksIOHandler, @NonNull KeyValidatorHandler keyValidatorHandler) {
         this.kontoId = kontoId;
@@ -32,6 +43,7 @@ public class FiksIOKlientImpl implements FiksIOKlient {
         this.katalogHandler = katalogHandler;
         this.fiksIOHandler = fiksIOHandler;
         this.keyValidatorHandler = keyValidatorHandler;
+        this.executor = null;
     }
 
     @Override
@@ -92,5 +104,8 @@ public class FiksIOKlientImpl implements FiksIOKlient {
     public void close() throws IOException {
         amqpHandler.close();
         fiksIOHandler.close();
+        if (executor != null) {
+            executor.shutdown();
+        }
     }
 }

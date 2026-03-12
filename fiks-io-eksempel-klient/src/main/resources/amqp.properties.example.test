@@ -1,0 +1,5 @@
+amqp.host=io.fiks.test.ks.no
+amqp.port=5671
+amqp.meldingErBehandlet=false
+amqp.applikasjonNavn=Fiks IO Java klient
+amqp.mottakBufferStorrelse=10
