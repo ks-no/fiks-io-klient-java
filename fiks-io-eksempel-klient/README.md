@@ -56,6 +56,20 @@ cp /path/to/virksomhetssertifikat.p12 src/main/resources/
 cp /path/to/private.key src/main/resources/
 ```
 
+## Kjøring av applikasjonen
+
+Bygg prosjektet:
+```bash
+mvn clean install
+```
+
+Kjør applikasjonen:
+```bash
+mvn exec:java -Dexec.mainClass="no.ks.fiks.io.client.eksempel.EksempelApp" -f fiks-io-eksempel-klient/pom.xml
+```
+
+Kommandoene må kjøres fra `fiks-io-klient-java/` mappen for å fungere.
+
 ## Bruk
 
 Etter oppstart av applikasjonen vil du se følgende meny:
