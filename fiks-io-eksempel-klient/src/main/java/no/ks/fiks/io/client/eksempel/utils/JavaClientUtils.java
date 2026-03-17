@@ -16,6 +16,7 @@ import no.ks.fiks.io.client.konfigurasjon.VirksomhetssertifikatKonfigurasjon;
 import no.ks.fiks.maskinporten.Maskinportenklient;
 import no.ks.fiks.maskinporten.MaskinportenklientProperties;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 
 import java.io.FileReader;
@@ -107,7 +108,18 @@ public class JavaClientUtils {
     private static PrivateKey setOppPrivateKey(FiksIOKlientProperties klientProperties) throws InvalidKeySpecException, NoSuchAlgorithmException, IOException {
         try(var fileReader = new FileReader(fileFromResource(klientProperties.privatekeyFile()))) {
             try(var pemParser = new PEMParser(fileReader)) {
-                return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(((PrivateKeyInfo) pemParser.readObject()).getEncoded()));
+                var pemObject = pemParser.readObject();
+                PrivateKeyInfo privateKeyInfo;
+
+                if (pemObject instanceof PEMKeyPair) {
+                    privateKeyInfo = ((PEMKeyPair) pemObject).getPrivateKeyInfo();
+                } else if (pemObject instanceof PrivateKeyInfo) {
+                    privateKeyInfo = (PrivateKeyInfo) pemObject;
+                } else {
+                    throw new IllegalArgumentException("Unexpected PEM object type: " + pemObject.getClass());
+                }
+
+                return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(privateKeyInfo.getEncoded()));
             }
         }
     }
