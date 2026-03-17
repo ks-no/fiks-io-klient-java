@@ -14,8 +14,6 @@ import no.ks.fiks.io.client.model.MeldingRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Scanner;
 
 import static no.ks.fiks.io.client.eksempel.AnsiColor.*;
@@ -93,9 +91,7 @@ public class EksempelApp {
 
     private static void hentOgVisMaskinportenToken(TokenProvider tokenProvider) {
         final var token = tokenProvider.getMaskinportenToken();
-        final var tokenLifetimeSeconds = 119;
-        final var expiryTime = System.currentTimeMillis() + (tokenLifetimeSeconds * 1000);
-        logger.info(formatMaskinportenToken(token, tokenLifetimeSeconds, expiryTime));
+        logger.info(formatMaskinportenToken(token));
     }
 
     private static String formatCommand(String command, String message) {
@@ -105,11 +101,7 @@ public class EksempelApp {
         );
     }
 
-    private static String formatMaskinportenToken(String token, int lifetimeSeconds, long expiryTimeMillis) {
-        final var expiryDate = new Date(expiryTimeMillis);
-        final var formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        final var expiryTimeFormatted = formatter.format(expiryDate);
-
+    private static String formatMaskinportenToken(String token) {
         return String.format(
             """
 
@@ -118,8 +110,6 @@ public class EksempelApp {
                 %s════════════════════════════════════════%s
                 %sToken:%s
                 %s%s%s
-                %sLevetid:%s              %d sekunder%s
-                %sUtløper:%s              %s%s%s
                 %s════════════════════════════════════════%s
                 """,
             BOLD + BLUE, RESET,
@@ -127,8 +117,6 @@ public class EksempelApp {
             BOLD + BLUE, RESET,
             CYAN, RESET,
             YELLOW, token, RESET,
-            CYAN, RESET, lifetimeSeconds, RESET,
-            CYAN, RESET, YELLOW, expiryTimeFormatted, RESET,
             BOLD + BLUE, RESET
         );
     }
