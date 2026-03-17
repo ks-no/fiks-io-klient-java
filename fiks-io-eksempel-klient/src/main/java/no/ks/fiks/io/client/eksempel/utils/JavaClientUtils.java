@@ -34,7 +34,7 @@ import static no.ks.fiks.io.client.eksempel.utils.FileUtils.getKeyStore;
 public class JavaClientUtils {
 
     public static FiksIOKlient lagJavaKlient(FiksIOKlientProperties klientProperties, MaskinportenProperties maskinportenProperties, FiksApiProperties fiksApiProperties, AmqpProperties amqpProperties) throws InvalidKeySpecException, NoSuchAlgorithmException, IOException {
-        final var virksomhetssertifikatKonfigurasjon = settOppVirksomhetssertifikatKonfigurasjon(klientProperties);
+        final var virksomhetssertifikatKonfigurasjon = settOppVirksomhetssertifikatKonfigurasjon(maskinportenProperties);
         final var privateKey = setOppPrivateKey(klientProperties);
         final var kontoKonfigurasjon = settOppKontoKonfigurasjon(klientProperties, privateKey);
         final var konfigurasjon = settOppFiksIOKonfigurasjon(klientProperties, maskinportenProperties, fiksApiProperties, amqpProperties, kontoKonfigurasjon, virksomhetssertifikatKonfigurasjon);
@@ -46,8 +46,8 @@ public class JavaClientUtils {
         return new FiksIOKlientFactory(konfigurasjon).build();
     }
 
-    public static TokenProvider lagTokenProvider(MaskinportenProperties maskinportenProperties, FiksIOKlientProperties fiksIOKlientProperties) {
-        final Maskinportenklient maskinportenKlient = getMaskinportenKlient(maskinportenProperties, fiksIOKlientProperties);
+    public static TokenProvider lagTokenProvider(MaskinportenProperties maskinportenProperties) {
+        final Maskinportenklient maskinportenKlient = getMaskinportenKlient(maskinportenProperties);
         return new TokenProvider(maskinportenKlient);
     }
 
@@ -55,7 +55,7 @@ public class JavaClientUtils {
         return KontoKonfigurasjon.builder().kontoId(klientProperties.kontoId()).privatNokkel(privateKey).build();
     }
 
-    private static Maskinportenklient getMaskinportenKlient(MaskinportenProperties maskinportenProperties, FiksIOKlientProperties fiksIOKlientProperties) {
+    private static Maskinportenklient getMaskinportenKlient(MaskinportenProperties maskinportenProperties) {
         MaskinportenklientProperties maskinportenklientProperties = MaskinportenklientProperties.builder()
             .audience(maskinportenProperties.audience())
             .issuer(maskinportenProperties.klientId().toString())
@@ -63,7 +63,7 @@ public class JavaClientUtils {
             .build();
 
         try {
-            final var virksomhetssertifikatKonfigurasjon = settOppVirksomhetssertifikatKonfigurasjon(fiksIOKlientProperties);
+            final var virksomhetssertifikatKonfigurasjon = settOppVirksomhetssertifikatKonfigurasjon(maskinportenProperties);
             final var keyStore = virksomhetssertifikatKonfigurasjon.getKeyStore();
             final var keyAlias = virksomhetssertifikatKonfigurasjon.getKeyAlias();
             final var keyPassword = virksomhetssertifikatKonfigurasjon.getKeyPassword().toCharArray();
@@ -124,12 +124,12 @@ public class JavaClientUtils {
         }
     }
 
-    private static VirksomhetssertifikatKonfigurasjon settOppVirksomhetssertifikatKonfigurasjon(FiksIOKlientProperties klientProperties) {
+    private static VirksomhetssertifikatKonfigurasjon settOppVirksomhetssertifikatKonfigurasjon(MaskinportenProperties maskinportenProperties) {
         return VirksomhetssertifikatKonfigurasjon.builder()
-            .keyStore(getKeyStore(klientProperties.keystoreFile(), klientProperties.keystorePassword().toCharArray()))
-            .keyAlias(klientProperties.keystorePrivatekeyAlias())
-            .keyStorePassword(klientProperties.keystorePassword())
-            .keyPassword(klientProperties.keystorePrivatekeyPassword())
+            .keyStore(getKeyStore(maskinportenProperties.keystoreFile(), maskinportenProperties.keystorePassword().toCharArray()))
+            .keyAlias(maskinportenProperties.keystorePrivatekeyAlias())
+            .keyStorePassword(maskinportenProperties.keystorePassword())
+            .keyPassword(maskinportenProperties.keystorePrivatekeyPassword())
             .build();
     }
 }

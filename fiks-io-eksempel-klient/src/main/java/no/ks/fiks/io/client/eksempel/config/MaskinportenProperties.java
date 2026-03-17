@@ -8,7 +8,11 @@ import java.util.UUID;
 public record MaskinportenProperties(
     String audience,
     String tokenEndpoint,
-    UUID klientId
+    UUID klientId,
+    String keystoreFile,
+    String keystorePassword,
+    String keystorePrivatekeyAlias,
+    String keystorePrivatekeyPassword
 ) {
     public static MaskinportenProperties loadMaskinportenProperties(String configFile) {
         try {
@@ -19,7 +23,11 @@ public record MaskinportenProperties(
                 return new MaskinportenProperties(
                     properties.getProperty("maskinporten.audience"),
                     properties.getProperty("maskinporten.token-endpoint"),
-                    UUID.fromString(properties.getProperty("klient.id"))
+                    UUID.fromString(properties.getProperty("klient.id")),
+                    properties.getProperty("keystore.file"),
+                    properties.getProperty("keystore.password"),
+                    properties.getProperty("keystore.privatekey-alias"),
+                    properties.getProperty("keystore.privatekey-password")
                 );
             }
         } catch (Exception e) {

@@ -7,10 +7,6 @@ import java.util.Properties;
 import java.util.UUID;
 
 public record FiksIOKlientProperties(
-    String keystoreFile,
-    String keystorePassword,
-    String keystorePrivatekeyAlias,
-    String keystorePrivatekeyPassword,
     String privatekeyFile,
     KontoId kontoId,
     UUID integrasjonId,
@@ -27,10 +23,6 @@ public record FiksIOKlientProperties(
 
         try {
             return new FiksIOKlientProperties(
-                properties.getProperty("keystore.file"),
-                properties.getProperty("keystore.password"),
-                properties.getProperty("keystore.privatekey-alias"),
-                properties.getProperty("keystore.privatekey-password"),
                 properties.getProperty("privatekey.file"),
                 new KontoId(UUID.fromString(properties.getProperty("konto.id"))),
                 UUID.fromString(properties.getProperty("integrasjon.id")),

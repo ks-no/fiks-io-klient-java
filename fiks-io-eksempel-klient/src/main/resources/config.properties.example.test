@@ -1,8 +1,3 @@
-keystore.file=virksomhetssertifikat.p12
-keystore.password=PASSWORD
-keystore.privatekey-alias=ALIAS
-keystore.privatekey-password=PASSWORD
-
 privatekey.file=private.key
 
 konto.id=
