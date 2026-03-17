@@ -73,7 +73,7 @@ Starter interaktiv konsoll:
 
 Fiks IO API bruker Maskinporten for autentisering. Velg alternativ **M** i menyen for å hente en Maskinporten access token. Tokenet er en JWT (JSON Web Token) som genereres basert på din organisasjons virksomhetssertifikat og privatnøkkel.
 
-**Viktig:** Maskinporten token har en levetid på **2 minutter**. Du må hente et nytt token hvis det er gått mer enn 2 minutter siden forrige henting.
+**Viktig:** Maskinporten token har en begrenset levetid på typisk 2 minutt og må fornyes ved behov. Hvis det er behov for å gjøre mange API-kall manuelt så bør det settes opp en maskinporten klient med lengre levetid.
 
 #### Eksempel API-kall med curl
 
