@@ -31,7 +31,7 @@ public class EksempelApp {
         final var kontoId = klientProperties.kontoId();
 
         try (var javaKlient = JavaClientUtils.lagJavaKlient(klientProperties, maskinportenProperties, fiksApiProperties, amqpProperties)) {
-            final var tokenProvider = JavaClientUtils.lagTokenProvider(maskinportenProperties, klientProperties);
+            final var tokenProvider = JavaClientUtils.lagTokenProvider(maskinportenProperties);
 
             javaKlient.newSubscription(new MeldingHandler()::behandleMelding);
 
