@@ -1,0 +1,3 @@
+fiks-api.host=api.fiks.test.ks.no
+fiks-api.port=443
+fiks-api.scheme=https

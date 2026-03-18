@@ -76,6 +76,7 @@ public class FiksIOKlientFactory {
      */
     public FiksIOKlient build() {
         settDefaults(fiksIOKonfigurasjon);
+        final var executor = fiksIOKonfigurasjon.getExecutor();
         log.info("Setter opp FIKS-IO klient med følgende konfigurasjon: {}", fiksIOKonfigurasjon);
 
 
@@ -92,7 +93,7 @@ public class FiksIOKlientFactory {
             utsendingKlient = getFiksIOUtsendingKlient(fiksIOKonfigurasjon, httpClient, maskinportenAccessTokenSupplier);
 
             final AsicHandler asicHandler = AsicHandler.builder()
-                .withExecutorService(fiksIOKonfigurasjon.getExecutor())
+                .withExecutorService(executor)
                 .withPrivateNokler(fiksIOKonfigurasjon.getKontoKonfigurasjon().getPrivateNokler())
                 .withKeyStoreHolder(toKeyStoreHolder(fiksIOKonfigurasjon.getVirksomhetssertifikatKonfigurasjon()))
                 .build();
@@ -116,7 +117,8 @@ public class FiksIOKlientFactory {
                     maskinportenAccessTokenSupplier, kontoId, dokumentlagerKlient),
                 katalogHandler,
                 fiksIOHandler,
-                keyValidatorHandler
+                keyValidatorHandler,
+                executor
             );
         } catch (Exception e) {
             if (dokumentlagerKlient != null) {

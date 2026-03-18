@@ -1,0 +1,8 @@
+maskinporten.audience=https://test.maskinporten.no/
+maskinporten.token-endpoint=https://test.maskinporten.no/token
+klient.id=
+
+keystore.file=virksomhetssertifikat.p12
+keystore.password=PASSWORD
+keystore.privatekey-alias=ALIAS
+keystore.privatekey-password=PASSWORD
