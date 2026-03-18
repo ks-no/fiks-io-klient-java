@@ -36,6 +36,7 @@ public class EksempelApp {
             javaKlient.newSubscription(new MeldingHandler()::behandleMelding);
 
             runInteractiveConsole(javaKlient, kontoId, tokenProvider);
+            System.exit(0);
         }
     }
 
