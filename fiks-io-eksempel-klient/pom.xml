@@ -11,6 +11,10 @@
 
     <artifactId>fiks-io-eksempel-klient</artifactId>
 
+    <properties>
+        <protokoll.version>2.0.1</protokoll.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>no.ks.fiks</groupId>
@@ -23,6 +27,20 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.ks.fiks</groupId>
+            <artifactId>fiks-protokoll-konfigurasjon-api-v1</artifactId>
+            <version>${protokoll.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-httpclient</artifactId>
+            <version>13.6</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-jackson</artifactId>
         </dependency>
     </dependencies>
 

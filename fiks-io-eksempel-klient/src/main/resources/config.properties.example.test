@@ -1,6 +1,8 @@
 privatekey.file=private.key
+publickey.file=public.key
 
 konto.id=
+system.id=
 
 integrasjon.id=
 integrasjon.password=PASSWORD
