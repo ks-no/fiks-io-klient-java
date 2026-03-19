@@ -8,8 +8,8 @@ import feign.jackson.JacksonEncoder;
 import no.ks.fiks.feign.RequestInterceptors;
 import no.ks.fiks.io.client.eksempel.config.FiksApiProperties;
 import no.ks.fiks.io.client.eksempel.utils.TokenProvider;
-import no.ks.fiks.protokoll.konfigurasjon.api.v1.api.ProtokollKonfigurasjonApi;
-import no.ks.fiks.protokoll.konfigurasjon.api.v1.invoker.ApiClient;
+import no.ks.fiks.protokoll.konfigurasjon.v1.api.ProtokollKonfigurasjonApi;
+import no.ks.fiks.protokoll.konfigurasjon.v1.invoker.ApiClient;
 
 import java.util.UUID;
 

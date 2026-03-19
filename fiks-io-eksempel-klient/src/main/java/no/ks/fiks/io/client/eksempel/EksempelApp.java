@@ -13,10 +13,12 @@ import no.ks.fiks.io.client.eksempel.utils.TokenProvider;
 import no.ks.fiks.io.client.model.Konto;
 import no.ks.fiks.io.client.model.KontoId;
 import no.ks.fiks.io.client.model.MeldingRequest;
-import no.ks.fiks.protokoll.konfigurasjon.api.v1.model.ProtokollKontoResponse;
+import no.ks.fiks.protokoll.konfigurasjon.v1.model.ProtokollKontoResponse;
+import no.ks.fiks.protokoll.konfigurasjon.v1.model.ProtokollSystemSummaryWithOrgNameResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
 
@@ -243,7 +245,7 @@ public class EksempelApp {
         );
     }
 
-    private static String formatTilgangForesporsler(java.util.List<no.ks.fiks.protokoll.konfigurasjon.api.v1.model.ProtokollSystemSummaryWithOrgNameResponse> tilganger) {
+    private static String formatTilgangForesporsler(List<ProtokollSystemSummaryWithOrgNameResponse> tilganger) {
         var sb = new StringBuilder();
         sb.append(String.format("""
 
@@ -267,7 +269,7 @@ public class EksempelApp {
         return sb.toString();
     }
 
-    private static String formatTilgangItem(no.ks.fiks.protokoll.konfigurasjon.api.v1.model.ProtokollSystemSummaryWithOrgNameResponse tilgang, int index) {
+    private static String formatTilgangItem(ProtokollSystemSummaryWithOrgNameResponse tilgang, int index) {
         return String.format("""
             %s[%d]%s
             %sID:%s              %s%s%s

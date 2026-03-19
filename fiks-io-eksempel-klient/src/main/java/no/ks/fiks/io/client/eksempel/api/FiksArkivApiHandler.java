@@ -2,11 +2,11 @@ package no.ks.fiks.io.client.eksempel.api;
 
 import feign.FeignException;
 import no.ks.fiks.io.client.model.KontoId;
-import no.ks.fiks.protokoll.konfigurasjon.api.v1.api.ProtokollKonfigurasjonApi;
-import no.ks.fiks.protokoll.konfigurasjon.api.v1.model.CreateProtokollKontoRequest;
-import no.ks.fiks.protokoll.konfigurasjon.api.v1.model.PartRequest;
-import no.ks.fiks.protokoll.konfigurasjon.api.v1.model.ProtokollKontoResponse;
-import no.ks.fiks.protokoll.konfigurasjon.api.v1.model.ProtokollSystemSummaryWithOrgNameResponse;
+import no.ks.fiks.protokoll.konfigurasjon.v1.api.ProtokollKonfigurasjonApi;
+import no.ks.fiks.protokoll.konfigurasjon.v1.model.CreateProtokollKontoRequest;
+import no.ks.fiks.protokoll.konfigurasjon.v1.model.PartRequest;
+import no.ks.fiks.protokoll.konfigurasjon.v1.model.ProtokollKontoResponse;
+import no.ks.fiks.protokoll.konfigurasjon.v1.model.ProtokollSystemSummaryWithOrgNameResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

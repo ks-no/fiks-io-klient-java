@@ -10,9 +10,9 @@
     </parent>
 
     <properties>
-        <feign.version>13.10</feign.version>
+        <feign.version>13.11</feign.version>
 
-        <basePackageProtokollApi>${project.groupId}.protokoll.konfigurasjon.api.v1</basePackageProtokollApi>
+        <basePackageProtokollApi>${project.groupId}.protokoll.konfigurasjon.v1</basePackageProtokollApi>
     </properties>
 
 
@@ -49,6 +49,7 @@
             <groupId>io.github.openfeign</groupId>
             <artifactId>feign-okhttp</artifactId>
             <version>${feign.version}</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
@@ -69,7 +70,7 @@
                             <generatorName>java</generatorName>
                             <configOptions>
                                 <dateLibrary>java8</dateLibrary>
-                                <feignVersion>13.x</feignVersion>
+                                <feignVersion>10.x</feignVersion>
                                 <java8>true</java8>
                                 <useJakartaEe>true</useJakartaEe>
                                 <collectionType>list</collectionType>
