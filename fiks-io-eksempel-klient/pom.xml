@@ -9,11 +9,14 @@
         <version>3.6.2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>fiks-io-eksempel-klient</artifactId>
-
     <properties>
-        <protokoll.version>2.0.2</protokoll.version>
+        <feign.version>13.10</feign.version>
+
+        <basePackageProtokollApi>${project.groupId}.protokoll.konfigurasjon.api.v1</basePackageProtokollApi>
     </properties>
+
+
+    <artifactId>fiks-io-eksempel-klient</artifactId>
 
     <dependencies>
         <dependency>
@@ -29,22 +32,62 @@
             <artifactId>guava</artifactId>
         </dependency>
         <dependency>
-            <groupId>no.ks.fiks</groupId>
-            <artifactId>fiks-protokoll-konfigurasjon-api-v1</artifactId>
-            <version>${protokoll.version}</version>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-core</artifactId>
+            <version>${feign.version}</version>
         </dependency>
         <dependency>
             <groupId>io.github.openfeign</groupId>
             <artifactId>feign-httpclient</artifactId>
-            <version>13.6</version>
+            <version>${feign.version}</version>
         </dependency>
         <dependency>
             <groupId>io.github.openfeign</groupId>
             <artifactId>feign-jackson</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-okhttp</artifactId>
+            <version>${feign.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
+        <plugins>
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>print-api-client</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <inputSpec>https://developers.fiks.ks.no/api/fiks-protokoll-konfigurasjon-api-v1.json</inputSpec>
+                            <generatorName>java</generatorName>
+                            <configOptions>
+                                <dateLibrary>java8</dateLibrary>
+                                <feignVersion>13.x</feignVersion>
+                                <java8>true</java8>
+                                <useJakartaEe>true</useJakartaEe>
+                                <collectionType>list</collectionType>
+                                <enumPropertyNaming>legacy</enumPropertyNaming>
+                            </configOptions>
+                            <modelPackage>${basePackageProtokollApi}.model</modelPackage>
+                            <apiPackage>${basePackageProtokollApi}.api</apiPackage>
+                            <invokerPackage>${basePackageProtokollApi}.invoker</invokerPackage>
+                            <generateApiTests>false</generateApiTests>
+                            <generateModelTests>false</generateModelTests>
+                            <generateSupportingFiles>true</generateSupportingFiles>
+                            <library>feign</library>
+                            <addCompileSourceRoot>true</addCompileSourceRoot>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
         <sourceDirectory>src/main/java</sourceDirectory>
         <resources>
             <resource>
