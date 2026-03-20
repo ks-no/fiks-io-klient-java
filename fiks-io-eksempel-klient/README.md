@@ -75,13 +75,58 @@ Kommandoene må kjøres fra `fiks-io-klient-java/` mappen for å fungere.
 Etter oppstart av applikasjonen vil du se følgende meny:
 
 ```
-Starter interaktiv konsoll:
-  P - Send PING melding
-  G - Send PONG melding
-  K - Hent konto informasjon og status
-  M - Hent Maskinporten token
-  Q - Avslutter applikasjonen
+╔════════════════════════════════════════════════════════════════╗
+║             TILGJENGELIGE KOMMANDOER                           ║
+╠════════════════════════════════════════════════════════════════╣
+║  MELDINGER:                                                    ║
+║    P - Send PING melding                                       ║
+║    G - Send PONG melding                                       ║
+║                                                                ║
+║  KONTO OG TILGANG:                                             ║
+║    K - Hent konto informasjon og status                        ║
+║    M - Hent maskinporten token                                 ║
+║                                                                ║
+║  FIKS ARKIV KONTO:                                             ║
+║    N - Opprett Fiks Arkiv konto som arkiv                      ║
+║    T - Send tilgangsforespørsel til opprettet konto            ║
+║    S - Se alle tilgangforspørslene                             ║
+║    A - Godkjenn alle tilgangforspørslene                       ║
+║                                                                ║
+║  SYSTEM:                                                       ║
+║    Q - Avslutter applikasjonen                                 ║
+╚════════════════════════════════════════════════════════════════╝
 ```
+
+### Kommandoer
+
+#### Meldinger
+- **P** - Send en PING melding til mottaker
+- **G** - Send en PONG melding til mottaker
+
+#### Konto og Tilgang
+- **K** - Henter og viser kontoinformasjon inkludert konto-ID, navn, Fiks-org navn og status
+- **M** - Henter og viser gjeldende Maskinporten access token
+
+#### Fiks Arkiv Konto
+Disse kommandoene brukes for å opprette en Fiks Arkiv-konto og håndtere tilgangsforespørsler:
+- **N** - Opprett en ny Fiks Arkiv-konto som arkiv i organisasjonen
+- **T** - Send tilgangsforespørsel til den opprettede Fiks Arkiv-kontoen
+- **S** - Se alle mottatte tilgangsforespørsler
+- **A** - Godkjenn alle mottatte tilgangsforespørsler
+
+#### System
+- **Q** - Avslutter applikasjonen
+
+### Fiks Arkiv Konto - Opprettelsesflyt
+
+For å opprette en Fiks Arkiv-konto, følg disse stegene:
+
+1. **Opprett Fiks Arkiv konto (N)**: Opprett en ny Fiks Arkiv-konto på system id angitt i properties fil.
+2. **Send tilgangsforespørsel (T)**: Send en tilgangsforespørsel til den opprettede kontoen
+3. **Se tilgangsforespørsler (S)**: Vis alle mottatte tilgangsforespørsler
+4. **Godkjenn tilgangsforespørsler (A)**: Godkjenn alle tilgangsforespørslene
+
+Hver konto kan kun opprettes én gang. Hvis du prøver å opprette den igjen, vil applikasjonen informere deg om at den allerede er opprettet.
 
 ### Maskinporten Token og API-kall
 
