@@ -13,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.UUID;
 
+import static no.ks.fiks.io.client.eksempel.AnsiColor.*;
+
 /**
  * Håndterer API-kall til Fiks Arkiv konfigurasjons-API for å opprette konto og administrere tilgang.
  */
@@ -25,7 +27,7 @@ public class FiksArkivApiHandler {
     }
 
     public ProtokollKontoResponse opprettFiksArkivKonto(UUID fiksOrgId, UUID systemId, String offentligNokkel) {
-        logger.info("Oppretter ny Fiks Arkiv konto med part type 'no.ks.fiks.arkiv'");
+        logger.info(formatOpprettingAvKonto("no.ks.fiks.arkiv"));
 
         final var protokollNavn = "no.ks.fiks.arkiv";
         final var parts = List.of(arkivPart());
@@ -68,6 +70,13 @@ public class FiksArkivApiHandler {
 
     private void giTilgangTilSystem(UUID fiksOrgId, UUID systemId, UUID kontoId, ProtokollSystemSummaryWithOrgNameResponse system) {
         protokollKonfigurasjonApi.createTilgangTilSystem(fiksOrgId, systemId, kontoId, system.getId());
+    }
+
+    private static String formatOpprettingAvKonto(String partType) {
+        return String.format("%s[Oppretter Konto]%s Oppretter ny Fiks Arkiv konto med part type %s%s%s",
+                BOLD + GREEN, RESET,
+                YELLOW, partType, RESET
+        );
     }
 }
 

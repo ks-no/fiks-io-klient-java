@@ -107,7 +107,7 @@ public class EksempelApp {
                         final var kontoForTilgang = javaKlient.getKonto(avsenderKontoId);
                         final var fiksOrgIdForTilgang = kontoForTilgang.get().getFiksOrgId();
                         final var nyKontoId = new KontoId(opprettetFiksArkivKonto.getId());
-                        beOmTilgangTilKonto(fiksOrgIdForTilgang.getFiksOrgId(), protokollSystemId, nyKontoId);
+                        beOmTilgangTilKonto(fiksOrgIdForTilgang.getFiksOrgId(), protokollSystemId, nyKontoId, avsenderKontoId);
                         break;
                     case "S":
                         if (opprettetFiksArkivKonto == null) {
@@ -180,9 +180,9 @@ public class EksempelApp {
         logger.info(formatCommand("Tilgangsforespørsel Godkjent", "Godkjent på vegne av konto: " + kontoId));
     }
 
-    private static void beOmTilgangTilKonto(UUID fiksOrgId, UUID systemId, KontoId nyKontoId) {
+    private static void beOmTilgangTilKonto(UUID fiksOrgId, UUID systemId, KontoId nyKontoId, KontoId avsenderKontoId) {
         apiHandler.beOmTilgang(fiksOrgId, systemId, nyKontoId);
-        logger.info(formatCommand("Tilgangsforespørsel Sendt", "Ber om tilgang til konto: " + nyKontoId));
+        logger.info(formatTilgangsforespoersel(avsenderKontoId, nyKontoId));
     }
 
     private static void hentOgVisMaskinportenToken(TokenProvider tokenProvider) {
@@ -282,6 +282,14 @@ public class EksempelApp {
             CYAN, RESET, YELLOW, tilgang.getNavn(), RESET,
             CYAN, RESET, YELLOW, tilgang.getBeskrivelse(), RESET,
             CYAN, RESET, YELLOW, tilgang.getFiksOrgNavn(), RESET
+        );
+    }
+
+    private static String formatTilgangsforespoersel(KontoId avsenderKontoId, KontoId mottakerKontoId) {
+        return String.format("%s[Tilgangsforespørsel]%s Konto %s%s%s ber om tilgang til å snakke med konto: %s%s%s",
+                BOLD + GREEN, RESET,
+                YELLOW, avsenderKontoId, RESET,
+                YELLOW, mottakerKontoId, RESET
         );
     }
 
