@@ -67,8 +67,10 @@ public class MeldingRequest implements MeldingSpesifikasjon {
         }
 
         private static void leggTilKorrelasjonsId(Map<String, String> copyHeadere, KlientKorrelasjonId korrelasjonsId) {
-            copyHeadere.put(Melding.HeaderKlientKorrelasjonIdDeprecated, korrelasjonsId.getKlientKorrelasjonId());
-            copyHeadere.put(Melding.HeaderKlientKorrelasjonId, korrelasjonsId.getKlientKorrelasjonId());
+            if(korrelasjonsId.getKlientKorrelasjonId() != null) {
+                copyHeadere.put(Melding.HeaderKlientKorrelasjonIdDeprecated, korrelasjonsId.getKlientKorrelasjonId());
+                copyHeadere.put(Melding.HeaderKlientKorrelasjonId, korrelasjonsId.getKlientKorrelasjonId());
+            }
         }
 
         private static String getKlientKorrelasjonsId(Map<String, String> copyHeadere) {
