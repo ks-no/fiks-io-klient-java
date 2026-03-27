@@ -52,10 +52,10 @@ public class MeldingRequest implements MeldingSpesifikasjon {
 
             final KlientKorrelasjonId korrelasjonsId = super.korrelasjonsId;
             if(null != korrelasjonsId) {
-                final String headerKorrelasjonsId = copyHeadere.get(Melding.HeaderKlientKorrelasjonId);
+                final String headerKorrelasjonsId = getKlientKorrelasjonsId(copyHeadere);
 
                 if(null == headerKorrelasjonsId) {
-                    copyHeadere.put(Melding.HeaderKlientKorrelasjonId, korrelasjonsId.getKlientKorrelasjonId());
+                    leggTilKorrelasjonsId(copyHeadere, korrelasjonsId);
                 } else if(!Objects.equals(korrelasjonsId.getKlientKorrelasjonId(), headerKorrelasjonsId)) {
                     throw new IllegalArgumentException(String.format("Property korrelasjonsId er ulik %s-entry angitt via headere-property.", Melding.HeaderKlientKorrelasjonId));
                 }
@@ -64,6 +64,18 @@ public class MeldingRequest implements MeldingSpesifikasjon {
             super.headere = copyHeadere;
 
             return super.build();
+        }
+
+        private static void leggTilKorrelasjonsId(Map<String, String> copyHeadere, KlientKorrelasjonId korrelasjonsId) {
+            copyHeadere.put(Melding.HeaderKlientKorrelasjonIdDeprecated, korrelasjonsId.getKlientKorrelasjonId());
+            copyHeadere.put(Melding.HeaderKlientKorrelasjonId, korrelasjonsId.getKlientKorrelasjonId());
+        }
+
+        private static String getKlientKorrelasjonsId(Map<String, String> copyHeadere) {
+            var headerKorrelasjonsId = copyHeadere.get(Melding.HeaderKlientKorrelasjonId);
+            var oldHeaderKorrelasjonsId = copyHeadere.get(Melding.HeaderKlientKorrelasjonIdDeprecated);
+
+            return (headerKorrelasjonsId != null) ? headerKorrelasjonsId : oldHeaderKorrelasjonsId;
         }
     }
 }

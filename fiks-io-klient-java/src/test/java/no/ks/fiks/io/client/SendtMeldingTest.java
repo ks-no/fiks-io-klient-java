@@ -52,9 +52,13 @@ class SendtMeldingTest {
             .svarPaMelding(UUID.randomUUID())
             .dokumentlagerId(UUID.randomUUID())
             .ttl(TimeUnit.DAYS.toMillis(5L))
-            .headere(ImmutableMap.of(Melding.HeaderKlientMeldingId, klientMeldingId.toString(),
-                 Melding.HeaderKlientKorrelasjonId, klientKorrelasjonsId.getKlientKorrelasjonId()
-                ))
+            .headere(
+                ImmutableMap.of(
+                    Melding.HeaderKlientMeldingId, klientMeldingId.toString(),
+                    Melding.HeaderKlientKorrelasjonIdDeprecated, klientKorrelasjonsId.getKlientKorrelasjonId(),
+                    Melding.HeaderKlientKorrelasjonId, klientKorrelasjonsId.getKlientKorrelasjonId()
+                )
+            )
             .build();
         final SendtMelding sendtMelding = SendtMelding.fromSendResponse(sendtMeldingApiModel);
         assertAll(
@@ -64,6 +68,7 @@ class SendtMeldingTest {
             () -> assertEquals(sendtMeldingApiModel.getSvarPaMelding(), sendtMelding.getSvarPaMelding().getUuid()),
             () -> assertEquals(sendtMeldingApiModel.getTtl(), sendtMelding.getTtl().toMillis()),
             () -> assertEquals(sendtMeldingApiModel.getHeadere().get(Melding.HeaderKlientMeldingId), sendtMelding.getKlientMeldingId().toString()),
+            () -> assertEquals(sendtMeldingApiModel.getHeadere().get(Melding.HeaderKlientKorrelasjonIdDeprecated), sendtMelding.getKlientKorrelasjonId().toString()),
             () -> assertEquals(sendtMeldingApiModel.getHeadere().get(Melding.HeaderKlientKorrelasjonId), sendtMelding.getKlientKorrelasjonId().toString())
         );
     }

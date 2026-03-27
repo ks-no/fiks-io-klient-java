@@ -123,13 +123,20 @@ public class MottattMelding implements Melding {
     }
 
     private static KlientKorrelasjonId getKorrelasjonsIdFromHeader(MottattMeldingMetadata melding) {
-        if(melding.getHeadere() != null && melding.getHeadere().get(HeaderKlientKorrelasjonId) != null) {
+        if(melding.getHeadere() != null && getKlientKorrelasjonsId(melding) != null) {
             try {
-                return new KlientKorrelasjonId(melding.getHeadere().get(HeaderKlientKorrelasjonId));
+                return new KlientKorrelasjonId(getKlientKorrelasjonsId(melding));
             } catch (IllegalArgumentException e) {
                 return null;
             }
         }
         return null;
+    }
+
+    private static String getKlientKorrelasjonsId(MottattMeldingMetadata melding) {
+        var headerKorrelasjonsId = melding.getHeadere().get(HeaderKlientKorrelasjonId);
+        var oldHeaderKorrelasjonsId = melding.getHeadere().get(HeaderKlientKorrelasjonIdDeprecated);
+
+        return (headerKorrelasjonsId != null) ? headerKorrelasjonsId : oldHeaderKorrelasjonsId;
     }
 }
