@@ -10,6 +10,7 @@ import no.ks.fiks.io.client.eksempel.config.MaskinportenProperties;
 import no.ks.fiks.io.client.eksempel.utils.JavaClientUtils;
 import no.ks.fiks.io.client.eksempel.utils.MeldingType;
 import no.ks.fiks.io.client.eksempel.utils.TokenProvider;
+import no.ks.fiks.io.client.model.KlientKorrelasjonId;
 import no.ks.fiks.io.client.model.Konto;
 import no.ks.fiks.io.client.model.KontoId;
 import no.ks.fiks.io.client.model.MeldingRequest;
@@ -152,9 +153,19 @@ public class EksempelApp {
     }
 
     public static void send(FiksIOKlient klient, KontoId mottakerKontoId, MeldingType meldingType, String innhold) {
+        send(klient, mottakerKontoId, meldingType, innhold, null);
+    }
+
+    public static void send(FiksIOKlient klient, KontoId mottakerKontoId, MeldingType meldingType, String innhold, String korrelasjonId) {
         final var avsenderKontoId = klient.getKontoId();
         logger.info("Sender melding - Avsender: {}, Mottaker: {}, Type: {}", avsenderKontoId, mottakerKontoId, meldingType);
-        klient.send(MeldingRequest.builder().mottakerKontoId(mottakerKontoId).meldingType(meldingType.toString()).build(), innhold, "melding.txt");
+        final var meldingRequest = MeldingRequest.builder()
+            .mottakerKontoId(mottakerKontoId)
+            .meldingType(meldingType.toString())
+            .korrelasjonsId(new KlientKorrelasjonId(korrelasjonId))
+            .build();
+
+        klient.send(meldingRequest, innhold, "melding.txt");
     }
 
     private static ProtokollKontoResponse opprettFiksArkivKonto(UUID fiksOrgId, UUID systemId, String offentligNokkel) {
