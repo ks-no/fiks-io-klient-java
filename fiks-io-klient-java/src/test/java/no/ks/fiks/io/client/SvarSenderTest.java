@@ -127,7 +127,12 @@ class SvarSenderTest {
                         .mottakerKontoId(meldingSpesifikasjonApiModel.getMottakerKontoId())
                         .ttl(Duration.ofHours(1L).toMillis())
                         .meldingType(MELDING_TYPE)
-                        .headere(ImmutableMap.of(Melding.HeaderKlientKorrelasjonId, meldingSpesifikasjonApiModel.getHeadere().get(Melding.HeaderKlientKorrelasjonId)))
+                        .headere(
+                            ImmutableMap.of(
+                                Melding.HeaderKlientKorrelasjonIdDeprecated, getKlientKorrelasjonsId(meldingSpesifikasjonApiModel),
+                                Melding.HeaderKlientKorrelasjonId, meldingSpesifikasjonApiModel.getHeadere().get(Melding.HeaderKlientKorrelasjonId)
+                            )
+                        )
                         .build();
                 });
 
@@ -239,5 +244,12 @@ class SvarSenderTest {
             .getKryptertStream(() -> new ByteArrayInputStream(buf))
             .getDekryptertZipStream(() -> new ZipInputStream(inputStream))
             .build();
+    }
+
+    private static String getKlientKorrelasjonsId(MeldingSpesifikasjonApiModel meldingSpesifikasjonApiModel) {
+        var headerKorrelasjonsId = meldingSpesifikasjonApiModel.getHeadere().get(Melding.HeaderKlientKorrelasjonId);
+        var oldHeaderKorrelasjonsId = meldingSpesifikasjonApiModel.getHeadere().get(Melding.HeaderKlientKorrelasjonIdDeprecated);
+
+        return (headerKorrelasjonsId != null) ? headerKorrelasjonsId : oldHeaderKorrelasjonsId;
     }
 }
