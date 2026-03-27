@@ -58,7 +58,7 @@
         <jakarta.annotation-api.version>3.0.0</jakarta.annotation-api.version>
         <junit-jupiter.version>6.0.3</junit-jupiter.version>
         <kryptering.version>2.2.1</kryptering.version>
-        <ks-commons-asic.version>1.0.2</ks-commons-asic.version>
+        <ks-commons-asic.version>1.1.0</ks-commons-asic.version>
         <logback.version>1.5.32</logback.version>
         <lombok.version>1.18.44</lombok.version>
         <maven-surefire-plugin.version>3.0.0</maven-surefire-plugin.version>
