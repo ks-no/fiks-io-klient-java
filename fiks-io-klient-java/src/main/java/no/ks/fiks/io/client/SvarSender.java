@@ -89,13 +89,22 @@ public class SvarSender {
     private ImmutableMap<String, String> genererEgendefinerteHeadere() {
         ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
 
-        if (meldingSomSkalKvitteres.getKlientKorrelasjonId() != null &&
-            meldingSomSkalKvitteres.getKlientKorrelasjonId().toString() != null) {
-            builder.put(Melding.HeaderKlientKorrelasjonId,
-                meldingSomSkalKvitteres.getKlientKorrelasjonId().toString());
-        }
+        leggPaaKlientKorrelasjonsId(builder);
 
         return builder.build();
+    }
+
+    private void leggPaaKlientKorrelasjonsId(ImmutableMap.Builder<String, String> builder) {
+        if (meldingSomSkalKvitteres.getKlientKorrelasjonId() != null && meldingSomSkalKvitteres.getKlientKorrelasjonId().toString() != null) {
+            builder
+                .put(
+                    Melding.HeaderKlientKorrelasjonIdDeprecated,
+                    meldingSomSkalKvitteres.getKlientKorrelasjonId().toString()
+                ).put(
+                    Melding.HeaderKlientKorrelasjonId,
+                    meldingSomSkalKvitteres.getKlientKorrelasjonId().toString()
+                );
+        }
     }
 
     private MeldingSpesifikasjonApiModel.MeldingSpesifikasjonApiModelBuilder fellesBuilder(String meldingType) {

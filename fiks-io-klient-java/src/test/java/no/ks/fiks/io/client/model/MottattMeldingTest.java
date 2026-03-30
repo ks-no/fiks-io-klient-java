@@ -170,8 +170,13 @@ class MottattMeldingTest {
             .svarPaMelding(UUID.randomUUID())
             .deliveryTag(Long.MAX_VALUE)
             .ttl(Duration.ofMinutes(22L).toMillis())
-            .headere(ImmutableMap.of(Melding.HeaderKlientMeldingId, klientKorrelasjonId.toString(),
-                Melding.HeaderKlientKorrelasjonId, korrelasjonsId.getKlientKorrelasjonId()))
+            .headere(
+                ImmutableMap.of(
+                    Melding.HeaderKlientMeldingId, klientKorrelasjonId.toString(),
+                    Melding.HeaderKlientKorrelasjonId, korrelasjonsId.getKlientKorrelasjonId(),
+                    Melding.HeaderKlientKorrelasjonIdDeprecated, korrelasjonsId.getKlientKorrelasjonId()
+                )
+            )
             .build();
 
         final MottattMelding mottattMelding = MottattMelding.fromMottattMeldingMetadata(

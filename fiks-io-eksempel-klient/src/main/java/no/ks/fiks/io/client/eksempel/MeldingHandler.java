@@ -8,6 +8,8 @@ import no.ks.fiks.io.client.model.MottattMelding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+
 import static no.ks.fiks.io.client.eksempel.AnsiColor.*;
 import static no.ks.fiks.io.client.eksempel.utils.MeldingType.PONG;
 
@@ -20,8 +22,9 @@ public class MeldingHandler {
         final var meldingType = mottattMelding.getMeldingType();
         final var avsenderKontoId = mottattMelding.getAvsenderKontoId();
         final var mottakerKontoId = mottattMelding.getMottakerKontoId();
+        final var headers = mottattMelding.getHeadere();
 
-        logger.info(formatMeldingMottatt(meldingId, meldingType, avsenderKontoId, mottakerKontoId));
+        logger.info(formatMeldingMottatt(meldingId, meldingType, avsenderKontoId, mottakerKontoId, headers));
 
         switch (MeldingType.from(meldingType)) {
             case PING:
@@ -55,14 +58,24 @@ public class MeldingHandler {
         }
     }
 
-    private static String formatMeldingMottatt(MeldingId meldingId, String meldingType, KontoId avsenderKontoId, KontoId mottakerKontoId) {
-        return String.format("\n%sMELDING MOTTATT%s | %sMeldingType:%s %s%s%s | %sMeldingId:%s %s%s%s | %sAvsender:%s %s%s%s | %sMottaker:%s %s%s%s",
+    private static String formatMeldingMottatt(MeldingId meldingId, String meldingType, KontoId avsenderKontoId, KontoId mottakerKontoId, Map<String, String> headers) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("\n%sMELDING MOTTATT%s | %sMeldingType:%s %s%s%s | %sMeldingId:%s %s%s%s | %sAvsender:%s %s%s%s | %sMottaker:%s %s%s%s",
                 BOLD + MAGENTA, RESET,
                 CYAN, RESET, YELLOW, meldingType, RESET,
                 CYAN, RESET, YELLOW, meldingId, RESET,
                 CYAN, RESET, YELLOW, avsenderKontoId, RESET,
                 CYAN, RESET, YELLOW, mottakerKontoId, RESET
-        );
+        ));
+
+        if (headers != null && !headers.isEmpty()) {
+            sb.append(String.format("\n%sHeaders:%s", CYAN, RESET));
+            headers.forEach((key, value) ->
+                sb.append(String.format("\n  %s%s:%s %s%s%s", CYAN, key, RESET, YELLOW, value, RESET))
+            );
+        }
+
+        return sb.toString();
     }
 
     private static String formatSenderMelding(MeldingType meldingType, MeldingId meldingId, KontoId avsenderKontoId, KontoId mottakerKontoId) {
