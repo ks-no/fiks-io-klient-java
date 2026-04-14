@@ -1,0 +1,35 @@
+name: Build and Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      is_release:
+        description: 'Release build?'
+        type: boolean
+        required: false
+        default: false
+      version:
+        description: 'Version (X.X.X) - required for release'
+        required: false
+        default: ''
+      reviewer:
+        description: 'Reviewer name'
+        required: false
+        default: 'No review required'
+     
+  push:
+    branches:
+      - main
+      - master
+      - '**'
+
+jobs:
+  build:
+    uses: ks-no/github-actions/.github/workflows/java-library-build.yml@main
+    with:
+      java_version: 'java17'
+      is_release: ${{ github.event.inputs.is_release == 'true' }}
+      version: ${{ github.event.inputs.version }}
+      reviewer: ${{ github.event.inputs.reviewer }}
+      component_test_project: 'fiks-io-klient-java-komponent-test'
+    secrets: inherit
