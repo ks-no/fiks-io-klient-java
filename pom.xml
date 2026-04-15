@@ -51,7 +51,7 @@
         <fiks-io-asice-handler.version>2.2.10</fiks-io-asice-handler.version>
         <fiks-io-commons.version>2.0.13</fiks-io-commons.version>
         <fiks-maskinporten-client.version>3.6.0</fiks-maskinporten-client.version>
-        <guava.version>33.5.0-jre</guava.version>
+        <guava.version>33.6.0-jre</guava.version>
         <jackson-databind-nullable.version>0.2.10</jackson-databind-nullable.version>
         <jackson.version>2.21.2</jackson.version>
         <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
@@ -64,7 +64,7 @@
         <maven-surefire-plugin.version>3.0.0</maven-surefire-plugin.version>
         <mockito.version>5.23.0</mockito.version>
         <openapi-generator-maven-plugin.version>7.21.0</openapi-generator-maven-plugin.version>
-        <rabbitmq-amqp-client.version>5.29.0</rabbitmq-amqp-client.version>
+        <rabbitmq-amqp-client.version>5.30.0</rabbitmq-amqp-client.version>
         <scribejava.version>8.3.3</scribejava.version>
         <slf4j.version>2.0.17</slf4j.version>
         <spec.postfix>json</spec.postfix>
