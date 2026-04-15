@@ -32,4 +32,5 @@ jobs:
       version: ${{ github.event.inputs.version }}
       reviewer: ${{ github.event.inputs.reviewer }}
       component_test_project: 'fiks-io-klient-java-komponent-test'
+      runner: 'ubuntu-latest'
     secrets: inherit
