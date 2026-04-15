@@ -27,7 +27,7 @@ jobs:
   build:
     uses: ks-no/github-actions-public/.github/workflows/java-library-build.yml@main
     with:
-      java_version: 'java17'
+      java_version: '17'
       is_release: ${{ github.event.inputs.is_release == 'true' }}
       version: ${{ github.event.inputs.version }}
       reviewer: ${{ github.event.inputs.reviewer }}
