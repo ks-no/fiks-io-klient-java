@@ -33,5 +33,5 @@ jobs:
       reviewer: ${{ github.event.inputs.reviewer }}
       component_test_project: 'fiks-io-klient-java-komponent-test'
       runner: 'ubuntu-latest'
-      snapshot_version: '3.6.5-SNAPSHOT'
+      component_test_version: '3.6.3'
     secrets: inherit
