@@ -190,6 +190,7 @@
                 <executions>
                     <execution>
                         <phase>generate-sources</phase>
+                        <id>fiks-io-katalog-api</id>
                         <goals>
                             <goal>generate</goal>
                         </goals>
@@ -205,6 +206,31 @@
                             <modelPackage>${project.groupId}.fiksio.client.api.katalog.model</modelPackage>
                             <apiPackage>${project.groupId}.fiksio.client.api.katalog.api</apiPackage>
                             <invokerPackage>${project.groupId}.fiksio.client.api.katalog.invoker</invokerPackage>
+                            <generateApiTests>false</generateApiTests>
+                            <generateModelTests>false</generateModelTests>
+                            <generateSupportingFiles>true</generateSupportingFiles>
+                            <library>feign</library>
+                            <addCompileSourceRoot>true</addCompileSourceRoot>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <id>fiks-io-konfigurasjon-api</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${spec.location}${fiks-io-konto-spec.name}.${spec.postfix}</inputSpec>
+                            <generatorName>java</generatorName>
+                            <configOptions>
+                                <dateLibrary>java8</dateLibrary>
+                                <feignVersion>10.x</feignVersion>
+                                <java8>true</java8>
+                                <useJakartaEe>true</useJakartaEe>
+                            </configOptions>
+                            <modelPackage>${project.groupId}.fiksio.client.api.konfigurasjon.model</modelPackage>
+                            <apiPackage>${project.groupId}.fiksio.client.api.konfigurasjon.api</apiPackage>
+                            <invokerPackage>${project.groupId}.fiksio.client.api.konfigurasjon.invoker</invokerPackage>
                             <generateApiTests>false</generateApiTests>
                             <generateModelTests>false</generateModelTests>
                             <generateSupportingFiles>true</generateSupportingFiles>
