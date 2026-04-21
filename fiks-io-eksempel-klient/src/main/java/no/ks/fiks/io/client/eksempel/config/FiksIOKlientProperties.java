@@ -32,7 +32,13 @@ public record FiksIOKlientProperties(
                 UUID.fromString(systemIdString);
 
             String publickeyFilename = properties.getProperty("publickey.file");
-            String offentligNokkel = loadPublicKeyContent(publickeyFilename);
+            String offentligNokkel;
+
+            try {
+                offentligNokkel = loadPublicKeyContent(publickeyFilename);
+            } catch (Exception e) {
+                offentligNokkel = null;
+            }
 
             return new FiksIOKlientProperties(
                 properties.getProperty("privatekey.file"),
