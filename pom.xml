@@ -44,7 +44,7 @@
         <commons-io.version>2.21.0</commons-io.version>
         <download-maven-plugin.version>1.13.0</download-maven-plugin.version>
         <feign-form-version>3.8.0</feign-form-version>
-        <feign-version>13.11</feign-version>
+        <feign-version>13.12</feign-version>
         <fiks-dokumentlager-klient.version>4.1.0</fiks-dokumentlager-klient.version>
         <fiks-feign-interceptors.version>1.3.0</fiks-feign-interceptors.version>
         <fiks-io-send-klient.version>3.3.10</fiks-io-send-klient.version>
@@ -60,7 +60,7 @@
         <kryptering.version>2.2.1</kryptering.version>
         <ks-commons-asic.version>1.1.0</ks-commons-asic.version>
         <logback.version>1.5.32</logback.version>
-        <lombok.version>1.18.44</lombok.version>
+        <lombok.version>1.18.46</lombok.version>
         <maven-surefire-plugin.version>3.0.0</maven-surefire-plugin.version>
         <mockito.version>5.23.0</mockito.version>
         <openapi-generator-maven-plugin.version>7.21.0</openapi-generator-maven-plugin.version>
