@@ -32,15 +32,9 @@ import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.VersionInfo;
 
 import java.io.IOException;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.PublicKey;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPrivateCrtKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.RSAPublicKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.List;
@@ -132,14 +126,7 @@ public class FiksIOKlientFactory {
                 executor
             );
 
-            if(katalogHandler.hasPublicKey(kontoId) == false) {
-                try {
-                    final String publicKey = opprettPublicKeyFromCertificate(fiksIOKonfigurasjon.getVirksomhetssertifikatKonfigurasjon());
-                    katalogHandler.uploadPublicKeyFromPrivateKey(kontoId, publicKey);
-                } catch (Exception e) {
-                    throw new RuntimeException("Feil med opplasting av public key", e);
-                }
-            }
+            lastOppOffentligNokkelHvisOppdatert(katalogHandler, keyValidatorHandler, kontoId);
 
             return klient;
         } catch (Exception e) {
@@ -161,35 +148,40 @@ public class FiksIOKlientFactory {
         }
     }
 
+    private void lastOppOffentligNokkelHvisOppdatert(KatalogHandler katalogHandler, KeyValidatorHandler keyValidatorHandler, KontoId kontoId) {
+        final String publicKey = fiksIOKonfigurasjon.getKontoKonfigurasjon().getPublicKey();
+
+        if(katalogHandler.hasPublicKey(kontoId) == false || offentligNokkelUlikFraFiksIOKatalog(katalogHandler, kontoId, publicKey)) {
+            if(keyValidatorHandler.validerOffentligNokkelMotPrivateKey(publicKey)) {
+                lastOppOffentligNokkel(katalogHandler, kontoId, publicKey);
+            } else {
+                throw new RuntimeException("Offentlignøkkel kan ikke valideres opp mot konfigurerte private nøkler");
+            }
+        }
+    }
+
+    private static Boolean offentligNokkelUlikFraFiksIOKatalog(KatalogHandler katalogHandler, KontoId kontoId, String publicKey) {
+        try {
+            return !publicKey.contains(Base64.getEncoder().encodeToString(katalogHandler.getPublicKey(kontoId).getEncoded()));
+        } catch (CertificateEncodingException e) {
+            return true;
+        }
+    }
+
+    private void lastOppOffentligNokkel(KatalogHandler katalogHandler, KontoId kontoId, String publicKey) {
+        try {
+            if(publicKey == null) {
+                throw new RuntimeException("Offentlignøkkel mangler i konfigurasjon, og finnes ikke i katalogen. Kan ikke fortsette uten offentlignøkkel.");
+            }
+
+            katalogHandler.uploadPublicKey(kontoId, publicKey);
+        } catch (Exception e) {
+            throw new RuntimeException("Feil med opplasting av public key", e);
+        }
+    }
+
     private @NonNull List<PrivateKey> getPrivateNokler() {
         return fiksIOKonfigurasjon.getKontoKonfigurasjon().getPrivateNokler();
-    }
-
-    private static String opprettPublicKey(RSAPrivateCrtKey privateKey) throws InvalidKeySpecException, NoSuchAlgorithmException {
-        var publicKeySpec = new RSAPublicKeySpec(
-            privateKey.getModulus(),
-            privateKey.getPublicExponent()
-        );
-
-        PublicKey publicKey = KeyFactory.getInstance("RSA").generatePublic(publicKeySpec);
-        byte[] encodedPublicKey = publicKey.getEncoded();
-        String base64PublicKey = Base64.getEncoder().encodeToString(encodedPublicKey);
-
-        return "-----BEGIN PUBLIC KEY-----\n" +
-               base64PublicKey.replaceAll("(.{64})", "$1\n") +
-               "\n-----END PUBLIC KEY-----";
-    }
-
-    private static String opprettPublicKeyFromCertificate(VirksomhetssertifikatKonfigurasjon virksomhetssertifikatKonfigurasjon) throws Exception {
-        final var keyStore = virksomhetssertifikatKonfigurasjon.getKeyStore();
-        X509Certificate certificate = (X509Certificate) keyStore.getCertificate(virksomhetssertifikatKonfigurasjon.getKeyAlias());
-
-        byte[] encodedCertificate = certificate.getEncoded();
-        String base64Certificate = Base64.getEncoder().encodeToString(encodedCertificate);
-
-        return "-----BEGIN CERTIFICATE-----\n" +
-               base64Certificate.replaceAll("(.{64})", "$1\n") +
-               "\n-----END CERTIFICATE-----";
     }
 
     private static KeystoreHolder toKeyStoreHolder(VirksomhetssertifikatKonfigurasjon virksomhetssertifikatKonfigurasjon) {

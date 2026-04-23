@@ -3,11 +3,11 @@ package no.ks.fiks.io.client;
 import feign.FeignException;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import no.ks.fiks.fiksio.client.api.katalog.api.FiksIoKatalogApi;
 import no.ks.fiks.fiksio.client.api.konfigurasjon.api.FiksIoKontoApi;
 import no.ks.fiks.fiksio.client.api.konfigurasjon.model.OppdaterOffentligNokkelSpesifikasjon;
 import no.ks.fiks.io.client.model.Konto;
 import no.ks.fiks.io.client.model.KontoId;
-import no.ks.fiks.fiksio.client.api.katalog.api.FiksIoKatalogApi;
 
 import java.io.ByteArrayInputStream;
 import java.security.cert.CertificateException;
@@ -43,17 +43,16 @@ public class KatalogHandler {
 
     public Boolean hasPublicKey(@NonNull KontoId kontoId) {
         try {
-            getPublicKeyFromKatalogApi(kontoId);
-            return true;
+            return getPublicKeyFromKatalogApi(kontoId) != null;
         } catch (FeignException.NotFound | CertificateException exception) {
             return false;
         }
     }
 
-    public void uploadPublicKeyFromPrivateKey(@NonNull KontoId kontoId, @NonNull String pem) {
+    public void uploadPublicKey(@NonNull KontoId kontoId, @NonNull String publicKey) {
         requireFiksIoKontoApi();
 
-        kontoApi.settOffentligNokkel(kontoId.getUuid(), new OppdaterOffentligNokkelSpesifikasjon().pem(pem));
+        kontoApi.settOffentligNokkel(kontoId.getUuid(), new OppdaterOffentligNokkelSpesifikasjon().pem(publicKey));
     }
 
     private void requireFiksIoKontoApi() {
@@ -73,7 +72,12 @@ public class KatalogHandler {
 
     private X509Certificate getPublicKeyFromKatalogApi(@NonNull KontoId mottakerKontoId) throws CertificateException {
         setCertificateFactoryIfNull();
-        return (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(publicKatalogApi.getOffentligNokkel(mottakerKontoId.getUuid()).getNokkel().getBytes()));
+        try {
+            return (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(publicKatalogApi.getOffentligNokkel(mottakerKontoId.getUuid()).getNokkel().getBytes()));
+        } catch (FeignException.NotFound e) {
+            return null;
+        }
+
     }
 
     private void setCertificateFactoryIfNull() throws CertificateException {
