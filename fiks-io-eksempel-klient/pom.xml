@@ -10,7 +10,7 @@
     </parent>
 
     <properties>
-        <feign.version>13.11</feign.version>
+        <feign.version>13.12</feign.version>
 
         <basePackageProtokollApi>${project.groupId}.protokoll.konfigurasjon.v1</basePackageProtokollApi>
 
