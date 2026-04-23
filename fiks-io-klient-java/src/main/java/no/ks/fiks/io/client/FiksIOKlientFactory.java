@@ -151,6 +151,9 @@ public class FiksIOKlientFactory {
     private void lastOppOffentligNokkelHvisOppdatert(KatalogHandler katalogHandler, KeyValidatorHandler keyValidatorHandler, KontoId kontoId) {
         final String publicKey = fiksIOKonfigurasjon.getKontoKonfigurasjon().getPublicKey();
 
+        if(publicKey == null)
+            return;
+
         if(katalogHandler.hasPublicKey(kontoId) == false || offentligNokkelUlikFraFiksIOKatalog(katalogHandler, kontoId, publicKey)) {
             if(keyValidatorHandler.validerOffentligNokkelMotPrivateKey(publicKey)) {
                 lastOppOffentligNokkel(katalogHandler, kontoId, publicKey);
