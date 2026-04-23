@@ -57,7 +57,7 @@
         <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
         <jakarta.annotation-api.version>3.0.0</jakarta.annotation-api.version>
         <junit-jupiter.version>6.0.3</junit-jupiter.version>
-        <kryptering.version>2.2.1</kryptering.version>
+        <kryptering.version>2.2.2</kryptering.version>
         <ks-commons-asic.version>1.1.0</ks-commons-asic.version>
         <logback.version>1.5.32</logback.version>
         <lombok.version>1.18.46</lombok.version>
