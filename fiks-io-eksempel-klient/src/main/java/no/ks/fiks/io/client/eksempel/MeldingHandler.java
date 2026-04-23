@@ -8,6 +8,7 @@ import no.ks.fiks.io.client.model.MottattMelding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Map;
 
 import static no.ks.fiks.io.client.eksempel.AnsiColor.*;
@@ -24,6 +25,8 @@ public class MeldingHandler {
         final var mottakerKontoId = mottattMelding.getMottakerKontoId();
         final var headers = mottattMelding.getHeadere();
 
+        logMeldingInnhold(mottattMelding);
+
         logger.info(formatMeldingMottatt(meldingId, meldingType, avsenderKontoId, mottakerKontoId, headers));
 
         switch (MeldingType.from(meldingType)) {
@@ -38,6 +41,14 @@ public class MeldingHandler {
         }
 
         svarSender.ack();
+    }
+
+    private static void logMeldingInnhold(MottattMelding mottattMelding) {
+        try {
+            mottattMelding.getDekryptertZipStream().readAllBytes();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void sendPong(MeldingId meldingId, KontoId avsenderKontoId, KontoId mottakerKontoId, SvarSender svarSender) {

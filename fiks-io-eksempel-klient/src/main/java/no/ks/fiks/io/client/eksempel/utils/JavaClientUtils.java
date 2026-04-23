@@ -6,13 +6,7 @@ import no.ks.fiks.io.client.eksempel.config.AmqpProperties;
 import no.ks.fiks.io.client.eksempel.config.FiksApiProperties;
 import no.ks.fiks.io.client.eksempel.config.FiksIOKlientProperties;
 import no.ks.fiks.io.client.eksempel.config.MaskinportenProperties;
-import no.ks.fiks.io.client.konfigurasjon.AmqpKonfigurasjon;
-import no.ks.fiks.io.client.konfigurasjon.FiksApiKonfigurasjon;
-import no.ks.fiks.io.client.konfigurasjon.FiksIOKonfigurasjon;
-import no.ks.fiks.io.client.konfigurasjon.FiksIntegrasjonKonfigurasjon;
-import no.ks.fiks.io.client.konfigurasjon.IdPortenKonfigurasjon;
-import no.ks.fiks.io.client.konfigurasjon.KontoKonfigurasjon;
-import no.ks.fiks.io.client.konfigurasjon.VirksomhetssertifikatKonfigurasjon;
+import no.ks.fiks.io.client.konfigurasjon.*;
 import no.ks.fiks.maskinporten.Maskinportenklient;
 import no.ks.fiks.maskinporten.MaskinportenklientProperties;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
@@ -35,8 +29,9 @@ public class JavaClientUtils {
 
     public static FiksIOKlient lagJavaKlient(FiksIOKlientProperties klientProperties, MaskinportenProperties maskinportenProperties, FiksApiProperties fiksApiProperties, AmqpProperties amqpProperties) throws InvalidKeySpecException, NoSuchAlgorithmException, IOException {
         final var virksomhetssertifikatKonfigurasjon = settOppVirksomhetssertifikatKonfigurasjon(maskinportenProperties);
-        final var privateKey = setOppPrivateKey(klientProperties);
-        final var kontoKonfigurasjon = settOppKontoKonfigurasjon(klientProperties, privateKey);
+        final var privateKey = settOppPrivateKey(klientProperties);
+        final var publicKey = encodedPublicKey(klientProperties);
+        final var kontoKonfigurasjon = settOppKontoKonfigurasjon(klientProperties, privateKey, publicKey);
         final var konfigurasjon = settOppFiksIOKonfigurasjon(klientProperties, maskinportenProperties, fiksApiProperties, amqpProperties, kontoKonfigurasjon, virksomhetssertifikatKonfigurasjon);
 
         return lagJavaKlient(konfigurasjon);
@@ -51,8 +46,8 @@ public class JavaClientUtils {
         return new TokenProvider(maskinportenKlient);
     }
 
-    public static KontoKonfigurasjon settOppKontoKonfigurasjon(FiksIOKlientProperties klientProperties, PrivateKey privateKey) {
-        return KontoKonfigurasjon.builder().kontoId(klientProperties.kontoId()).privatNokkel(privateKey).build();
+    public static KontoKonfigurasjon settOppKontoKonfigurasjon(FiksIOKlientProperties klientProperties, PrivateKey privateKey, String publicKey) {
+        return KontoKonfigurasjon.builder().kontoId(klientProperties.kontoId()).privatNokkel(privateKey).publicKey(publicKey).build();
     }
 
     private static Maskinportenklient getMaskinportenKlient(MaskinportenProperties maskinportenProperties) {
@@ -105,7 +100,7 @@ public class JavaClientUtils {
             .build();
     }
 
-    private static PrivateKey setOppPrivateKey(FiksIOKlientProperties klientProperties) throws InvalidKeySpecException, NoSuchAlgorithmException, IOException {
+    private static PrivateKey settOppPrivateKey(FiksIOKlientProperties klientProperties) throws InvalidKeySpecException, NoSuchAlgorithmException, IOException {
         try(var fileReader = new FileReader(fileFromResource(klientProperties.privatekeyFile()))) {
             try(var pemParser = new PEMParser(fileReader)) {
                 var pemObject = pemParser.readObject();
@@ -122,6 +117,10 @@ public class JavaClientUtils {
                 return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(privateKeyInfo.getEncoded()));
             }
         }
+    }
+
+    public static String encodedPublicKey(FiksIOKlientProperties klientProperties) {
+        return klientProperties.offentligNokkel();
     }
 
     private static VirksomhetssertifikatKonfigurasjon settOppVirksomhetssertifikatKonfigurasjon(MaskinportenProperties maskinportenProperties) {
