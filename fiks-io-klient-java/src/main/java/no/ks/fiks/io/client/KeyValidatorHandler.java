@@ -43,6 +43,10 @@ public class KeyValidatorHandler {
 
     public Boolean validerOffentligNokkelMotPrivateKey(X509Certificate publicKey) throws IllegalStateException {
         try {
+            if(kontoKonfigurasjon.getPrivateNokler().isEmpty()) {
+                throw new IllegalStateException(String.format("Konto mangler private keys, kan ikke validere offentlig nøkkel for konto %s", kontoKonfigurasjon.getKontoId()));
+            }
+
             return kontoKonfigurasjon.getPrivateNokler().stream().anyMatch(privateKey ->
                 krypterOgDekrypterMedNokkelparForValidering(publicKey, privateKey)
             );
