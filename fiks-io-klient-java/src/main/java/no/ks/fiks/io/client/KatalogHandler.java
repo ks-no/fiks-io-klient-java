@@ -41,14 +41,6 @@ public class KatalogHandler {
         }
     }
 
-    public Boolean hasPublicKey(@NonNull KontoId kontoId) {
-        try {
-            return getPublicKeyFromKatalogApi(kontoId) != null;
-        } catch (FeignException.NotFound | CertificateException exception) {
-            return false;
-        }
-    }
-
     public void uploadPublicKey(@NonNull KontoId kontoId, @NonNull String publicKey) {
         requireFiksIoKontoApi();
 

@@ -39,40 +39,13 @@ class OffentligNokkelTest {
     @Mock
     private FiksIoKontoApi kontoApi;
 
-    @DisplayName("harOffentligNokkel")
-    @Nested
-    class HarOffentligNokkel {
-
-        @DisplayName("returnerer true når offentlig nøkkel finnes i katalogen")
-        @Test
-        void returnerTrue_naarNokkelFinnes() throws IOException {
-            KontoId kontoId = new KontoId(UUID.randomUUID());
-
-            when(publicKatalogApi.getOffentligNokkel(kontoId.getUuid())).thenReturn(lagOffentligNokkel());
-
-            KatalogHandler handler = lagKatalogHandlerMedKontoApi();
-            assertTrue(handler.hasPublicKey(kontoId));
-        }
-
-        @DisplayName("returnerer false når katalogApiet kaster FeignException.NotFound exception")
-        @Test
-        void returnerFalse_naarKatalogApiKasterNotFound() {
-            KontoId kontoId = new KontoId(UUID.randomUUID());
-            when(publicKatalogApi.getOffentligNokkel(kontoId.getUuid()))
-                .thenThrow(FeignException.NotFound.class);
-
-            KatalogHandler handler = lagKatalogHandlerMedKontoApi();
-            assertFalse(handler.hasPublicKey(kontoId));
-        }
-    }
-
     @DisplayName("lastOppOffentligNokkel")
     @Nested
     class LastOppOffentligNokkel {
 
         @DisplayName("laster opp offentlig nøkkel når kontoApi er tilgjengelig")
         @Test
-        void lasterOppNokkel_naarKontoApiFinnes() throws IOException {
+        void lasterOppNokkel() throws IOException {
             KontoId kontoId = new KontoId(UUID.randomUUID());
             String pem = lesOffentligNokkel();
             KatalogHandler handler = lagKatalogHandlerMedKontoApi();
@@ -84,13 +57,47 @@ class OffentligNokkelTest {
 
         @DisplayName("kaster RuntimeException når kontoApi mangler")
         @Test
-        void kasterException_naarKontoApiMangler() throws IOException {
+        void kasterExceptionNaarKontoApiMangler() throws IOException {
             KontoId kontoId = new KontoId(UUID.randomUUID());
             String pem = lesOffentligNokkel();
             KatalogHandler handler = lagKatalogHandlerUtenKontoApi();
 
             RuntimeException exception = assertThrows(RuntimeException.class, () -> handler.uploadPublicKey(kontoId, pem));
             assertEquals("Kan ikke laste opp offentlig nøkkel grunnet manglene FiksIOKontoApi klient", exception.getMessage());
+        }
+
+        @DisplayName("getPublicKey returnerer null når katalogApi kaster FeignException.NotFound")
+        @Test
+        void getPublicKeyReturnerNullNaarKatalogApiKasterNotFound() {
+            KontoId kontoId = new KontoId(UUID.randomUUID());
+            when(publicKatalogApi.getOffentligNokkel(kontoId.getUuid()))
+                .thenThrow(FeignException.NotFound.class);
+
+            KatalogHandler handler = lagKatalogHandlerMedKontoApi();
+            assertNull(handler.getPublicKey(kontoId));
+        }
+
+        @DisplayName("getPublicKey returnerer null når offentlig nøkkel ikke finnes i katalogen")
+        @Test
+        void getPublicKeyReturnerNullNaarNokkelIkkeFinnes() {
+            KontoId kontoId = new KontoId(UUID.randomUUID());
+            when(publicKatalogApi.getOffentligNokkel(kontoId.getUuid()))
+                .thenReturn(new OffentligNokkel());
+
+            KatalogHandler handler = lagKatalogHandlerMedKontoApi();
+            assertThrows(RuntimeException.class, () -> handler.getPublicKey(kontoId));
+        }
+
+        @DisplayName("getPublicKey kaster RuntimeException ved ugyldig sertifikat (CertificateException)")
+        @Test
+        void getPublicKeyKasterRuntimeExceptionVedUgyldigSertifikat() {
+            KontoId kontoId = new KontoId(UUID.randomUUID());
+            when(publicKatalogApi.getOffentligNokkel(kontoId.getUuid()))
+                .thenReturn(new OffentligNokkel().nokkel("dette-er-ikke-et-gyldig-sertifikat"));
+
+            KatalogHandler handler = lagKatalogHandlerMedKontoApi();
+            RuntimeException exception = assertThrows(RuntimeException.class, () -> handler.getPublicKey(kontoId));
+            assertTrue(exception.getMessage().contains(kontoId.toString()));
         }
     }
 
@@ -100,7 +107,7 @@ class OffentligNokkelTest {
 
         @DisplayName("returnerer true når offentlig nøkkel matcher privat nøkkel")
         @Test
-        void returnerTrue_naarNokkelMatcherPrivatNokkel() throws IOException {
+        void returnerTrueNaarNokkelMatcherPrivatNokkel() throws IOException {
             String pem = lesOffentligNokkel();
             KontoKonfigurasjon konfigurasjon = KontoKonfigurasjon.builder()
                 .kontoId(new KontoId(UUID.randomUUID()))
@@ -113,7 +120,7 @@ class OffentligNokkelTest {
 
         @DisplayName("returnerer false når offentlig nøkkel ikke matcher privat nøkkel")
         @Test
-        void returnerFalse_naarNokkelIkkeMatcherPrivatNokkel() throws IOException {
+        void returnerFalseNaarNokkelIkkeMatcherPrivatNokkel() throws IOException {
             String pem = lesOffentligNokkel();
             KontoKonfigurasjon konfigurasjon = KontoKonfigurasjon.builder()
                 .kontoId(new KontoId(UUID.randomUUID()))
@@ -126,7 +133,7 @@ class OffentligNokkelTest {
 
         @DisplayName("kaster IllegalStateException når ingen private nøkler er konfigurert")
         @Test
-        void kasterIllegalStateException_naarIngenPrivateNokler() throws IOException {
+        void kasterIllegalStateExceptionNaarIngenPrivateNokler() throws IOException {
             String pem = lesOffentligNokkel();
             KontoId kontoId = new KontoId(UUID.randomUUID());
             KontoKonfigurasjon konfigurasjon = KontoKonfigurasjon.builder()
@@ -144,7 +151,7 @@ class OffentligNokkelTest {
 
         @DisplayName("returnerer false ved ugyldig PEM-streng")
         @Test
-        void returnerFalse_naarPemErUgyldig() {
+        void returnerFalseNaarPemErUgyldig() {
             KontoKonfigurasjon konfigurasjon = KontoKonfigurasjon.builder()
                 .kontoId(new KontoId(UUID.randomUUID()))
                 .privatNokkel(TestUtil.generatePrivateKey())
@@ -165,9 +172,5 @@ class OffentligNokkelTest {
 
     private String lesOffentligNokkel() throws IOException {
         return new String(Resources.toByteArray(getClass().getResource("/alice.cert")), StandardCharsets.UTF_8);
-    }
-
-    private OffentligNokkel lagOffentligNokkel() throws IOException {
-        return new OffentligNokkel().nokkel(lesOffentligNokkel());
     }
 }

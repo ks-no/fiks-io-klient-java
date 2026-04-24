@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import feign.Feign;
+import feign.FeignException;
 import feign.hc5.ApacheHttp5Client;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
@@ -33,7 +34,7 @@ import org.apache.hc.core5.util.VersionInfo;
 
 import java.io.IOException;
 import java.security.PrivateKey;
-import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.Base64;
@@ -154,7 +155,7 @@ public class FiksIOKlientFactory {
         if(publicKey == null)
             return;
 
-        if(katalogHandler.hasPublicKey(kontoId) == false || offentligNokkelUlikFraFiksIOKatalog(katalogHandler, kontoId, publicKey)) {
+        if(offentligNokkelUlikFraFiksIOKatalog(katalogHandler, kontoId, publicKey)) {
             if(keyValidatorHandler.validerOffentligNokkelMotPrivateKey(publicKey)) {
                 lastOppOffentligNokkel(katalogHandler, kontoId, publicKey);
             } else {
@@ -165,8 +166,14 @@ public class FiksIOKlientFactory {
 
     private static Boolean offentligNokkelUlikFraFiksIOKatalog(KatalogHandler katalogHandler, KontoId kontoId, String publicKey) {
         try {
-            return !publicKey.replace("\n","").contains(Base64.getEncoder().encodeToString(katalogHandler.getPublicKey(kontoId).getEncoded()));
-        } catch (CertificateEncodingException e) {
+            X509Certificate publicKeyFraKatalog = katalogHandler.getPublicKey(kontoId);
+
+            if(publicKeyFraKatalog == null) {
+                return false;
+            }
+
+            return !publicKey.replace("\n","").contains(Base64.getEncoder().encodeToString(publicKeyFraKatalog.getEncoded()));
+        } catch (FeignException.NotFound | CertificateException e) {
             return true;
         }
     }
