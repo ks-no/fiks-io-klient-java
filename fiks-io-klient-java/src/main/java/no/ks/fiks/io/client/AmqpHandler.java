@@ -173,6 +173,7 @@ class AmqpHandler implements Closeable {
         factory.setPort(amqpKonf.getPort());
         factory.setUsername(intKonf.getIntegrasjonId().toString());
         factory.setAutomaticRecoveryEnabled(true);
+        factory.setChannelRpcTimeout(amqpKonf.getRpcTimeout());
 
         try {
             factory.useSslProtocol(SSLContext.getDefault());

@@ -47,4 +47,9 @@ public class AmqpKonfigurasjon {
      * Konfigurasjon for test.
      */
     public static final AmqpKonfigurasjon TEST = AmqpKonfigurasjon.builder().host("io.fiks.test.ks.no").build();
+
+    /**
+     * Ikke påkrevd felt. RPC timeout i millisekund. Trenger stort sett ikke endres.
+     */
+    @Builder.Default private Integer rpcTimeout = 10000;
 }
