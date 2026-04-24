@@ -25,8 +25,6 @@ public class MeldingHandler {
         final var mottakerKontoId = mottattMelding.getMottakerKontoId();
         final var headers = mottattMelding.getHeadere();
 
-        logMeldingInnhold(mottattMelding);
-
         logger.info(formatMeldingMottatt(meldingId, meldingType, avsenderKontoId, mottakerKontoId, headers));
 
         switch (MeldingType.from(meldingType)) {
@@ -34,7 +32,7 @@ public class MeldingHandler {
                 sendPong(meldingId, avsenderKontoId, mottakerKontoId, svarSender);
                 break;
             case PONG:
-                handlePong(meldingId, avsenderKontoId, mottakerKontoId, mottattMelding.getSvarPaMelding());
+                handlePong(meldingId, avsenderKontoId, mottakerKontoId, mottattMelding);
                 break;
             default:
                 logger.warn(formatUkjentMeldingType(meldingType));
@@ -43,7 +41,7 @@ public class MeldingHandler {
         svarSender.ack();
     }
 
-    private static void logMeldingInnhold(MottattMelding mottattMelding) {
+    private static void lesOglogMeldingInnhold(MottattMelding mottattMelding) {
         try {
             mottattMelding.getDekryptertZipStream().readAllBytes();
         } catch (IOException e) {
@@ -61,9 +59,10 @@ public class MeldingHandler {
         }
     }
 
-    private void handlePong(MeldingId meldingId, KontoId avsenderKontoId, KontoId mottakerKontoId, MeldingId svarPaMelding) {
+    private void handlePong(MeldingId meldingId, KontoId avsenderKontoId, KontoId mottakerKontoId, MottattMelding svarPaMelding) {
         if(svarPaMelding != null) {
-            logger.info(formatMeldingSvarPa(PONG, meldingId, svarPaMelding, avsenderKontoId, mottakerKontoId));
+            lesOglogMeldingInnhold(svarPaMelding);
+            logger.info(formatMeldingSvarPa(PONG, meldingId, svarPaMelding.getMeldingId(), avsenderKontoId, mottakerKontoId));
         } else {
             logger.info(formatMeldingUtenSvar(PONG, meldingId, avsenderKontoId, mottakerKontoId));
         }
