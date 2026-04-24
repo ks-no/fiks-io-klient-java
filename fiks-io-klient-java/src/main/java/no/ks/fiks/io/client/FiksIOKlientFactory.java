@@ -165,7 +165,7 @@ public class FiksIOKlientFactory {
 
     private static Boolean offentligNokkelUlikFraFiksIOKatalog(KatalogHandler katalogHandler, KontoId kontoId, String publicKey) {
         try {
-            return !publicKey.contains(Base64.getEncoder().encodeToString(katalogHandler.getPublicKey(kontoId).getEncoded()));
+            return !publicKey.replace("\n","").contains(Base64.getEncoder().encodeToString(katalogHandler.getPublicKey(kontoId).getEncoded()));
         } catch (CertificateEncodingException e) {
             return true;
         }
