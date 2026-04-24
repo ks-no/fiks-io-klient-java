@@ -34,6 +34,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spec.location>https://ks-no.github.io/api/</spec.location>
         <spec.name>fiksio-katalog-api-v1</spec.name>
+        <fiks-io-konto-spec.name>fiksio-konto-api-v1</fiks-io-konto-spec.name>
 
         <java.version>17</java.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>

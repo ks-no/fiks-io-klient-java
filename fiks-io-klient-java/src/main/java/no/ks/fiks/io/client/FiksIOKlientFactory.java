@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import feign.Feign;
+import feign.FeignException;
 import feign.hc5.ApacheHttp5Client;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
@@ -13,6 +14,7 @@ import no.ks.fiks.dokumentlager.klient.DokumentlagerApiImpl;
 import no.ks.fiks.dokumentlager.klient.DokumentlagerKlient;
 import no.ks.fiks.feign.RequestInterceptors;
 import no.ks.fiks.fiksio.client.api.katalog.api.FiksIoKatalogApi;
+import no.ks.fiks.fiksio.client.api.konfigurasjon.api.FiksIoKontoApi;
 import no.ks.fiks.io.asice.AsicHandler;
 import no.ks.fiks.io.asice.model.KeystoreHolder;
 import no.ks.fiks.io.client.konfigurasjon.*;
@@ -32,8 +34,11 @@ import org.apache.hc.core5.util.VersionInfo;
 
 import java.io.IOException;
 import java.security.PrivateKey;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
+import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -94,13 +99,14 @@ public class FiksIOKlientFactory {
 
             final AsicHandler asicHandler = AsicHandler.builder()
                 .withExecutorService(executor)
-                .withPrivateNokler(fiksIOKonfigurasjon.getKontoKonfigurasjon().getPrivateNokler())
+                .withPrivateNokler(getPrivateNokler())
                 .withKeyStoreHolder(toKeyStoreHolder(fiksIOKonfigurasjon.getVirksomhetssertifikatKonfigurasjon()))
                 .build();
 
             final KatalogHandler katalogHandler = new KatalogHandler(
                 getFiksIOKatalogApi(fiksIOKonfigurasjon, maskinportenAccessTokenSupplier, httpClient),
-                getPublicFiksIOKatalogApi(fiksIOKonfigurasjon, httpClient));
+                getPublicFiksIOKatalogApi(fiksIOKonfigurasjon, httpClient),
+                getFiksIOKontoApi(fiksIOKonfigurasjon, maskinportenAccessTokenSupplier, httpClient));
 
             final KontoId kontoId = fiksIOKonfigurasjon.getKontoKonfigurasjon().getKontoId();
             final FiksIOHandler fiksIOHandler = new FiksIOHandler(
@@ -110,7 +116,7 @@ public class FiksIOKlientFactory {
 
             final KeyValidatorHandler keyValidatorHandler = new KeyValidatorHandler(katalogHandler, fiksIOKonfigurasjon.getKontoKonfigurasjon());
 
-            return new FiksIOKlientImpl(
+            final FiksIOKlient klient =  new FiksIOKlientImpl(
                 kontoId,
                 new AmqpHandler(fiksIOKonfigurasjon.getAmqpKonfigurasjon(),
                     fiksIOKonfigurasjon.getFiksIntegrasjonKonfigurasjon(), fiksIOHandler, asicHandler,
@@ -120,6 +126,10 @@ public class FiksIOKlientFactory {
                 keyValidatorHandler,
                 executor
             );
+
+            lastOppOffentligNokkelHvisOppdatert(katalogHandler, keyValidatorHandler, kontoId);
+
+            return klient;
         } catch (Exception e) {
             if (dokumentlagerKlient != null) {
                 try {
@@ -137,6 +147,51 @@ public class FiksIOKlientFactory {
             }
             throw e;
         }
+    }
+
+    private void lastOppOffentligNokkelHvisOppdatert(KatalogHandler katalogHandler, KeyValidatorHandler keyValidatorHandler, KontoId kontoId) {
+        final String publicKey = fiksIOKonfigurasjon.getKontoKonfigurasjon().getPublicKey();
+
+        if(publicKey == null)
+            return;
+
+        if(offentligNokkelUlikFraFiksIOKatalog(katalogHandler, kontoId, publicKey)) {
+            if(keyValidatorHandler.validerOffentligNokkelMotPrivateKey(publicKey)) {
+                lastOppOffentligNokkel(katalogHandler, kontoId, publicKey);
+            } else {
+                throw new RuntimeException("Offentlignøkkel kan ikke valideres opp mot konfigurerte private nøkler");
+            }
+        }
+    }
+
+    private static Boolean offentligNokkelUlikFraFiksIOKatalog(KatalogHandler katalogHandler, KontoId kontoId, String publicKey) {
+        try {
+            X509Certificate publicKeyFraKatalog = katalogHandler.getPublicKey(kontoId);
+
+            if(publicKeyFraKatalog == null) {
+                return false;
+            }
+
+            return !publicKey.replace("\n","").contains(Base64.getEncoder().encodeToString(publicKeyFraKatalog.getEncoded()));
+        } catch (FeignException.NotFound | CertificateException e) {
+            return true;
+        }
+    }
+
+    private void lastOppOffentligNokkel(KatalogHandler katalogHandler, KontoId kontoId, String publicKey) {
+        try {
+            if(publicKey == null) {
+                throw new RuntimeException("Offentlignøkkel mangler i konfigurasjon, og finnes ikke i katalogen. Kan ikke fortsette uten offentlignøkkel.");
+            }
+
+            katalogHandler.uploadPublicKey(kontoId, publicKey);
+        } catch (Exception e) {
+            throw new RuntimeException("Feil med opplasting av public key", e);
+        }
+    }
+
+    private @NonNull List<PrivateKey> getPrivateNokler() {
+        return fiksIOKonfigurasjon.getKontoKonfigurasjon().getPrivateNokler();
     }
 
     private static KeystoreHolder toKeyStoreHolder(VirksomhetssertifikatKonfigurasjon virksomhetssertifikatKonfigurasjon) {
@@ -175,6 +230,14 @@ public class FiksIOKlientFactory {
             .target(FiksIoKatalogApi.class, konfigurasjon.getKatalogKonfigurasjon().getUrl());
     }
 
+    private static FiksIoKontoApi getFiksIOKontoApi(@NonNull FiksIOKonfigurasjon konfigurasjon, Supplier<String> maskinportenAccessTokenSupplier, final CloseableHttpClient httpClient) {
+        return baseKatalogApiKlientBuilder(konfigurasjon, httpClient)
+            .requestInterceptor(RequestInterceptors.accessToken(maskinportenAccessTokenSupplier))
+            .requestInterceptor(RequestInterceptors.integrasjon(
+                konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonId(),
+                konfigurasjon.getFiksIntegrasjonKonfigurasjon().getIntegrasjonPassord()))
+            .target(FiksIoKontoApi.class, konfigurasjon.getKatalogKonfigurasjon().getUrl());
+    }
 
     private static FiksIoKatalogApi getPublicFiksIOKatalogApi(FiksIOKonfigurasjon konfigurasjon, final CloseableHttpClient httpClient) {
         return baseKatalogApiKlientBuilder(konfigurasjon, httpClient).target(FiksIoKatalogApi.class, konfigurasjon.getKatalogKonfigurasjon().getUrl());

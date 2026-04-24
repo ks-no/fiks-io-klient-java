@@ -33,6 +33,12 @@ public class KontoKonfigurasjon {
         return "KontoKonfigurasjon{" +
             "kontoId=" + kontoId +
             ", privatNokkel=*****" +
+            ", publicKey=*****" +
             '}';
     }
+
+    /**
+     * Offentlignøkkel som matcher en av de private nøkklene over. Benyttes for å oppdatere offentlignøkkel på Fiks-IO konto ved oppstart hvis den er forskjellig ifra konfigurert offentlignøkkel.
+     */
+    String publicKey;
 }
