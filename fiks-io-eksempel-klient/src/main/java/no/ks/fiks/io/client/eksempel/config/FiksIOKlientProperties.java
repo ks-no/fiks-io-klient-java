@@ -34,14 +34,11 @@ public record FiksIOKlientProperties(
             String publickeyFilename = properties.getProperty("publickey.file");
             String offentligNokkel;
 
-
-            if(publickeyFilename == null || publickeyFilename.isEmpty()) {
+            if (publickeyFilename == null || publickeyFilename.isEmpty()) {
                 offentligNokkel = null;
             } else {
                 offentligNokkel = loadPublicKeyContent(publickeyFilename);
             }
-
-
 
             return new FiksIOKlientProperties(
                 properties.getProperty("privatekey.file"),
