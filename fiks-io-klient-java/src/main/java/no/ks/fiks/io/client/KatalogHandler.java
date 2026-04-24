@@ -57,7 +57,7 @@ public class KatalogHandler {
 
     private void requireFiksIoKontoApi() {
         if(kontoApi == null) {
-            throw new RuntimeException("Kan ikke laste opp public key grunnet manglene FiksIOKontoApi klient");
+            throw new RuntimeException("Kan ikke laste opp offentlig nøkkel grunnet manglene FiksIOKontoApi klient");
         }
     }
 
