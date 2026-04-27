@@ -88,6 +88,23 @@ class OffentligNokkelTest {
             assertThrows(RuntimeException.class, () -> handler.getPublicKey(kontoId));
         }
 
+        @DisplayName("laster opp offentlig nøkkel når nøkkel finnes ikke i katalogen")
+        @Test
+        void lasterOppNokkelNaarGetPublicKeyReturnerNull() throws IOException {
+            KontoId kontoId = new KontoId(UUID.randomUUID());
+            String pem = lesOffentligNokkel();
+
+            when(publicKatalogApi.getOffentligNokkel(kontoId.getUuid()))
+                .thenThrow(FeignException.NotFound.class);
+
+            KatalogHandler handler = lagKatalogHandlerMedKontoApi();
+            assertNull(handler.getPublicKey(kontoId));
+
+            handler.uploadPublicKey(kontoId, pem);
+
+            verify(kontoApi).settOffentligNokkel(eq(kontoId.getUuid()), any(OppdaterOffentligNokkelSpesifikasjon.class));
+        }
+
         @DisplayName("getPublicKey kaster RuntimeException ved ugyldig sertifikat (CertificateException)")
         @Test
         void getPublicKeyKasterRuntimeExceptionVedUgyldigSertifikat() {
