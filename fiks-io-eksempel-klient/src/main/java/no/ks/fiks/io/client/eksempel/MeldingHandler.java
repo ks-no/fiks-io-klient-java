@@ -8,6 +8,7 @@ import no.ks.fiks.io.client.model.MottattMelding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Map;
 
 import static no.ks.fiks.io.client.eksempel.AnsiColor.*;
@@ -31,13 +32,21 @@ public class MeldingHandler {
                 sendPong(meldingId, avsenderKontoId, mottakerKontoId, svarSender);
                 break;
             case PONG:
-                handlePong(meldingId, avsenderKontoId, mottakerKontoId, mottattMelding.getSvarPaMelding());
+                handlePong(meldingId, avsenderKontoId, mottakerKontoId, mottattMelding);
                 break;
             default:
                 logger.warn(formatUkjentMeldingType(meldingType));
         }
 
         svarSender.ack();
+    }
+
+    private static void lesOglogMeldingInnhold(MottattMelding mottattMelding) {
+        try {
+            mottattMelding.getDekryptertZipStream().readAllBytes();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void sendPong(MeldingId meldingId, KontoId avsenderKontoId, KontoId mottakerKontoId, SvarSender svarSender) {
@@ -50,9 +59,10 @@ public class MeldingHandler {
         }
     }
 
-    private void handlePong(MeldingId meldingId, KontoId avsenderKontoId, KontoId mottakerKontoId, MeldingId svarPaMelding) {
+    private void handlePong(MeldingId meldingId, KontoId avsenderKontoId, KontoId mottakerKontoId, MottattMelding svarPaMelding) {
         if(svarPaMelding != null) {
-            logger.info(formatMeldingSvarPa(PONG, meldingId, svarPaMelding, avsenderKontoId, mottakerKontoId));
+            lesOglogMeldingInnhold(svarPaMelding);
+            logger.info(formatMeldingSvarPa(PONG, meldingId, svarPaMelding.getMeldingId(), avsenderKontoId, mottakerKontoId));
         } else {
             logger.info(formatMeldingUtenSvar(PONG, meldingId, avsenderKontoId, mottakerKontoId));
         }
