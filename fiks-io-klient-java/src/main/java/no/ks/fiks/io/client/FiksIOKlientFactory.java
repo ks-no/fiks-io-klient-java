@@ -41,6 +41,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -172,7 +173,7 @@ public class FiksIOKlientFactory {
                 return false;
             }
 
-            return !publicKey.replace("\n","").contains(Base64.getEncoder().encodeToString(publicKeyFraKatalog.getEncoded()));
+            return !publicKey.lines().collect(Collectors.joining()).contains(Base64.getEncoder().encodeToString(publicKeyFraKatalog.getEncoded()));
         } catch (FeignException.NotFound | CertificateException e) {
             return true;
         }
