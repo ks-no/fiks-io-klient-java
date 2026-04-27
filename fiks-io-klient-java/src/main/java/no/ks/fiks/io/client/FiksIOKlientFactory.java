@@ -170,7 +170,7 @@ public class FiksIOKlientFactory {
             X509Certificate publicKeyFraKatalog = katalogHandler.getPublicKey(kontoId);
 
             if(publicKeyFraKatalog == null) {
-                return false;
+                return true;
             }
 
             return !publicKey.lines().collect(Collectors.joining()).contains(Base64.getEncoder().encodeToString(publicKeyFraKatalog.getEncoded()));
