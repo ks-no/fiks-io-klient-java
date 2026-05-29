@@ -286,7 +286,7 @@ public class FiksIOKlientFactory {
             .build();
     }
 
-    private static Maskinportenklient getMaskinportenKlient(@NonNull FiksIOKonfigurasjon konfigurasjon) {
+     static Maskinportenklient getMaskinportenKlient(@NonNull FiksIOKonfigurasjon konfigurasjon) {
         MaskinportenklientProperties maskinportenklientProperties = MaskinportenklientProperties.builder()
             .audience(konfigurasjon.getFiksIntegrasjonKonfigurasjon()
                 .getIdPortenKonfigurasjon()
@@ -300,7 +300,23 @@ public class FiksIOKlientFactory {
                 .getAccessTokenUri())
             .build();
 
+        final String keyIdentifier = konfigurasjon.getFiksIntegrasjonKonfigurasjon()
+            .getIdPortenKonfigurasjon()
+            .getKeyIdentifier();
+
         try {
+            if (keyIdentifier != null) {
+                final var asymmetriskNokkelKonfigurasjon = konfigurasjon.getAsymmetriskNokkelKonfigurasjon();
+                if (asymmetriskNokkelKonfigurasjon == null) {
+                    throw new IllegalStateException("keyIdentifier er satt på IdPortenKonfigurasjon, men asymmetriskNokkelKonfigurasjon mangler på FiksIOKonfigurasjon");
+                }
+                return Maskinportenklient.builder()
+                    .withPrivateKey(asymmetriskNokkelKonfigurasjon.getPrivatNokkel())
+                    .usingAsymmetricKey(keyIdentifier)
+                    .withProperties(maskinportenklientProperties)
+                    .build();
+            }
+
             final var keyStore = konfigurasjon.getVirksomhetssertifikatKonfigurasjon().getKeyStore();
             return Maskinportenklient.builder()
                 .withPrivateKey((PrivateKey) keyStore.getKey(konfigurasjon.getVirksomhetssertifikatKonfigurasjon().getKeyAlias(), konfigurasjon.getVirksomhetssertifikatKonfigurasjon().getKeyPassword().toCharArray()))

@@ -29,6 +29,13 @@ public class IdPortenKonfigurasjon {
     @NonNull
     private String klientId;
 
+    /**
+     * Valgfritt. Settes som JWT {@code kid}-header ved bruk av asymmetrisk nøkkel for
+     * Maskinporten-autentisering. Når denne er satt benyttes asymmetrisk nøkkel
+     * (se {@link AsymmetriskNokkelKonfigurasjon}) i stedet for virksomhetssertifikat for autentisering.
+     */
+    private String keyIdentifier;
+
     public static class IdPortenKonfigurasjonBuilder {
     }
 
