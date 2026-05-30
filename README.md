@@ -120,7 +120,7 @@ final FiksIOKonfigurasjon fiksIOKonfigurasjon = FiksIOKonfigurasjon.builder()
         .integrasjonPassord(integrationPassword)
         .idPortenKonfigurasjon(IdPortenKonfigurasjon.test()
             .klientId("din klientid")
-            .keyIdentifier("din-key-id") // settes som JWT kid-header
+            .keyIdentifier("din-key-id")
             .build())
         .build())
     .asymmetriskNokkelKonfigurasjon(AsymmetriskNokkelKonfigurasjon.builder()

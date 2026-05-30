@@ -117,7 +117,6 @@ class FiksIOKonfigurasjonTest {
             .keyStorePassword("PASSWORD")
             .build();
 
-        // Asymmetrisk konfig setter keyIdentifier
         final FiksIOKonfigurasjon asymmetrisk = FiksIOKonfigurasjon.defaultTestConfiguration(
             UUID.randomUUID().toString(),
             UUID.randomUUID(),
@@ -131,7 +130,6 @@ class FiksIOKonfigurasjonTest {
         assertEquals("min-key-id", asymmetrisk.getFiksIntegrasjonKonfigurasjon().getIdPortenKonfigurasjon().getKeyIdentifier());
         assertNotNull(asymmetrisk.getAsymmetriskNokkelKonfigurasjon());
 
-        // Påfølgende ordinær konfig skal IKKE arve keyIdentifier fra forrige kall
         final FiksIOKonfigurasjon ordinaer = FiksIOKonfigurasjon.defaultTestConfiguration(
             UUID.randomUUID().toString(),
             UUID.randomUUID(),

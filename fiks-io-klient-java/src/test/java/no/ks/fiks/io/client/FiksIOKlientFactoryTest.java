@@ -9,12 +9,16 @@ import no.ks.fiks.io.client.konfigurasjon.KontoKonfigurasjon;
 import no.ks.fiks.io.client.konfigurasjon.VirksomhetssertifikatKonfigurasjon;
 import no.ks.fiks.io.client.model.KontoId;
 import no.ks.fiks.maskinporten.Maskinportenklient;
+import com.nimbusds.jose.JWSHeader;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class FiksIOKlientFactoryTest {
@@ -41,6 +45,16 @@ class FiksIOKlientFactoryTest {
             .integrasjonPassord(UUID.randomUUID().toString())
             .idPortenKonfigurasjon(idPortenKonfigurasjon)
             .build();
+    }
+
+    private static JWSHeader jwsHeader(Maskinportenklient maskinportenklient) {
+        try {
+            final Field field = Maskinportenklient.class.getDeclaredField("jwsHeader");
+            field.setAccessible(true);
+            return (JWSHeader) field.get(maskinportenklient);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
@@ -78,6 +92,10 @@ class FiksIOKlientFactoryTest {
 
         final Maskinportenklient maskinportenklient = FiksIOKlientFactory.getMaskinportenKlient(fiksIOKonfigurasjon);
         assertNotNull(maskinportenklient);
+
+        final JWSHeader jwsHeader = jwsHeader(maskinportenklient);
+        assertNotNull(jwsHeader.getX509CertChain());
+        assertNull(jwsHeader.getKeyID());
     }
 
     @Test
@@ -99,6 +117,10 @@ class FiksIOKlientFactoryTest {
 
         final Maskinportenklient maskinportenklient = FiksIOKlientFactory.getMaskinportenKlient(fiksIOKonfigurasjon);
         assertNotNull(maskinportenklient);
+
+        final JWSHeader jwsHeader = jwsHeader(maskinportenklient);
+        assertEquals("min-key-id", jwsHeader.getKeyID());
+        assertNull(jwsHeader.getX509CertChain());
     }
 
     @Test
