@@ -118,7 +118,7 @@ final FiksIOKonfigurasjon fiksIOKonfigurasjon = FiksIOKonfigurasjon.builder()
     .fiksIntegrasjonKonfigurasjon(FiksIntegrasjonKonfigurasjon.builder()
         .integrasjonId(integrationId)
         .integrasjonPassord(integrationPassword)
-        .idPortenKonfigurasjon(IdPortenKonfigurasjon.TEST
+        .idPortenKonfigurasjon(IdPortenKonfigurasjon.test()
             .klientId("din klientid")
             .keyIdentifier("din-key-id") // settes som JWT kid-header
             .build())

@@ -84,7 +84,7 @@ public class FiksIOKonfigurasjon {
             .fiksApiKonfigurasjon(FiksApiKonfigurasjon.PROD)
             .amqpKonfigurasjon(AmqpKonfigurasjon.PROD)
             .fiksIntegrasjonKonfigurasjon(FiksIntegrasjonKonfigurasjon.builder()
-                .idPortenKonfigurasjon(IdPortenKonfigurasjon.PROD
+                .idPortenKonfigurasjon(IdPortenKonfigurasjon.prod()
                     .klientId(klientId)
                     .build())
                 .integrasjonId(integrasjonId)
@@ -106,7 +106,7 @@ public class FiksIOKonfigurasjon {
             .fiksApiKonfigurasjon(FiksApiKonfigurasjon.TEST)
             .amqpKonfigurasjon(AmqpKonfigurasjon.TEST)
             .fiksIntegrasjonKonfigurasjon(FiksIntegrasjonKonfigurasjon.builder()
-                .idPortenKonfigurasjon(IdPortenKonfigurasjon.TEST
+                .idPortenKonfigurasjon(IdPortenKonfigurasjon.test()
                     .klientId(klientId)
                     .build())
                 .integrasjonId(integrasjonId)
@@ -135,7 +135,7 @@ public class FiksIOKonfigurasjon {
             .fiksApiKonfigurasjon(FiksApiKonfigurasjon.PROD)
             .amqpKonfigurasjon(AmqpKonfigurasjon.PROD)
             .fiksIntegrasjonKonfigurasjon(FiksIntegrasjonKonfigurasjon.builder()
-                .idPortenKonfigurasjon(IdPortenKonfigurasjon.PROD
+                .idPortenKonfigurasjon(IdPortenKonfigurasjon.prod()
                     .klientId(klientId)
                     .keyIdentifier(keyIdentifier)
                     .build())
@@ -166,7 +166,7 @@ public class FiksIOKonfigurasjon {
             .fiksApiKonfigurasjon(FiksApiKonfigurasjon.TEST)
             .amqpKonfigurasjon(AmqpKonfigurasjon.TEST)
             .fiksIntegrasjonKonfigurasjon(FiksIntegrasjonKonfigurasjon.builder()
-                .idPortenKonfigurasjon(IdPortenKonfigurasjon.TEST
+                .idPortenKonfigurasjon(IdPortenKonfigurasjon.test()
                     .klientId(klientId)
                     .keyIdentifier(keyIdentifier)
                     .build())
