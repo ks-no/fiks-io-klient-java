@@ -303,13 +303,14 @@ public class FiksIOKlientFactory {
         final String keyIdentifier = konfigurasjon.getFiksIntegrasjonKonfigurasjon()
             .getIdPortenKonfigurasjon()
             .getKeyIdentifier();
+        final var asymmetriskNokkelKonfigurasjon = konfigurasjon.getAsymmetriskNokkelKonfigurasjon();
+
+        if ((keyIdentifier == null) != (asymmetriskNokkelKonfigurasjon == null)) {
+            throw new IllegalStateException("keyIdentifier på IdPortenKonfigurasjon og asymmetriskNokkelKonfigurasjon på FiksIOKonfigurasjon må enten begge være satt (asymmetrisk nøkkel) eller begge være utelatt (virksomhetssertifikat)");
+        }
 
         try {
             if (keyIdentifier != null) {
-                final var asymmetriskNokkelKonfigurasjon = konfigurasjon.getAsymmetriskNokkelKonfigurasjon();
-                if (asymmetriskNokkelKonfigurasjon == null) {
-                    throw new IllegalStateException("keyIdentifier er satt på IdPortenKonfigurasjon, men asymmetriskNokkelKonfigurasjon mangler på FiksIOKonfigurasjon");
-                }
                 return Maskinportenklient.builder()
                     .withPrivateKey(asymmetriskNokkelKonfigurasjon.getPrivatNokkel())
                     .usingAsymmetricKey(keyIdentifier)

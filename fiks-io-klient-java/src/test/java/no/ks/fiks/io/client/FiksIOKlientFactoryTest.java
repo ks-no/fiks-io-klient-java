@@ -140,4 +140,23 @@ class FiksIOKlientFactoryTest {
         assertThrows(RuntimeException.class, () -> FiksIOKlientFactory.getMaskinportenKlient(fiksIOKonfigurasjon));
     }
 
+    @Test
+    void getMaskinportenKlientFeilerNarAsymmetriskNokkelKonfigurasjonErSattUtenKeyIdentifier() {
+        final IdPortenKonfigurasjon idPortenKonfigurasjon = IdPortenKonfigurasjon.builder()
+            .accessTokenUri("http://localhost")
+            .idPortenAudience("audience")
+            .klientId(UUID.randomUUID().toString())
+            .build();
+        final FiksIOKonfigurasjon fiksIOKonfigurasjon = FiksIOKonfigurasjon.builder()
+            .kontoKonfigurasjon(kontoKonfigurasjon())
+            .virksomhetssertifikatKonfigurasjon(virksomhetssertifikatKonfigurasjon())
+            .fiksIntegrasjonKonfigurasjon(fiksIntegrasjonKonfigurasjon(idPortenKonfigurasjon))
+            .asymmetriskNokkelKonfigurasjon(AsymmetriskNokkelKonfigurasjon.builder()
+                .privatNokkel(TestUtil.generatePrivateKey())
+                .build())
+            .build();
+
+        assertThrows(RuntimeException.class, () -> FiksIOKlientFactory.getMaskinportenKlient(fiksIOKonfigurasjon));
+    }
+
 }
