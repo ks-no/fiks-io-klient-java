@@ -154,6 +154,42 @@ curl -X 'GET' \
 - `<integrasjonpassord>`: Dit integrasjons-passord
 
 
+## Automatisk opplasting av Public Certificate
+
+Applikasjonen støtter automatisk opplasting av public certificate til Fiks IO katalog. Dette sikrer at mottakere alltid har den korrekte offentlignøkkelen for dekryptering av meldinger.
+
+### Konfigurering
+
+Referer til public key i `config.properties`:
+
+```properties
+publickey.file=/path/to/public.pem
+```
+
+### Hva skjer ved oppstart
+
+1. Hvis public key er konfigurert, valideres den mot private key
+2. Dersom public key er forskjellig fra den som er registrert i katalogen, lastes den opp
+3. Rate limiting sikrer at opplasting ikke skjer oftere enn hver 24. time
+
+### Rate Limiting
+
+For å unngå hyppige uploads implementerer applikasjonen 24-timers rate limiting:
+
+- **Første oppstart**: Public key lastes opp
+- **Restart innen 24 timer**: Opplasting hoppes over
+- **Restart etter 24 timer**: Public key lastes opp igjen (hvis endret)
+
+Cache lagres lokalt i `$TMPDIR/fiks-io/public-key-upload-cache.txt` eller i directory spesifisert via `FIKS_IO_CACHE_DIR` environment variable.
+
+Hvis man av en eller annen grunn ønsker å tvinge opplasting av public key, kan man  slette cache-filen eller redigere den for å sette en tidligere timestamp.
+
+Logging under oppstart viser status for public key opplasting:
+```
+[main] INFO PersistentPublicKeyUploadCache - Registrerte opplasting av public key for konto <uuid>
+[main] INFO PersistentPublicKeyUploadCache - Hopper over opplasting... prøv igjen etter <tidspunkt>
+```
+
 ## Ressurser
 
 - [Fiks IO dokumentasjon](https://ks-no.github.io/fiks-plattform/tjenester/fiksprotokoll/fiksio/)
