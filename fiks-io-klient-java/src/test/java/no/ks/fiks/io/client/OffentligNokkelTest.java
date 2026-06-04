@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 
@@ -176,6 +177,55 @@ class OffentligNokkelTest {
 
             KeyValidatorHandler validator = new KeyValidatorHandler(lagKatalogHandlerMedKontoApi(), konfigurasjon);
             assertFalse(validator.validerOffentligNokkelMotPrivateKey("dette-er-ikke-en-gyldig-pem"));
+        }
+    }
+
+    @DisplayName("Rate limiting for opplasting av public key")
+    @Nested
+    class RateLimitingPublicKeyUpload {
+
+        @DisplayName("skal laste opp nøkkel første gang")
+        @Test
+        void shouldUploadKeyOnFirstAttempt() {
+            PersistentPublicKeyUploadCache cache = new PersistentPublicKeyUploadCache(Duration.ofHours(24));
+            KontoId kontoId = new KontoId(UUID.randomUUID());
+
+            assertTrue(cache.shouldUpload(kontoId));
+        }
+
+        @DisplayName("skal ikke laste opp nøkkel innen intervallet")
+        @Test
+        void shouldNotUploadWithinInterval() {
+            PersistentPublicKeyUploadCache cache = new PersistentPublicKeyUploadCache(Duration.ofHours(24));
+            KontoId kontoId = new KontoId(UUID.randomUUID());
+
+            cache.recordUpload(kontoId);
+            assertFalse(cache.shouldUpload(kontoId));
+        }
+
+        @DisplayName("skal tillate opplasting etter intervallet er utløpt")
+        @Test
+        void shouldAllowUploadAfterIntervalExpires() throws InterruptedException {
+            PersistentPublicKeyUploadCache cache = new PersistentPublicKeyUploadCache(Duration.ofMillis(100));
+            KontoId kontoId = new KontoId(UUID.randomUUID());
+
+            cache.recordUpload(kontoId);
+            assertFalse(cache.shouldUpload(kontoId));
+
+            Thread.sleep(150);
+            assertTrue(cache.shouldUpload(kontoId));
+        }
+
+        @DisplayName("skal håndtere flere kontoer uavhengig")
+        @Test
+        void shouldHandleMultipleAccountsIndependently() {
+            PersistentPublicKeyUploadCache cache = new PersistentPublicKeyUploadCache(Duration.ofHours(24));
+            KontoId kontoId1 = new KontoId(UUID.randomUUID());
+            KontoId kontoId2 = new KontoId(UUID.randomUUID());
+
+            cache.recordUpload(kontoId1);
+            assertFalse(cache.shouldUpload(kontoId1));
+            assertTrue(cache.shouldUpload(kontoId2));
         }
     }
 

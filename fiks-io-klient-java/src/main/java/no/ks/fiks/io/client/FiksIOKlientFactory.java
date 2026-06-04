@@ -55,11 +55,18 @@ public class FiksIOKlientFactory {
     private Supplier<String> maskinportenAccessTokenSupplier;
 
     private final CloseableHttpClient httpClient;
+    private final PublicKeyUploadRateLimiter uploadCache;
 
     public FiksIOKlientFactory(@NonNull FiksIOKonfigurasjon fiksIOKonfigurasjon, PublicKeyProvider publicKeyProvider, @NonNull CloseableHttpClient httpClient) {
+        // ikke last opp nytt public cert mer enn 1 gang pr 24 timer
+        this(fiksIOKonfigurasjon, publicKeyProvider, httpClient, new PersistentPublicKeyUploadCache(24));
+    }
+
+    public FiksIOKlientFactory(@NonNull FiksIOKonfigurasjon fiksIOKonfigurasjon, PublicKeyProvider publicKeyProvider, @NonNull CloseableHttpClient httpClient, PublicKeyUploadRateLimiter uploadCache) {
         this.fiksIOKonfigurasjon = fiksIOKonfigurasjon;
         this.publicKeyProvider = publicKeyProvider;
         this.httpClient = httpClient;
+        this.uploadCache = uploadCache;
     }
 
     public FiksIOKlientFactory(@NonNull FiksIOKonfigurasjon fiksIOKonfigurasjon, PublicKeyProvider publicKeyProvider) {
@@ -117,7 +124,7 @@ public class FiksIOKlientFactory {
 
             final KeyValidatorHandler keyValidatorHandler = new KeyValidatorHandler(katalogHandler, fiksIOKonfigurasjon.getKontoKonfigurasjon());
 
-            final FiksIOKlient klient =  new FiksIOKlientImpl(
+            final FiksIOKlient klient = new FiksIOKlientImpl(
                 kontoId,
                 new AmqpHandler(fiksIOKonfigurasjon.getAmqpKonfigurasjon(),
                     fiksIOKonfigurasjon.getFiksIntegrasjonKonfigurasjon(), fiksIOHandler, asicHandler,
@@ -153,12 +160,19 @@ public class FiksIOKlientFactory {
     private void lastOppOffentligNokkelHvisOppdatert(KatalogHandler katalogHandler, KeyValidatorHandler keyValidatorHandler, KontoId kontoId) {
         final String publicKey = fiksIOKonfigurasjon.getKontoKonfigurasjon().getPublicKey();
 
-        if(publicKey == null)
+        if (publicKey == null)
             return;
 
-        if(offentligNokkelUlikFraFiksIOKatalog(katalogHandler, kontoId, publicKey)) {
-            if(keyValidatorHandler.validerOffentligNokkelMotPrivateKey(publicKey)) {
+        if (offentligNokkelUlikFraFiksIOKatalog(katalogHandler, kontoId, publicKey)) {
+            if (!uploadCache.shouldUpload(kontoId)) {
+                var neste = uploadCache.nextUploadAllowedAfter(kontoId);
+                log.info("Hopper over opplasting av public key for konto {} på grunn av rate limiting, prøv igjen etter {}", kontoId, neste);
+                return;
+            }
+
+            if (keyValidatorHandler.validerOffentligNokkelMotPrivateKey(publicKey)) {
                 lastOppOffentligNokkel(katalogHandler, kontoId, publicKey);
+                uploadCache.recordUpload(kontoId);
             } else {
                 throw new RuntimeException("Offentlignøkkel kan ikke valideres opp mot konfigurerte private nøkler");
             }
@@ -169,7 +183,7 @@ public class FiksIOKlientFactory {
         try {
             X509Certificate publicKeyFraKatalog = katalogHandler.getPublicKey(kontoId);
 
-            if(publicKeyFraKatalog == null) {
+            if (publicKeyFraKatalog == null) {
                 return true;
             }
 
@@ -181,10 +195,6 @@ public class FiksIOKlientFactory {
 
     private void lastOppOffentligNokkel(KatalogHandler katalogHandler, KontoId kontoId, String publicKey) {
         try {
-            if(publicKey == null) {
-                throw new RuntimeException("Offentlignøkkel mangler i konfigurasjon, og finnes ikke i katalogen. Kan ikke fortsette uten offentlignøkkel.");
-            }
-
             katalogHandler.uploadPublicKey(kontoId, publicKey);
         } catch (Exception e) {
             throw new RuntimeException("Feil med opplasting av public key", e);
