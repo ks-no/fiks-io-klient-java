@@ -54,18 +54,18 @@
         <fiks-maskinporten-client.version>3.6.1</fiks-maskinporten-client.version>
         <guava.version>33.6.0-jre</guava.version>
         <jackson-databind-nullable.version>0.2.10</jackson-databind-nullable.version>
-        <jackson.version>2.21.3</jackson.version>
+        <jackson.version>2.22.0</jackson.version>
         <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
         <jakarta.annotation-api.version>3.0.0</jakarta.annotation-api.version>
         <junit-jupiter.version>6.1.0</junit-jupiter.version>
         <kryptering.version>2.3.0</kryptering.version>
         <ks-commons-asic.version>1.1.0</ks-commons-asic.version>
-        <logback.version>1.5.32</logback.version>
+        <logback.version>1.5.34</logback.version>
         <lombok.version>1.18.46</lombok.version>
         <maven-surefire-plugin.version>3.0.0</maven-surefire-plugin.version>
         <mockito.version>5.23.0</mockito.version>
         <openapi-generator-maven-plugin.version>7.22.0</openapi-generator-maven-plugin.version>
-        <rabbitmq-amqp-client.version>5.30.0</rabbitmq-amqp-client.version>
+        <rabbitmq-amqp-client.version>5.31.0</rabbitmq-amqp-client.version>
         <scribejava.version>8.3.3</scribejava.version>
         <slf4j.version>2.0.18</slf4j.version>
         <spec.postfix>json</spec.postfix>
