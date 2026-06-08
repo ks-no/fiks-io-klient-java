@@ -55,7 +55,7 @@
         <guava.version>33.6.0-jre</guava.version>
         <jackson-databind-nullable.version>0.2.10</jackson-databind-nullable.version>
         <jackson.version>2.22.0</jackson.version>
-        <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
         <jakarta.annotation-api.version>3.0.0</jakarta.annotation-api.version>
         <junit-jupiter.version>6.1.0</junit-jupiter.version>
         <kryptering.version>2.3.0</kryptering.version>
