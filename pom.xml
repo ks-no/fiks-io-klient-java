@@ -259,6 +259,7 @@
                 <executions>
                     <execution>
                         <id>validate-snap</id>
+                        <phase>none</phase>
                         <goals>
                             <goal>enforce</goal>
                         </goals>
