@@ -64,9 +64,9 @@ Denne henter gjeldende katalognøkkel og sjekker den mot den/de konfigurerte pri
 
 1. Leser `publicKey` fra `KontoKonfigurasjon`. Hvis den er `null`, returnerer metoden umiddelbart — ingen katalogoppslag, ingen skriving.
 2. Ellers kalles `KatalogHandler.getPublicKey(kontoId)` mot det **uautentiserte** offentlige katalog-endepunktet:
-   - Hvis katalogen ikke har noen registrert nøkkel, kaster det underliggende kallet `FeignException.NotFound`, som fanges opp og tolkes som «ingen nøkkel» (`null`).
+   - Hvis katalogen ikke har noen registrert nøkkel, kaster det underliggende HTTP-kallet `FeignException.NotFound` — men `getPublicKey` fanger dette internt og **returnerer bare `null`**; unntaket når aldri kalleren.
    - Hvis katalogen returnerer et ugyldig/uleselig sertifikat, kaster `getPublicKey` en `RuntimeException`.
-   - Alle andre HTTP-feil (5xx, timeout osv.) forplanter seg som en usjekket `FeignException`.
+   - Alle andre HTTP-feil (5xx, timeout osv.) fanges **ikke** av `getPublicKey` og forplanter seg ut av den som en usjekket `FeignException`.
 3. Sammenligner katalogresultatet med den konfigurerte `publicKey`:
    - Hvis katalognøkkelen er `null` (ingenting registrert) → behandles som **forskjellig**.
    - Ellers sjekkes det om de Base64-kodede DER-bytene til katalogsertifikatet finnes som en **delstreng** i den konfigurerte PEM-en (med linjeskift fjernet). Dette er en ren tekst-/bytesammenligning — ikke en sammenligning basert på `SubjectPublicKeyInfo`.
@@ -99,9 +99,9 @@ flowchart TD
         A -->|nei| SKIP["returner umiddelbart\n(ingen katalogoppslag/-skriving)"]:::info
         A -->|ja| C["KatalogHandler.getPublicKey(kontoId)"]
 
-        C -->|FeignException.NotFound| NULLKEY["katalognøkkel = null"]:::info
+        C -->|404: NotFound fanges internt, returnerer null| NULLKEY["katalognøkkel = null"]:::info
         C -->|ugyldig sertifikat| ERR0(["RuntimeException:\ngenerering av sertifikat feilet"]):::error
-        C -->|annen FeignException| ERR3(["forplanter seg ut av build():\nkatalogoppslag feilet"]):::error
+        C -->|annen FeignException, ikke fanget| ERR3(["forplanter seg ut av build():\nkatalogoppslag feilet"]):::error
         C -->|nøkkel returnert| D
 
         NULLKEY --> DIFF["behandles som forskjellig"]
@@ -132,7 +132,7 @@ flowchart TD
 **Forutsetning:** En ny konto er opprettet. Ingen offentlig nøkkel er registrert ennå. `publicKey` er konfigurert.
 
 **Flyt:**
-1. `KatalogHandler.getPublicKey` får `FeignException.NotFound` fra katalogen → tolkes som «ingen nøkkel» (`null`)
+1. Katalogen returnerer 404; `KatalogHandler.getPublicKey` fanger den underliggende `FeignException.NotFound` internt og returnerer `null` — ingen unntak når `lastOppOffentligNokkelHvisOppdatert`
 2. Sammenligningen behandler dette som forskjellig → validering kjøres
 3. `KeyValidatorHandler.validerOffentligNokkelMotPrivateKey(publicKey)` bekrefter at en av de konfigurerte private nøklene matcher
 4. `KatalogHandler.uploadPublicKey(kontoId, publicKey)` laster opp nøkkelen via `FiksIoKontoApi.settOffentligNokkel`

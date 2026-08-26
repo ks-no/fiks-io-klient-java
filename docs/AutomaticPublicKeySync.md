@@ -64,9 +64,9 @@ This fetches the current catalog key and checks it against the configured privat
 
 1. Reads `publicKey` from `KontoKonfigurasjon`. If it is `null`, returns immediately — no catalog read, no write.
 2. Otherwise calls `KatalogHandler.getPublicKey(kontoId)` against the **unauthenticated** public catalog endpoint:
-   - If the catalog has no key registered, the underlying call throws `FeignException.NotFound`, which is caught and treated as "no key" (`null`).
+   - If the catalog has no key registered, the underlying HTTP call throws `FeignException.NotFound` — but `getPublicKey` catches this internally and simply **returns `null`**; the exception never reaches the caller.
    - If the catalog returns an invalid/unparseable certificate, `getPublicKey` throws a `RuntimeException`.
-   - Any other HTTP failure (5xx, timeout, etc.) propagates as an unchecked `FeignException`.
+   - Any other HTTP failure (5xx, timeout, etc.) is **not** caught by `getPublicKey` and propagates out of it as an unchecked `FeignException`.
 3. Compares the catalog result with the configured `publicKey`:
    - If the catalog key is `null` (nothing registered) → treated as **different**.
    - Otherwise, the Base64-encoded DER bytes of the catalog certificate are checked as a **substring** of the configured PEM (with newlines stripped). This is a raw text/byte comparison — not a `SubjectPublicKeyInfo`-based comparison.
@@ -99,9 +99,9 @@ flowchart TD
         A -->|no| SKIP["return immediately\n(no catalog read/write)"]:::info
         A -->|yes| C["KatalogHandler.getPublicKey(kontoId)"]
 
-        C -->|FeignException.NotFound| NULLKEY["catalog key = null"]:::info
+        C -->|404: NotFound caught internally, returns null| NULLKEY["catalog key = null"]:::info
         C -->|invalid certificate| ERR0(["RuntimeException:\ncertificate generation failed"]):::error
-        C -->|other FeignException| ERR3(["propagates out of build():\ncatalog read failed"]):::error
+        C -->|other FeignException, not caught| ERR3(["propagates out of build():\ncatalog read failed"]):::error
         C -->|key returned| D
 
         NULLKEY --> DIFF["treated as different"]
@@ -132,7 +132,7 @@ flowchart TD
 **Precondition:** A new account has been created. No public key has been registered yet. `publicKey` is configured.
 
 **Flow:**
-1. `KatalogHandler.getPublicKey` gets `FeignException.NotFound` from the catalog → treated as "no key" (`null`)
+1. The catalog returns 404; `KatalogHandler.getPublicKey` catches the underlying `FeignException.NotFound` internally and returns `null` — no exception reaches `lastOppOffentligNokkelHvisOppdatert`
 2. Comparison treats this as different → validation runs
 3. `KeyValidatorHandler.validerOffentligNokkelMotPrivateKey(publicKey)` confirms one of the configured private keys matches
 4. `KatalogHandler.uploadPublicKey(kontoId, publicKey)` uploads the key via `FiksIoKontoApi.settOffentligNokkel`
