@@ -36,7 +36,7 @@ KontoKonfigurasjon.builder()
 
 ## Er funksjonen aktivert?
 
-Automatisk opplasting kjører **hvis og bare hvis `publicKey` er satt (ikke null) på `KontoKonfigurasjon`**. Det finnes ingen egen boolsk flagg eller loggmelding ved oppstart som indikerer om funksjonen er aktivert eller deaktivert — du kan bare avgjøre dette ved å inspisere konfigurasjonen du bygde (`kontoKonfigurasjon.getPublicKey() != null`). I motsetning til et design der validering alltid kjører uavhengig av flagget, skjer det i denne klienten **ingen katalogoppslag eller validering av private nøkler i det hele tatt** når `publicKey` er utelatt — klienten går rett videre til å bygge AMQP-forbindelsen.
+Automatisk opplasting kjører **hvis og bare hvis `publicKey` er satt (ikke null) på `KontoKonfigurasjon`**. Det finnes ikke noe eget boolsk flagg eller noen loggmelding ved oppstart som indikerer om funksjonen er aktivert eller deaktivert — du kan bare avgjøre dette ved å inspisere konfigurasjonen du bygde (`kontoKonfigurasjon.getPublicKey() != null`). I motsetning til et design der validering alltid kjører uavhengig av flagget, skjer det i denne klienten **ingen katalogoppslag eller validering av private nøkler i det hele tatt** når `publicKey` er utelatt — klienten går rett videre til å bygge AMQP-forbindelsen.
 
 Hvis du vil verifisere at nøkkelen til en kjørende klient stemmer med det som er registrert i katalogen (uavhengig av om opplasting er konfigurert), kan du kalle den offentlige metoden på den bygde klienten:
 
