@@ -55,7 +55,7 @@ This fetches the current catalog key and checks it against the configured privat
 1. Sets up the Maskinporten client, dokumentlager client, and `FiksIOUtsendingKlient`.
 2. Builds `AsicHandler`, `KatalogHandler`, `FiksIOHandler`, and `KeyValidatorHandler`.
 3. Constructs `FiksIOKlientImpl`, which internally creates an `AmqpHandler` — **this already opens the RabbitMQ connection**.
-4. Only after the client (and its AMQP connection) has been assembled, calls `lastOppOffentligNokkelHvisOppdatert(...)`, which performs the key synchronization described below.
+4. Only after the client (and its AMQP connection) has been assembled, `build()` calls `lastOppOffentligNokkelHvisOppdatert(...)`, which performs the key synchronization described below.
 5. Returns the built `FiksIOKlient`.
 
 > **Important difference from a "validate before connecting" design:** in this client, the AMQP connection is already open by the time the public key check runs. If the key check fails and `build()` throws, the already-open AMQP connection is **not** explicitly closed by the surrounding `catch` block (only the dokumentlager and utsending HTTP clients are). See [Known Limitations](#known-limitations).

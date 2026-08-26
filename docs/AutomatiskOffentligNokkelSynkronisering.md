@@ -55,7 +55,7 @@ Denne henter gjeldende katalognøkkel og sjekker den mot den/de konfigurerte pri
 1. Setter opp Maskinporten-klienten, dokumentlager-klienten og `FiksIOUtsendingKlient`.
 2. Bygger `AsicHandler`, `KatalogHandler`, `FiksIOHandler` og `KeyValidatorHandler`.
 3. Konstruerer `FiksIOKlientImpl`, som internt oppretter en `AmqpHandler` — **dette åpner allerede RabbitMQ-forbindelsen**.
-4. Først etter at klienten (og AMQP-forbindelsen) er satt sammen, kalles `lastOppOffentligNokkelHvisOppdatert(...)`, som utfører nøkkelsynkroniseringen beskrevet under.
+4. Først etter at klienten (og AMQP-forbindelsen) er satt sammen, kaller `build()` metoden `lastOppOffentligNokkelHvisOppdatert(...)`, som utfører nøkkelsynkroniseringen beskrevet under.
 5. Returnerer den bygde `FiksIOKlient`.
 
 > **Viktig forskjell fra et design som «validerer før tilkobling»:** i denne klienten er AMQP-forbindelsen allerede åpnet når sjekken av offentlig nøkkel kjører. Hvis nøkkelsjekken feiler og `build()` kaster et unntak, blir den allerede åpne AMQP-forbindelsen **ikke** eksplisitt lukket av den omkringliggende `catch`-blokken (kun dokumentlager- og utsendingsklientene for HTTP lukkes). Se [Kjente begrensninger](#kjente-begrensninger).
