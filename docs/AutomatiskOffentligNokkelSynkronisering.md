@@ -72,7 +72,7 @@ Denne henter gjeldende katalognøkkel og sjekker den mot den/de konfigurerte pri
    - Ellers sjekkes det om de Base64-kodede DER-bytene til katalogsertifikatet finnes som en **delstreng** i den konfigurerte PEM-en (med linjeskift fjernet). Dette er en ren tekst-/bytesammenligning — ikke en sammenligning basert på `SubjectPublicKeyInfo`.
 4. Hvis nøklene er like → skjer det ingenting, `build()` fortsetter.
 5. Hvis nøklene er forskjellige → kalles `KeyValidatorHandler.validerOffentligNokkelMotPrivateKey(publicKey)`: den tolker den konfigurerte `publicKey` som et `X509Certificate`, krypterer 256 tilfeldige bytes (CMS, via `CMSKrypteringImpl`) med den, og forsøker å dekryptere med hver konfigurerte private nøkkel etter tur.
-   - Hvis **en hvilken som helst** konfigurert privat nøkkel dekrypterer vellykket → nøkkelen er vår → `KatalogHandler.uploadPublicKey(kontoId, publicKey)` kalles, som igjen kaller `FiksIoKontoApi.settOffentligNokkel(...)` (krever kontoens autentiserte `FiksIoKontoApi`; API-basert konfigurasjon må være aktivert for kontoen).
+   - Hvis **en hvilken som helst** konfigurert privat nøkkel dekrypterer vellykket → nøkkelen er vår → `KatalogHandler.uploadPublicKey(kontoId, publicKey)` kalles, som igjen kaller `FiksIoKontoApi.settOffentligNokkel(...)`. `FiksIOKlientFactory` konstruerer alltid en ikke-null `FiksIoKontoApi` for dette kallet (`kontoApi == null`-sjekken inne i `KatalogHandler` er uoppnåelig via `build()`); kontoen må likevel ha API-basert konfigurasjon aktivert for at selve opplastingskallet skal lykkes. Enhver feil under opplastingen (nettverksfeil, avvisning fra API-et osv.) fanges av `lastOppOffentligNokkel` og kastes på nytt som `RuntimeException("Feil med opplasting av public key", e)`, med den opprinnelige feilen som årsak.
    - Hvis **ingen** konfigurert privat nøkkel dekrypterer den → kastes `RuntimeException("Offentlignøkkel kan ikke valideres opp mot konfigurerte private nøkler")`, og `build()` feiler.
 
 To ting som skiller seg fra et design med uavhengig, alltid-på validering:
@@ -113,8 +113,8 @@ flowchart TD
         V -->|ingen privat nøkkel dekrypterer| ERR1(["RuntimeException:\nnøkkel matcher ikke konfigurerte private nøkler"]):::error
         V -->|en privat nøkkel dekrypterer| U["KatalogHandler.uploadPublicKey(kontoId, publicKey)\nvia FiksIoKontoApi.settOffentligNokkel"]
 
-        U -->|FiksIoKontoApi er null| ERR2(["RuntimeException:\nKan ikke laste opp offentlig nøkkel\ngrunnet manglene FiksIOKontoApi klient"]):::error
-        U -->|suksess| OK["nøkkel lastet opp"]:::success
+        U -->|opplasting lykkes| OK["nøkkel lastet opp"]:::success
+        U -->|opplasting feiler\n(nettverksfeil, avvist av API osv.)| ERR2(["RuntimeException:\nFeil med opplasting av public key\n(årsak: opprinnelig feil)"]):::error
     end
 
     SKIP --> DONE
@@ -269,6 +269,6 @@ KontoKonfigurasjon.builder()
 - **Synkronisering skjer kun ved build(), og er valgfritt (opt-in):** Synkroniseringen kjører kun én gang, synkront, inne i `FiksIOKlientFactory.build()`, og **kun** når `publicKey` er konfigurert. Hvis katalognøkkelen endres i etterkant, oppdages ikke dette før klienten bygges på nytt, og det oppdages ikke i det hele tatt hvis `publicKey` aldri ble konfigurert — med mindre du selv kaller `validerOffentligNokkelMotPrivateKey()`.
 - **Sammenligningen er en enkel streng-/bytesjekk, ikke basert på `SubjectPublicKeyInfo`:** Klienten sjekker om Base64(DER) av katalogsertifikatet finnes som en delstreng i den konfigurerte PEM-teksten, i stedet for å tolke og sammenligne selve nøkkelmaterialet strukturelt.
 - **AMQP-forbindelsen kan bli stående åpen ved feil:** RabbitMQ-forbindelsen etableres når `FiksIOKlientImpl`/`AmqpHandler` konstrueres, noe som skjer *før* nøkkelsjekken kjører. Hvis nøkkelsjekken deretter kaster et unntak, lukker `catch`-blokken i `build()` dokumentlager- og utsendingsklientene for HTTP, men ikke denne AMQP-forbindelsen.
-- **Krever API-basert kontokonfigurasjon for opplasting:** `uploadPublicKey` kaller den autentiserte `FiksIoKontoApi`; hvis kontoen ikke har API-basert konfigurasjon aktivert hos Fiks Forvaltning (eller klienten ikke ble bygget med en `FiksIoKontoApi`), feiler opplastingen med en `RuntimeException`.
+- **Krever API-basert kontokonfigurasjon for opplasting:** `uploadPublicKey` kaller den autentiserte `FiksIoKontoApi`, som `FiksIOKlientFactory` alltid tilbyr ved bygging via `build()`. Hvis kontoen ikke har API-basert konfigurasjon aktivert hos Fiks Forvaltning, feiler selve opplastingskallet, og `lastOppOffentligNokkel` pakker denne feilen inn på nytt som `RuntimeException("Feil med opplasting av public key", e)`.
 - **Ingen egne unntakstyper:** Alle feil i denne flyten kommer til syne som vanlige `RuntimeException` (eller den underliggende `FeignException`/`CertificateException`), ikke som en egen unntakstype for «nøkkel ikke funnet» vs. «feilkonfigurert» vs. «katalog utilgjengelig».
 - **Samtidig bygging under rotasjon:** Hvis flere klientinstanser bygges samtidig med forskjellige `publicKey`-verdier under en utrulling, kan de gjentatte ganger overskrive hverandres katalognøkkel helt til utrullingen er fullført overalt. Rull ut en nøkkelendring til alle instanser samtidig.

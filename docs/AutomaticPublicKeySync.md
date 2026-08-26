@@ -72,7 +72,7 @@ This fetches the current catalog key and checks it against the configured privat
    - Otherwise, the Base64-encoded DER bytes of the catalog certificate are checked as a **substring** of the configured PEM (with newlines stripped). This is a raw text/byte comparison — not a `SubjectPublicKeyInfo`-based comparison.
 4. If the keys are the same → nothing happens, `build()` proceeds.
 5. If the keys differ → `KeyValidatorHandler.validerOffentligNokkelMotPrivateKey(publicKey)` is called: it parses the configured `publicKey` as an `X509Certificate`, encrypts 256 random bytes (CMS, via `CMSKrypteringImpl`) with it, and tries decrypting with each configured private key in turn.
-   - If **any** configured private key decrypts successfully → the key is ours → `KatalogHandler.uploadPublicKey(kontoId, publicKey)` is called, which invokes `FiksIoKontoApi.settOffentligNokkel(...)` (requires the account's authenticated `FiksIoKontoApi`; API-based configuration must be enabled for the account).
+   - If **any** configured private key decrypts successfully → the key is ours → `KatalogHandler.uploadPublicKey(kontoId, publicKey)` is called, which invokes `FiksIoKontoApi.settOffentligNokkel(...)`. `FiksIOKlientFactory` always constructs a non-null `FiksIoKontoApi` for this call (the `kontoApi == null` guard inside `KatalogHandler` is unreachable via `build()`); the account must still have API-based configuration enabled for the upload call itself to succeed. Any failure during the upload (network error, API rejection, etc.) is caught by `lastOppOffentligNokkel` and rethrown as `RuntimeException("Feil med opplasting av public key", e)`, with the original failure as the cause.
    - If **no** configured private key decrypts it → throws `RuntimeException("Offentlignøkkel kan ikke valideres opp mot konfigurerte private nøkler")`, and `build()` fails.
 
 Two things to note that differ from a design with independent, always-on validation:
@@ -113,8 +113,8 @@ flowchart TD
         V -->|no private key decrypts| ERR1(["RuntimeException:\nkey does not match configured private keys"]):::error
         V -->|a private key decrypts| U["KatalogHandler.uploadPublicKey(kontoId, publicKey)\nvia FiksIoKontoApi.settOffentligNokkel"]
 
-        U -->|FiksIoKontoApi is null| ERR2(["RuntimeException:\nKan ikke laste opp offentlig nøkkel\ngrunnet manglene FiksIOKontoApi klient"]):::error
-        U -->|success| OK["key uploaded"]:::success
+        U -->|upload succeeds| OK["key uploaded"]:::success
+        U -->|upload fails\n(network error, API rejection, etc.)| ERR2(["RuntimeException:\nFeil med opplasting av public key\n(cause: original error)"]):::error
     end
 
     SKIP --> DONE
@@ -269,6 +269,6 @@ KontoKonfigurasjon.builder()
 - **Sync is build()-time only, and opt-in:** Synchronization runs once, synchronously, inside `FiksIOKlientFactory.build()`, and **only** when `publicKey` is configured. If the catalog key changes afterward, nothing detects it until the client is rebuilt, and nothing detects it at all if `publicKey` was never configured — unless you call `validerOffentligNokkelMotPrivateKey()` yourself.
 - **Comparison is a raw string/byte check, not `SubjectPublicKeyInfo`-based:** The client checks whether the Base64(DER) of the catalog certificate appears as a substring of the configured PEM text, rather than parsing and comparing public key material structurally.
 - **AMQP connection may be left open on failure:** The RabbitMQ connection is established when `FiksIOKlientImpl`/`AmqpHandler` is constructed, which happens *before* the key check runs. If the key check subsequently throws, `build()`'s `catch` block closes the dokumentlager and utsending HTTP clients but does not close this AMQP connection.
-- **Requires API-based account configuration to upload:** `uploadPublicKey` calls the authenticated `FiksIoKontoApi`; if the account does not have API-based configuration enabled at Fiks Forvaltning (or the client wasn't built with a `FiksIoKontoApi`), the upload fails with a `RuntimeException`.
+- **Requires API-based account configuration to upload:** `uploadPublicKey` calls the authenticated `FiksIoKontoApi`, which `FiksIOKlientFactory` always provides when building via `build()`. If the account does not have API-based configuration enabled at Fiks Forvaltning, the upload call itself fails, and `lastOppOffentligNokkel` rewraps that failure as `RuntimeException("Feil med opplasting av public key", e)`.
 - **No dedicated exception types:** All failures in this flow surface as plain `RuntimeException` (or the underlying `FeignException`/`CertificateException`), not a dedicated exception type for "key not found" vs. "misconfigured" vs. "catalog unavailable".
 - **Concurrent builds during rotation:** If several client instances are built simultaneously with different `publicKey` values during a rollout, they can repeatedly overwrite each other's catalog key until the rollout converges. Roll out a key change to all instances together.
