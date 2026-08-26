@@ -113,7 +113,7 @@ flowchart TD
         V -->|ingen privat nøkkel dekrypterer| ERR1(["RuntimeException:\nnøkkel matcher ikke konfigurerte private nøkler"]):::error
         V -->|en privat nøkkel dekrypterer| U["KatalogHandler.uploadPublicKey(kontoId, publicKey)\nvia FiksIoKontoApi.settOffentligNokkel"]
 
-        U -->|FiksIoKontoApi er null| ERR2(["RuntimeException:\nmangler FiksIoKontoApi-klient"]):::error
+        U -->|FiksIoKontoApi er null| ERR2(["RuntimeException:\nKan ikke laste opp offentlig nøkkel\ngrunnet manglene FiksIOKontoApi klient"]):::error
         U -->|suksess| OK["nøkkel lastet opp"]:::success
     end
 
