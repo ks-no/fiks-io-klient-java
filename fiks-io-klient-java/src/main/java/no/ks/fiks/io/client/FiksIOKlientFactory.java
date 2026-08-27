@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import feign.Feign;
-import feign.FeignException;
 import feign.hc5.ApacheHttp5Client;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
@@ -117,7 +116,9 @@ public class FiksIOKlientFactory {
 
             final KeyValidatorHandler keyValidatorHandler = new KeyValidatorHandler(katalogHandler, fiksIOKonfigurasjon.getKontoKonfigurasjon());
 
-            final FiksIOKlient klient =  new FiksIOKlientImpl(
+            lastOppOffentligNokkelHvisOppdatert(katalogHandler, keyValidatorHandler, kontoId);
+
+            return new FiksIOKlientImpl(
                 kontoId,
                 new AmqpHandler(fiksIOKonfigurasjon.getAmqpKonfigurasjon(),
                     fiksIOKonfigurasjon.getFiksIntegrasjonKonfigurasjon(), fiksIOHandler, asicHandler,
@@ -127,10 +128,6 @@ public class FiksIOKlientFactory {
                 keyValidatorHandler,
                 executor
             );
-
-            lastOppOffentligNokkelHvisOppdatert(katalogHandler, keyValidatorHandler, kontoId);
-
-            return klient;
         } catch (Exception e) {
             if (dokumentlagerKlient != null) {
                 try {
@@ -174,7 +171,9 @@ public class FiksIOKlientFactory {
             }
 
             return !publicKey.lines().collect(Collectors.joining()).contains(Base64.getEncoder().encodeToString(publicKeyFraKatalog.getEncoded()));
-        } catch (FeignException.NotFound | CertificateException e) {
+        } catch (CertificateException e) {
+            log.warn("Feil med offentlig nøkkel fra katalog", e);
+
             return true;
         }
     }
