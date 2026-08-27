@@ -37,6 +37,8 @@ public class KeyValidatorHandler {
         try {
             return validerOffentligNokkelMotPrivateKey(getPublicKeyFromString(publicKey));
         } catch (CertificateException e) {
+            log.warn("Offentlig nøkkel kunne ikke valideres opp mot private nøkler", e);
+
             return false;
         }
     }
