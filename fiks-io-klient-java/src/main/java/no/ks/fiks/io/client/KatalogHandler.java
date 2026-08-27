@@ -44,6 +44,8 @@ public class KatalogHandler {
     public void uploadPublicKey(@NonNull KontoId kontoId, @NonNull String publicKey) {
         requireFiksIoKontoApi();
 
+        log.info("Laster opp ny offentlig nøkkel for konto {}", kontoId.getUuid());
+
         kontoApi.settOffentligNokkel(kontoId.getUuid(), new OppdaterOffentligNokkelSpesifikasjon().pem(publicKey));
     }
 
