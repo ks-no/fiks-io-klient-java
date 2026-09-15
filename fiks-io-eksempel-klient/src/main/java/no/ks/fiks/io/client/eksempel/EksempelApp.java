@@ -2,7 +2,6 @@ package no.ks.fiks.io.client.eksempel;
 
 import no.ks.fiks.io.client.FiksIOKlient;
 import no.ks.fiks.io.client.eksempel.api.FiksArkivApiHandler;
-import no.ks.fiks.io.client.eksempel.api.ProtokollKonfigurasjonKlient;
 import no.ks.fiks.io.client.eksempel.config.AmqpProperties;
 import no.ks.fiks.io.client.eksempel.config.FiksApiProperties;
 import no.ks.fiks.io.client.eksempel.config.FiksIOKlientProperties;
@@ -14,8 +13,10 @@ import no.ks.fiks.io.client.model.KlientKorrelasjonId;
 import no.ks.fiks.io.client.model.Konto;
 import no.ks.fiks.io.client.model.KontoId;
 import no.ks.fiks.io.client.model.MeldingRequest;
-import no.ks.fiks.protokoll.konfigurasjon.v1.model.ProtokollKontoResponse;
-import no.ks.fiks.protokoll.konfigurasjon.v1.model.ProtokollSystemSummaryWithOrgNameResponse;
+import no.ks.fiks.io.protokoll.client.KontoKonfigurasjonKlient;
+import no.ks.fiks.protokoll.konfigurasjon.api.v1.api.ProtokollKonfigurasjonApi;
+import no.ks.fiks.protokoll.konfigurasjon.api.v1.model.ProtokollKontoResponse;
+import no.ks.fiks.protokoll.konfigurasjon.api.v1.model.ProtokollSystemSummaryWithOrgNameResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +44,7 @@ public class EksempelApp {
         try (var javaKlient = JavaClientUtils.lagJavaKlient(klientProperties, maskinportenProperties, fiksApiProperties, amqpProperties)) {
             final var tokenProvider = JavaClientUtils.lagTokenProvider(maskinportenProperties);
 
-            final var protokollKonfigurasjonKlient = new ProtokollKonfigurasjonKlient(tokenProvider, klientProperties.integrasjonId(), klientProperties.integrasjonPassword(), fiksApiProperties);
+            final ProtokollKonfigurasjonApi protokollKonfigurasjonKlient = KontoKonfigurasjonKlient.createKlient(fiksApiProperties.host(), klientProperties.integrasjonId(), klientProperties.integrasjonPassword(), tokenProvider::getMaskinportenToken);
 
             apiHandler = new FiksArkivApiHandler(protokollKonfigurasjonKlient);
 
