@@ -48,12 +48,14 @@ Viktige egenskaper:
 
 ### Sertifikater og nøkler
 
-Plassér ditt virksomhetssertifikat og privat nøkkel i `src/main/resources/`:
+Plassér ditt virksomhetssertifikat, offentlig nøkkel og privat nøkkel i `src/main/resources/`:
 
 ```bash
 cp /path/to/virksomhetssertifikat.p12 src/main/resources/
 
 cp /path/to/private.key src/main/resources/
+
+cp /path/to/public.key src/main/resources/
 ```
 
 ## Kjøring av applikasjonen

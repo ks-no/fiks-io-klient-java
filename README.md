@@ -142,6 +142,16 @@ KontoKonfigurasjon.builder()
         .build(),
 ```
 
+Man kan også sette opp en offentlig nøkkel i `KontoKonfigurasjon` som vil bli lastet opp til Fiks IO ved oppstart av klienten. Dette gjør at man slipper å registrere den offentlige nøkkelen manuelt via API eller forvaltningssidene:
+```java
+KontoKonfigurasjon.builder()
+        .kontoId(new KontoId(kontoId))
+        .privatNokkel(privateKey)
+        .publicKey(publicKey)
+        .build(),
+```
+Den offentlige nøkkelen vil bli validert mot de private nøklene som er konfigurert, slik at det sikres at nøklene matcher. Merk at dette krever at kontoen har slått på API-basert konfigurasjon – uten dette vil opplasting av offentlig nøkkel feile.
+
 **privateNokler**: `privateNokler` property forventer en eller flere private key i PKCS#8 format. En privat nøkkel som har PKCS#1 format vil føre til en exception. En PKCS#1 nøkkel kan bli konvertert ved hjelp av denne kommandoen:
 ```powershell
 openssl pkcs8 -topk8 -nocrypt -in <pkcs#1 key file> -out <pkcs#8 key file>
