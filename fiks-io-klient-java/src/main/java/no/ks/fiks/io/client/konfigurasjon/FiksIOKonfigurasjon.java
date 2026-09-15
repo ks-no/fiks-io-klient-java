@@ -37,6 +37,13 @@ public class FiksIOKonfigurasjon {
     @NonNull private FiksIntegrasjonKonfigurasjon fiksIntegrasjonKonfigurasjon;
 
     /**
+     * Ikke påkrevd. Asymmetrisk nøkkel som benyttes til Maskinporten-autentisering, som et alternativ
+     * til {@link VirksomhetssertifikatKonfigurasjon}. Brukes sammen med {@code keyIdentifier} på
+     * {@link IdPortenKonfigurasjon}. Se {@link AsymmetriskNokkelKonfigurasjon}.
+     */
+    private AsymmetriskNokkelKonfigurasjon asymmetriskNokkelKonfigurasjon;
+
+    /**
      * Ikke påkrevd. Kan brukes for å overkjøre defaults for fiks-api-host. Se {@link FiksApiKonfigurasjon}
      */
     @Builder.Default private FiksApiKonfigurasjon fiksApiKonfigurasjon = FiksApiKonfigurasjon.builder().build();
@@ -77,7 +84,7 @@ public class FiksIOKonfigurasjon {
             .fiksApiKonfigurasjon(FiksApiKonfigurasjon.PROD)
             .amqpKonfigurasjon(AmqpKonfigurasjon.PROD)
             .fiksIntegrasjonKonfigurasjon(FiksIntegrasjonKonfigurasjon.builder()
-                .idPortenKonfigurasjon(IdPortenKonfigurasjon.PROD
+                .idPortenKonfigurasjon(IdPortenKonfigurasjon.prod()
                     .klientId(klientId)
                     .build())
                 .integrasjonId(integrasjonId)
@@ -99,7 +106,7 @@ public class FiksIOKonfigurasjon {
             .fiksApiKonfigurasjon(FiksApiKonfigurasjon.TEST)
             .amqpKonfigurasjon(AmqpKonfigurasjon.TEST)
             .fiksIntegrasjonKonfigurasjon(FiksIntegrasjonKonfigurasjon.builder()
-                .idPortenKonfigurasjon(IdPortenKonfigurasjon.TEST
+                .idPortenKonfigurasjon(IdPortenKonfigurasjon.test()
                     .klientId(klientId)
                     .build())
                 .integrasjonId(integrasjonId)
@@ -107,6 +114,68 @@ public class FiksIOKonfigurasjon {
                 .build())
             .kontoKonfigurasjon(kontoKonfigurasjon)
             .virksomhetssertifikatKonfigurasjon(virksomhetssertifikatKonfigurasjon)
+            .build();
+    }
+
+    /**
+     * Oppretter prod-konfigurasjon som autentiserer mot Maskinporten med asymmetrisk nøkkel
+     * (privat nøkkel + {@code keyIdentifier}) i stedet for virksomhetssertifikat.
+     * {@code virksomhetssertifikatKonfigurasjon} kreves fortsatt for ASiC-E-signering.
+     */
+    public static FiksIOKonfigurasjon defaultProdConfiguration(
+        final String klientId,
+        final UUID integrasjonId,
+        final String integrasjonPassord,
+        final KontoKonfigurasjon kontoKonfigurasjon,
+        final VirksomhetssertifikatKonfigurasjon virksomhetssertifikatKonfigurasjon,
+        final String keyIdentifier,
+        final AsymmetriskNokkelKonfigurasjon asymmetriskNokkelKonfigurasjon) {
+
+        return FiksIOKonfigurasjon.builder()
+            .fiksApiKonfigurasjon(FiksApiKonfigurasjon.PROD)
+            .amqpKonfigurasjon(AmqpKonfigurasjon.PROD)
+            .fiksIntegrasjonKonfigurasjon(FiksIntegrasjonKonfigurasjon.builder()
+                .idPortenKonfigurasjon(IdPortenKonfigurasjon.prod()
+                    .klientId(klientId)
+                    .keyIdentifier(keyIdentifier)
+                    .build())
+                .integrasjonId(integrasjonId)
+                .integrasjonPassord(integrasjonPassord)
+                .build())
+            .kontoKonfigurasjon(kontoKonfigurasjon)
+            .virksomhetssertifikatKonfigurasjon(virksomhetssertifikatKonfigurasjon)
+            .asymmetriskNokkelKonfigurasjon(asymmetriskNokkelKonfigurasjon)
+            .build();
+    }
+
+    /**
+     * Oppretter test-konfigurasjon som autentiserer mot Maskinporten med asymmetrisk nøkkel
+     * (privat nøkkel + {@code keyIdentifier}) i stedet for virksomhetssertifikat.
+     * {@code virksomhetssertifikatKonfigurasjon} kreves fortsatt for ASiC-E-signering.
+     */
+    public static FiksIOKonfigurasjon defaultTestConfiguration(
+        final String klientId,
+        final UUID integrasjonId,
+        final String integrasjonPassord,
+        final KontoKonfigurasjon kontoKonfigurasjon,
+        final VirksomhetssertifikatKonfigurasjon virksomhetssertifikatKonfigurasjon,
+        final String keyIdentifier,
+        final AsymmetriskNokkelKonfigurasjon asymmetriskNokkelKonfigurasjon) {
+
+        return FiksIOKonfigurasjon.builder()
+            .fiksApiKonfigurasjon(FiksApiKonfigurasjon.TEST)
+            .amqpKonfigurasjon(AmqpKonfigurasjon.TEST)
+            .fiksIntegrasjonKonfigurasjon(FiksIntegrasjonKonfigurasjon.builder()
+                .idPortenKonfigurasjon(IdPortenKonfigurasjon.test()
+                    .klientId(klientId)
+                    .keyIdentifier(keyIdentifier)
+                    .build())
+                .integrasjonId(integrasjonId)
+                .integrasjonPassord(integrasjonPassord)
+                .build())
+            .kontoKonfigurasjon(kontoKonfigurasjon)
+            .virksomhetssertifikatKonfigurasjon(virksomhetssertifikatKonfigurasjon)
+            .asymmetriskNokkelKonfigurasjon(asymmetriskNokkelKonfigurasjon)
             .build();
     }
 
