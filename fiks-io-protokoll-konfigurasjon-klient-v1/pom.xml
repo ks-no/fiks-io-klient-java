@@ -9,6 +9,7 @@
         <version>3.7.1-SNAPSHOT</version>
     </parent>
 
+    <name>FIKS IO Java-klient Protokoll-konfigurasjon-klient-v1</name>
     <artifactId>fiks-io-protokoll-konfigurasjon-klient-v1</artifactId>
 
     <properties>
