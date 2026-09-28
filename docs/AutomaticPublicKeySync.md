@@ -44,7 +44,7 @@ If you want to verify that a running client's key matches what is currently regi
 Boolean matches = fiksIOKlient.validerOffentligNokkelMotPrivateKey();
 ```
 
-This fetches the current catalog key and checks it against the configured private key(s) on demand — useful for health checks or diagnostics, but it is **not** invoked automatically unless `publicKey` is configured (see below).
+;This fetches the current catalog key and checks it against the configured private key(s) on demand — useful for health checks or diagnostics. **`validerOffentligNokkelMotPrivateKey()` itself is never invoked automatically by `build()`.** What runs automatically is validation of the *configured* `publicKey` (via the overload `validerOffentligNokkelMotPrivateKey(String)`) — and only when `build()` first determines that the configured key differs from whatever is currently registered in the catalog. If the configured key is identical to the catalog's, no validation of any kind takes place (see [Known Limitations](#known-limitations)).
 
 ---
 
@@ -67,6 +67,7 @@ This fetches the current catalog key and checks it against the configured privat
    - If the catalog has no key registered, the underlying HTTP call throws `FeignException.NotFound` — but `getPublicKey` catches this internally and simply **returns `null`**; the exception never reaches the caller.
    - If the catalog returns an invalid/unparseable certificate, `getPublicKey` throws a `RuntimeException`.
    - Any other HTTP failure (5xx, timeout, etc.) is **not** caught by `getPublicKey` and propagates out of it as an unchecked `FeignException`.
+   - The comparison helper (`offentligNokkelUlikFraFiksIOKatalog`) also has a `catch (FeignException.NotFound | CertificateException e)` clause that treats a caught `CertificateException` the same as "no key registered" (i.e. as **different**, triggering validation/upload). In practice this branch is **dead code**: `KatalogHandler.getPublicKey` already catches any `CertificateException` internally and rethrows it wrapped as a `RuntimeException` (see the bullet above), so a bare `CertificateException` can never actually reach this `catch` clause under the current implementation.
 3. Compares the catalog result with the configured `publicKey`:
    - If the catalog key is `null` (nothing registered) → treated as **different**.
    - Otherwise, the Base64-encoded DER bytes of the catalog certificate are checked as a **substring** of the configured PEM (with newlines stripped). This is a raw text/byte comparison — not a `SubjectPublicKeyInfo`-based comparison.
@@ -97,24 +98,26 @@ flowchart TD
     subgraph SYNC ["lastOppOffentligNokkelHvisOppdatert (only when publicKey is set)"]
         A{"KontoKonfigurasjon\n.getPublicKey() != null?"}
         A -->|no| SKIP["return immediately\n(no catalog read/write)"]:::info
-        A -->|yes| C["KatalogHandler.getPublicKey(kontoId)"]
+        A -->|yes| C["KatalogHandler.getPublicKey(kontoId)\n(catalog key itself is never validated)"]
 
         C -->|404: NotFound caught internally, returns null| NULLKEY["catalog key = null"]:::info
-        C -->|invalid certificate| ERR0(["RuntimeException:\ncertificate generation failed"]):::error
+        C -->|invalid certificate, wrapped| ERR0(["RuntimeException:\ncertificate generation failed"]):::error
         C -->|other FeignException, not caught| ERR3(["propagates out of build():\ncatalog read failed"]):::error
+        C -->|bare CertificateException —\ndead code, see J5| CERTEX["treated as different"]:::warn
         C -->|key returned| D
 
         NULLKEY --> DIFF["treated as different"]
+        CERTEX --> DIFF
         D{"Base64(DER) of catalog cert\nis substring of configured PEM?"}
-        D -->|yes| SAME["same key, no action"]:::info
+        D -->|yes| SAME["same key, no action\n(no validation at all — see J2)"]:::info
         D -->|no| DIFF
 
-        DIFF --> V["KeyValidatorHandler\n.validerOffentligNokkelMotPrivateKey(publicKey)"]
-        V -->|no private key decrypts| ERR1(["RuntimeException:\nkey does not match configured private keys"]):::error
-        V -->|a private key decrypts| U["KatalogHandler.uploadPublicKey(kontoId, publicKey)\nvia FiksIoKontoApi.settOffentligNokkel"]
+        DIFF --> V["KeyValidatorHandler\n.validerOffentligNokkelMotPrivateKey(publicKey)\nvalidates the CONFIGURED key against CONFIGURED\nprivate keys — the catalog's (possibly foreign)\nkey is never itself checked (see J1)"]
+        V -->|no configured private key decrypts,\nor configured PEM is unparseable — J4| ERR1(["RuntimeException:\nkey does not match configured private keys"]):::error
+        V -->|a configured private key decrypts| U["KatalogHandler.uploadPublicKey(kontoId, publicKey)\nvia FiksIoKontoApi.settOffentligNokkel\noverwrites catalog key unconditionally,\nincluding foreign keys — Scenario 4"]
 
-        U -->|upload succeeds| OK["key uploaded"]:::success
-        U -->|upload fails\n(network error, API rejection, etc.)| ERR2(["RuntimeException:\nFeil med opplasting av public key\n(cause: original error)"]):::error
+        U -->|upload succeeds| OK["key uploaded\n(prior catalog key, if any, is gone)"]:::success
+        U -->|upload fails —\nnetwork error, API rejection, etc.| ERR2(["RuntimeException:\nFeil med opplasting av public key\n(cause: original error)"]):::error
     end
 
     SKIP --> DONE
@@ -176,15 +179,16 @@ KontoKonfigurasjon.builder()
 
 **Message decryption during rotation:**
 
-Messages already on the queue were encrypted with the old public key. The AMQP consumer (via `AsicHandler`, configured with all `privatNokler`) tries each private key until one succeeds:
+Messages already on the queue were encrypted with the old public key. All configured private keys (`privatNokler`) are passed together to `AsicHandler` (via `AsicHandler.builder().withPrivateNokler(...)`, from the external `asic-klient` library); actual decryption — including trying multiple private keys against an incoming message — is handled inside that library, not in this client's own code:
+
+Conceptually (exact ordering is an internal detail of `asic-klient`, not specified by this client):
 
 ```
 Old message arrives (encrypted with oldPubCert)
-  → try newPrivateKey → fails
-  → try oldPrivateKey → succeeds ✅
+  → decrypts successfully with oldPrivateKey (whichever of the configured keys matches) ✅
 
 New message arrives (encrypted with newPubCert)
-  → try newPrivateKey → succeeds ✅
+  → decrypts successfully with newPrivateKey ✅
 ```
 
 **When is it safe to remove the old private key?** When you are confident the queue no longer contains messages encrypted with the old key. There is no built-in indicator for this — it is an operational decision.
@@ -193,14 +197,19 @@ New message arrives (encrypted with newPubCert)
 
 ### Scenario 4 — Catalog has an unrelated key
 
-**Precondition:** The catalog contains a public key that does not match any of the configured private keys (e.g. the account was set up by someone else, or the wrong key was configured).
+> ⚠️ **Warning:** This scenario does **not** fail. Automatic public key sync validates only the *configured* key against the *configured* private keys — it never validates or checks ownership of whatever key is already sitting in the catalog. If the configured key pair is internally consistent, the foreign catalog key is silently overwritten. See [Known Limitations: J1](#known-limitations) for the underlying gap.
+
+**Precondition:** The catalog already has a public key registered that does **not** belong to this client's configured key pair — e.g. the account was previously set up by someone else, a decommissioned account's `kontoId` is being reused, or the wrong `kontoId` was targeted. The *configured* `publicKey` and configured private key(s), however, are a valid, self-consistent pair.
 
 **Flow:**
-1. Catalog returns a certificate that differs from the configured `publicKey`
-2. `validerOffentligNokkelMotPrivateKey` finds no configured private key can decrypt data encrypted with the configured `publicKey`'s certificate
-3. `build()` throws `RuntimeException("Offentlignøkkel kan ikke valideres opp mot konfigurerte private nøkler")`
+1. `KatalogHandler.getPublicKey` returns the existing (foreign) certificate from the catalog
+2. The Base64(DER)-substring comparison finds it different from the configured `publicKey` → treated as **different**
+3. `KeyValidatorHandler.validerOffentligNokkelMotPrivateKey(publicKey)` validates the **configured** `publicKey` against the **configured** private keys only — the catalog's (foreign) key is never itself validated or checked against anything — and succeeds, because the configured pair is self-consistent
+4. `KatalogHandler.uploadPublicKey` overwrites the catalog's foreign key with the configured `publicKey`, with no ownership check and no confirmation step
 
-**Result:** `build()` fails and no `FiksIOKlient` is returned. Because the AMQP connection was already opened as part of constructing `FiksIOKlientImpl` (step 3 above), this connection is **not** explicitly closed in the failure path — only the dokumentlager and utsending HTTP clients are cleaned up.
+**Result:** `build()` succeeds, and the previously-registered (foreign) key in the catalog is unconditionally replaced. If that key legitimately belonged to another party or a different deployment, their registration is silently clobbered — there is no log line, warning, or error surfaced anywhere in this path. See [Known Limitations](#known-limitations) item **J1** (no ownership check of an existing catalog key).
+
+> **Related failure mode:** If instead the *configured* `publicKey` does not correspond to any *configured* private key (a genuine local misconfiguration, independent of what is in the catalog), `validerOffentligNokkelMotPrivateKey` returns `false` and `build()` throws `RuntimeException("Offentlignøkkel kan ikke valideres opp mot konfigurerte private nøkler")` instead — no upload happens, and the AMQP connection opened earlier in `build()` (step 3 of [How It Works](#how-it-works)) is **not** explicitly closed in this failure path, only the dokumentlager and utsending HTTP clients are. Note that this is the *exact same* exception message produced by an unparseable configured PEM — see [Scenario 7](#scenario-7--invalid-configured-public-key-pem) and [Known Limitations](#known-limitations) item **J4**.
 
 ---
 
@@ -234,6 +243,20 @@ KontoKonfigurasjon.builder()
 3. `build()` proceeds straight to returning the client
 
 **Result:** No key upload or validation is performed at build time. If the catalog's registered key does not match any configured private key, this will only surface later — either when an incoming message cannot be decrypted, or if you explicitly call `fiksIOKlient.validerOffentligNokkelMotPrivateKey()` yourself.
+
+---
+
+### Scenario 7 — Invalid configured public key (PEM)
+
+**Precondition:** `publicKey` is configured, but the string is not a well-formed X.509 PEM certificate (e.g. truncated, corrupted, or not actually a certificate), and the catalog's currently registered key (if any) differs from it.
+
+**Flow:**
+1. `KatalogHandler.getPublicKey` returns the catalog's key (or `null`); the comparison against the malformed configured `publicKey` finds it different — malformed input cannot match, so this always falls through to validation
+2. `KeyValidatorHandler.validerOffentligNokkelMotPrivateKey(String)` tries to parse the configured `publicKey` via `CertificateFactory.generateCertificate(...)`, which throws `CertificateException`
+3. That `CertificateException` is caught **inside** `validerOffentligNokkelMotPrivateKey(String)` and the method simply returns `false` — the parse failure is swallowed and never surfaced as its own error
+4. `build()` sees `false` and throws `RuntimeException("Offentlignøkkel kan ikke valideres opp mot konfigurerte private nøkler")`
+
+**Result:** `build()` fails with the **exact same message** as a genuine key/private-key mismatch (see [Scenario 4](#scenario-4--catalog-has-an-unrelated-key)'s "Related failure mode" note). There is nothing in the exception text or type to indicate the real cause was a malformed PEM rather than a correct-but-non-matching key — you must inspect the configured `publicKey` value yourself to tell the two apart. See [Known Limitations](#known-limitations) item **J4**.
 
 ---
 
@@ -272,3 +295,25 @@ KontoKonfigurasjon.builder()
 - **Requires API-based account configuration to upload:** `uploadPublicKey` calls the authenticated `FiksIoKontoApi`, which `FiksIOKlientFactory` always provides when building via `build()`. If the account does not have API-based configuration enabled at Fiks Forvaltning, the upload call itself fails, and `lastOppOffentligNokkel` rewraps that failure as `RuntimeException("Feil med opplasting av public key", e)`.
 - **No dedicated exception types:** All failures in this flow surface as plain `RuntimeException` (or the underlying `FeignException`/`CertificateException`), not a dedicated exception type for "key not found" vs. "misconfigured" vs. "catalog unavailable".
 - **Concurrent builds during rotation:** If several client instances are built simultaneously with different `publicKey` values during a rollout, they can repeatedly overwrite each other's catalog key until the rollout converges. Roll out a key change to all instances together.
+- **No ownership check of an existing catalog key (J1):** Before overwriting a differing catalog key, the client only checks whether the *configured* `publicKey` matches one of the *configured* private keys — it never checks whether the key currently registered in the catalog belongs to (or was ever validated against) this account's private keys. An unrelated/foreign key already sitting in the catalog is silently overwritten as long as the new configured key validates against the configured private keys. See [Scenario 4](#scenario-4--catalog-has-an-unrelated-key).
+- **No validation when the keys are equal (J2):** If the configured `publicKey` matches the catalog key (per the substring comparison above), `validerOffentligNokkelMotPrivateKey` is never called and no private-key/public-key validation happens at all. A configured `publicKey` that doesn't actually correspond to any configured private key will go undetected for as long as it matches the catalog.
+- **Invalid configured PEM is indistinguishable from a genuine mismatch (J4):** If the configured `publicKey` is not a parseable X.509 PEM, `KeyValidatorHandler.validerOffentligNokkelMotPrivateKey(String)` catches the resulting `CertificateException` internally and simply returns `false`. `build()` then throws the exact same `RuntimeException("Offentlignøkkel kan ikke valideres opp mot konfigurerte private nøkler")` as it would for a correctly-formed key that just doesn't match any configured private key — there is no way to tell "malformed PEM" apart from "wrong key" from the exception message alone. See [Scenario 7 — Invalid configured public key (PEM)](#scenario-7--invalid-configured-public-key-pem).
+- **No logging or flag for enabled/disabled status (J7):** As noted in [Is the feature enabled?](#is-the-feature-enabled), there is no log line, metric, or dedicated flag emitted at build time indicating whether automatic sync ran, was skipped, or which branch (same/different/upload) was taken. The only way to know is to inspect `kontoKonfigurasjon.getPublicKey()` yourself or read the (non-dedicated) `RuntimeException`/`FeignException` thrown on failure.
+
+---
+
+## Differences from the .NET client
+
+The Fiks-IO **.NET** client's automatic public key sync feature is documented separately and behaves differently from this Java client in several important respects. If you have worked with (or read documentation for) the .NET client, do **not** assume the same guarantees hold here. The known behavioral differences are:
+
+| Aspect | This Java client | .NET client (as documented there) |
+|---|---|---|
+| When validation runs | Only when the configured `publicKey` differs from the catalog's key (substring comparison); if they're equal, **nothing** is validated (J2) | Runs its own validation independent of whether the flag/config differs |
+| What gets validated | Only the **configured** `publicKey` against the **configured** private key(s); the pre-existing catalog key is never itself validated or ownership-checked (J1) | Documented to include checks that are not mirrored here — do not assume catalog-side ownership checks exist in this client |
+| Overwriting a foreign/unrelated catalog key | Silently overwritten as soon as the configured key pair validates against itself — see [Scenario 4](#scenario-4--catalog-has-an-unrelated-key) | Not applicable in the same way; behavior differs per .NET documentation |
+| Connection ordering | The AMQP connection is already open (via `FiksIOKlientImpl`/`AmqpHandler`) **before** the key sync/validation step runs; a failed check does not close it | A "validate before connecting" style ordering is assumed by some existing prose in this repo describing a *different* design — that description does **not** apply to this Java client's actual `build()` order (see [How It Works](#how-it-works)) |
+| Malformed configured PEM vs. genuine mismatch | Indistinguishable — both produce the identical `RuntimeException` message (J4) | Not verified here; do not assume equivalent error granularity |
+| Enabled/disabled visibility | No dedicated flag or log line; inferred only from `getPublicKey() != null` (J7) | Not verified here; do not assume equivalent logging/observability |
+| Exception types | Plain `RuntimeException`/`FeignException`/`CertificateException` throughout, no dedicated exception hierarchy | Not verified here |
+
+**Takeaway:** this document describes the Java client's actual, current behavior only. Where earlier sections above contrast this client against "a design that validates independently" or "validates before connecting," that phrasing describes a hypothetical/alternate design for illustration — it is **not** a confirmed description of the .NET client's implementation. Consult the .NET client's own documentation for its actual behavior rather than inferring it from this file.

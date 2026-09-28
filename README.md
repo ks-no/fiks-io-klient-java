@@ -150,7 +150,7 @@ KontoKonfigurasjon.builder()
         .publicKey(publicKey)
         .build(),
 ```
-Den offentlige nøkkelen vil bli validert mot de private nøklene som er konfigurert, slik at det sikres at nøklene matcher. Merk at dette krever at kontoen har slått på API-basert konfigurasjon – uten dette vil opplasting av offentlig nøkkel feile.
+Den offentlige nøkkelen valideres kun mot de private nøklene som er konfigurert dersom den skiller seg fra nøkkelen som allerede er registrert i katalogen; er nøklene like, skjer ingen validering eller opplasting. Merk at dette krever at kontoen har slått på API-basert konfigurasjon – uten dette vil opplasting av offentlig nøkkel feile. Se [docs/AutomaticPublicKeySync.md](docs/AutomaticPublicKeySync.md) for en detaljert gjennomgang av denne funksjonaliteten, inkludert kjente begrensninger.
 
 **privateNokler**: `privateNokler` property forventer en eller flere private key i PKCS#8 format. En privat nøkkel som har PKCS#1 format vil føre til en exception. En PKCS#1 nøkkel kan bli konvertert ved hjelp av denne kommandoen:
 ```powershell
