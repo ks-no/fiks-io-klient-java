@@ -6,7 +6,7 @@
     <parent>
         <groupId>no.ks.fiks</groupId>
         <artifactId>fiks-io-klient-java-parent</artifactId>
-        <version>3.7.1-SNAPSHOT</version>
+        <version>3.8.0</version>
     </parent>
 
     <name>FIKS IO Java-klient Protokoll-konfigurasjon-klient-v1</name>
