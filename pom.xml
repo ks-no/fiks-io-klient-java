@@ -51,7 +51,7 @@
         <fiks-feign-interceptors.version>2.0.0</fiks-feign-interceptors.version>
         <fiks-io-send-klient.version>3.5.1</fiks-io-send-klient.version>
         <fiks-io-asice-handler.version>2.4.2</fiks-io-asice-handler.version>
-        <fiks-io-commons.version>2.2.1</fiks-io-commons.version>
+        <fiks-io-commons.version>2.3.0</fiks-io-commons.version>
         <fiks-maskinporten-client.version>3.6.1</fiks-maskinporten-client.version>
         <guava.version>33.7.2-jre</guava.version>
         <jackson-databind-nullable.version>0.2.12</jackson-databind-nullable.version>
