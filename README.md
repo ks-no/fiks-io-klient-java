@@ -108,6 +108,31 @@ private static IdPortenKonfigurasjon createMaskinportenPortenKonfigurasjon() {
 }
 ```
 
+##### Autentisering med asymmetrisk nøkkel
+Som et alternativ til virksomhetssertifikat kan Maskinporten-autentiseringen settes opp med en asymmetrisk nøkkel
+(privat nøkkel + `keyIdentifier`). `keyIdentifier` settes på `IdPortenKonfigurasjon` og benyttes som JWT `kid`-header,
+mens den private nøkkelen angis via `AsymmetriskNokkelKonfigurasjon` på `FiksIOKonfigurasjon`. Merk at ASiC-E-signering
+fortsatt krever et X.509-sertifikat, så `VirksomhetssertifikatKonfigurasjon` må fortsatt oppgis for å sende/motta meldinger.
+```java
+final FiksIOKonfigurasjon fiksIOKonfigurasjon = FiksIOKonfigurasjon.builder()
+    .fiksIntegrasjonKonfigurasjon(FiksIntegrasjonKonfigurasjon.builder()
+        .integrasjonId(integrationId)
+        .integrasjonPassord(integrationPassword)
+        .idPortenKonfigurasjon(IdPortenKonfigurasjon.test()
+            .klientId("din klientid")
+            .keyIdentifier("din-key-id")
+            .build())
+        .build())
+    .asymmetriskNokkelKonfigurasjon(AsymmetriskNokkelKonfigurasjon.builder()
+        .privatNokkel(maskinportenPrivateKey)
+        .build())
+    .virksomhetssertifikatKonfigurasjon(virksomhetssertifikatKonfigurasjon) // kreves fortsatt for ASiC-E-signering
+    .kontoKonfigurasjon(kontoKonfigurasjon)
+    .build();
+```
+`defaultProdConfiguration` og `defaultTestConfiguration` har tilsvarende overloads som tar `keyIdentifier` og
+`AsymmetriskNokkelKonfigurasjon` som ekstra argumenter.
+
 
 For å gjøre det enklere å sette opp standard konfigurasjon for *test* og *prod* miljøene, finnes det i tillegg to funksjoner `defaultProdConfiguration` og `defaultTestConfiguration` for å lage default konfigurasjon. Påkrevde felter angis som argument, slik:
 ```java

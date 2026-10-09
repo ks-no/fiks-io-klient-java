@@ -10,6 +10,8 @@ import java.util.Arrays;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class FiksIOKonfigurasjonTest {
 
@@ -100,6 +102,42 @@ class FiksIOKonfigurasjonTest {
         assertEquals(443, fiksIOKonfigurasjon.getFiksApiKonfigurasjon().getPort());
         assertEquals("io.fiks.test.ks.no", fiksIOKonfigurasjon.getAmqpKonfigurasjon().getHost());
         assertEquals(5671, fiksIOKonfigurasjon.getAmqpKonfigurasjon().getPort());
+    }
+
+    @Test
+    void keyIdentifierLekkerIkkeMellomKall() {
+        final KontoKonfigurasjon kontoKonfigurasjon = KontoKonfigurasjon.builder()
+            .kontoId(new KontoId(UUID.randomUUID()))
+            .privatNokkel(TestUtil.generatePrivateKey())
+            .build();
+        final VirksomhetssertifikatKonfigurasjon virksomhetssertifikatKonfigurasjon = VirksomhetssertifikatKonfigurasjon.builder()
+            .keyAlias("et alias")
+            .keyPassword("PASSWORD")
+            .keyStore(TestUtil.readAliceVirksomhetssertifikat())
+            .keyStorePassword("PASSWORD")
+            .build();
+
+        final FiksIOKonfigurasjon asymmetrisk = FiksIOKonfigurasjon.defaultTestConfiguration(
+            UUID.randomUUID().toString(),
+            UUID.randomUUID(),
+            UUID.randomUUID().toString(),
+            kontoKonfigurasjon,
+            virksomhetssertifikatKonfigurasjon,
+            "min-key-id",
+            AsymmetriskNokkelKonfigurasjon.builder()
+                .privatNokkel(TestUtil.generatePrivateKey())
+                .build());
+        assertEquals("min-key-id", asymmetrisk.getFiksIntegrasjonKonfigurasjon().getIdPortenKonfigurasjon().getKeyIdentifier());
+        assertNotNull(asymmetrisk.getAsymmetriskNokkelKonfigurasjon());
+
+        final FiksIOKonfigurasjon ordinaer = FiksIOKonfigurasjon.defaultTestConfiguration(
+            UUID.randomUUID().toString(),
+            UUID.randomUUID(),
+            UUID.randomUUID().toString(),
+            kontoKonfigurasjon,
+            virksomhetssertifikatKonfigurasjon);
+        assertNull(ordinaer.getFiksIntegrasjonKonfigurasjon().getIdPortenKonfigurasjon().getKeyIdentifier());
+        assertNull(ordinaer.getAsymmetriskNokkelKonfigurasjon());
     }
 
 
