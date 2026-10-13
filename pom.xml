@@ -6,11 +6,11 @@
     <parent>
         <groupId>no.ks.fiks.pom</groupId>
         <artifactId>fiks-ekstern-super-pom</artifactId>
-        <version>2.0.0</version>
+        <version>2.1.0</version>
     </parent>
     <groupId>no.ks.fiks</groupId>
     <artifactId>fiks-io-klient-java-parent</artifactId>
-    <version>3.6.4-SNAPSHOT</version>
+    <version>3.8.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>FIKS IO Java-klient Parent</name>
@@ -26,6 +26,7 @@
     </scm>
 
     <modules>
+        <module>fiks-io-protokoll-konfigurasjon-klient-v1</module>
         <module>fiks-io-klient-java</module>
         <module>fiks-io-eksempel-klient</module>
     </modules>
@@ -45,31 +46,33 @@
         <commons-io.version>2.22.0</commons-io.version>
         <download-maven-plugin.version>1.13.0</download-maven-plugin.version>
         <feign-form-version>3.8.0</feign-form-version>
-        <feign-version>13.14</feign-version>
-        <fiks-dokumentlager-klient.version>4.2.0</fiks-dokumentlager-klient.version>
-        <fiks-feign-interceptors.version>1.3.0</fiks-feign-interceptors.version>
-        <fiks-io-send-klient.version>3.5.0</fiks-io-send-klient.version>
-        <fiks-io-asice-handler.version>2.4.0</fiks-io-asice-handler.version>
-        <fiks-io-commons.version>2.2.0</fiks-io-commons.version>
-        <fiks-maskinporten-client.version>3.6.1</fiks-maskinporten-client.version>
-        <guava.version>33.7.1-jre</guava.version>
-        <jackson-databind-nullable.version>0.2.11</jackson-databind-nullable.version>
-        <jackson.version>2.22.2</jackson.version>
+        <feign-version>13.17</feign-version>
+        <fiks-dokumentlager-klient.version>4.3.0</fiks-dokumentlager-klient.version>
+        <fiks-feign-interceptors.version>2.0.0</fiks-feign-interceptors.version>
+        <fiks-io-send-klient.version>3.5.1</fiks-io-send-klient.version>
+        <fiks-io-asice-handler.version>2.4.2</fiks-io-asice-handler.version>
+        <fiks-io-commons.version>2.3.0</fiks-io-commons.version>
+        <fiks-maskinporten-client.version>3.6.2</fiks-maskinporten-client.version>
+        <guava.version>33.7.2-jre</guava.version>
+        <jackson-databind-nullable.version>0.2.12</jackson-databind-nullable.version>
+        <jackson.version>2.22.3</jackson.version>
         <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
         <jakarta.annotation-api.version>3.0.0</jakarta.annotation-api.version>
         <junit-jupiter.version>6.1.3</junit-jupiter.version>
-        <kryptering.version>2.4.0</kryptering.version>
-        <ks-commons-asic.version>1.1.0</ks-commons-asic.version>
-        <logback.version>1.6.3</logback.version>
-        <lombok.version>1.18.46</lombok.version>
+        <kryptering.version>2.5.0</kryptering.version>
+        <ks-commons-asic.version>1.2.0</ks-commons-asic.version>
+        <logback.version>1.6.5</logback.version>
+        <lombok.version>1.18.48</lombok.version>
         <maven-surefire-plugin.version>3.0.0</maven-surefire-plugin.version>
-        <mockito.version>5.23.0</mockito.version>
-        <openapi-generator-maven-plugin.version>7.24.0</openapi-generator-maven-plugin.version>
-        <rabbitmq-amqp-client.version>5.34.0</rabbitmq-amqp-client.version>
+        <mockito.version>5.24.0</mockito.version>
+        <openapi-generator-maven-plugin.version>7.26.0</openapi-generator-maven-plugin.version>
+        <rabbitmq-amqp-client.version>5.37.0</rabbitmq-amqp-client.version>
         <scribejava.version>8.3.3</scribejava.version>
-        <slf4j.version>2.0.18</slf4j.version>
+        <slf4j.version>2.0.20</slf4j.version>
         <spec.postfix>json</spec.postfix>
         <swagger-core-version>1.6.16</swagger-core-version>
+        <swagger.version>1.6.16</swagger.version>
+        <swagger-openapi.version>2.2.55</swagger-openapi.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -87,10 +90,20 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>no.ks.fiks</groupId>
+                <artifactId>kryptering</artifactId>
+                <version>${kryptering.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>no.ks.fiks</groupId>
                 <artifactId>fiks-io-klient-java</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>no.ks.fiks</groupId>
+                <artifactId>fiks-io-protokoll-konfigurasjon-klient-v1</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -131,11 +144,6 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>no.ks.fiks</groupId>
-                <artifactId>kryptering</artifactId>
-                <version>${kryptering.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>${lombok.version}</version>
@@ -171,11 +179,6 @@
                 <artifactId>commons-io</artifactId>
                 <version>${commons-io.version}</version>
             </dependency>
-            <dependency>
-                <groupId>io.swagger</groupId>
-                <artifactId>swagger-annotations</artifactId>
-                <version>${swagger-core-version}</version>
-            </dependency>
             <!-- Feign deps -->
             <dependency>
                 <groupId>io.github.openfeign</groupId>
@@ -201,8 +204,6 @@
                 <groupId>io.github.openfeign</groupId>
                 <artifactId>feign-okhttp</artifactId>
                 <version>${feign-version}</version>
-                <scope>provided</scope>
-                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>io.github.openfeign</groupId>
@@ -210,6 +211,21 @@
                 <version>${feign-version}</version>
             </dependency>
             <!-- /Feign deps -->
+            <dependency>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-annotations</artifactId>
+                <version>${swagger.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.swagger.core.v3</groupId>
+                <artifactId>swagger-annotations</artifactId>
+                <version>${swagger-openapi.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.swagger.core.v3</groupId>
+                <artifactId>swagger-jaxrs2-jakarta</artifactId>
+                <version>${swagger-openapi.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.openapitools</groupId>
                 <artifactId>jackson-databind-nullable</artifactId>

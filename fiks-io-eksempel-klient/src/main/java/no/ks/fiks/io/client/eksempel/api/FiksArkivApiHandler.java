@@ -2,11 +2,11 @@ package no.ks.fiks.io.client.eksempel.api;
 
 import feign.FeignException;
 import no.ks.fiks.io.client.model.KontoId;
-import no.ks.fiks.protokoll.konfigurasjon.v1.api.ProtokollKonfigurasjonApi;
-import no.ks.fiks.protokoll.konfigurasjon.v1.model.CreateProtokollKontoRequest;
-import no.ks.fiks.protokoll.konfigurasjon.v1.model.PartRequest;
-import no.ks.fiks.protokoll.konfigurasjon.v1.model.ProtokollKontoResponse;
-import no.ks.fiks.protokoll.konfigurasjon.v1.model.ProtokollSystemSummaryWithOrgNameResponse;
+import no.ks.fiks.protokoll.konfigurasjon.api.v1.api.ProtokollKonfigurasjonApi;
+import no.ks.fiks.protokoll.konfigurasjon.api.v1.model.CreateProtokollKontoRequest;
+import no.ks.fiks.protokoll.konfigurasjon.api.v1.model.PartRequest;
+import no.ks.fiks.protokoll.konfigurasjon.api.v1.model.ProtokollKontoResponse;
+import no.ks.fiks.protokoll.konfigurasjon.api.v1.model.ProtokollSystemSummaryWithOrgNameResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,8 +22,8 @@ public class FiksArkivApiHandler {
     private static final Logger logger = LoggerFactory.getLogger(FiksArkivApiHandler.class);
     private final ProtokollKonfigurasjonApi protokollKonfigurasjonApi;
 
-    public FiksArkivApiHandler(ProtokollKonfigurasjonKlient protokollKonfigurasjonKlient) {
-        this.protokollKonfigurasjonApi = protokollKonfigurasjonKlient.protokollKonfigurasjonApi();
+    public FiksArkivApiHandler(ProtokollKonfigurasjonApi protokollKonfigurasjonApiKlient) {
+        this.protokollKonfigurasjonApi = protokollKonfigurasjonApiKlient;
     }
 
     public ProtokollKontoResponse opprettFiksArkivKonto(UUID fiksOrgId, UUID systemId, String offentligNokkel) {
