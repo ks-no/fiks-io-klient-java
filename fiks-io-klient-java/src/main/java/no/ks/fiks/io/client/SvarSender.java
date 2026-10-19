@@ -89,7 +89,6 @@ public class SvarSender {
     /**
      *
      * <p> Use {@link #rejectWithRequeue()} instead. </p>
-     * @return
      */
     @Deprecated(since = "3.9.0")
     public void nackWithRequeue() {
