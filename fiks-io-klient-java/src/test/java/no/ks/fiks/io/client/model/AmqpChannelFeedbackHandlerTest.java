@@ -29,6 +29,12 @@ class AmqpChannelFeedbackHandlerTest {
         void getHandNackWithRequeue() {
             assertThrows(UnsupportedOperationException.class, () -> AmqpChannelFeedbackHandler.builder().build().getHandleNackWithRequeue());
         }
+
+        @DisplayName("for NACK W/REQUEUE ")
+        @Test
+        void getHandRejectWithRequeue() {
+            assertThrows(UnsupportedOperationException.class, () -> AmqpChannelFeedbackHandler.builder().build().getHandleRejectWithRequeue());
+        }
     }
 
     @DisplayName("Handler defined")
@@ -50,11 +56,18 @@ class AmqpChannelFeedbackHandlerTest {
         }
 
 
-        @DisplayName("for ACK")
+        @DisplayName("for NACK with Requeue")
         @Test
         public void nackWithRequeue() {
             assertNotNull(AmqpChannelFeedbackHandler.builder().handNackWithRequeue(() -> {
             }).build().getHandleNackWithRequeue());
+        }
+
+        @DisplayName("for Reject with Requeue")
+        @Test
+        public void rejectWithRequeue() {
+            assertNotNull(AmqpChannelFeedbackHandler.builder().handleRejectWithRequeue(() -> {
+            }).build().getHandleRejectWithRequeue());
         }
     }
 

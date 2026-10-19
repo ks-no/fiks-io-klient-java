@@ -142,9 +142,17 @@ class AmqpHandler implements Closeable {
             })
             .handNackWithRequeue(() -> {
                 try {
-                    channel.basicNack(deliveryTag, false, true);
+                    channel.basicReject(deliveryTag, true);
                 } catch (IOException e) {
                     log.error("nack with requeue failed", e);
+                    throw new RuntimeException(e);
+                }
+            })
+            .handleRejectWithRequeue(() -> {
+                try {
+                    channel.basicReject(deliveryTag, true);
+                } catch (IOException e) {
+                    log.error("reject with requeue failed", e);
                     throw new RuntimeException(e);
                 }
             })
