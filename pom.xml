@@ -10,7 +10,7 @@
     </parent>
     <groupId>no.ks.fiks</groupId>
     <artifactId>fiks-io-klient-java-parent</artifactId>
-    <version>5.9.0</version>
+    <version>5.9.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>FIKS IO Java-klient Parent</name>
