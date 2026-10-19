@@ -42,14 +42,14 @@ class SvarSenderTest {
     private AtomicBoolean ackCompleted;
     private AtomicBoolean nacked;
     private AtomicBoolean nackedWithRequeue;
-    private AtomicBoolean rejectWithRequeue;
+    private AtomicBoolean rejectedWithRequeue;
 
     @BeforeEach
     void setUp() {
         ackCompleted = new AtomicBoolean(false);
         nacked = new AtomicBoolean(false);
         nackedWithRequeue = new AtomicBoolean(false);
-        rejectWithRequeue = new AtomicBoolean(false);
+        rejectedWithRequeue = new AtomicBoolean(false);
     }
 
     @DisplayName("Sender svar")
@@ -208,7 +208,7 @@ class SvarSenderTest {
             final SvarSender svarSender = createSvarSender(buf, mottattMelding);
             svarSender.nackWithRequeue();
             assertFalse(nackedWithRequeue.get());
-            assertTrue(rejectWithRequeue.get());
+            assertTrue(rejectedWithRequeue.get());
             verifyNoInteractions(fiksIOSender);
         }
     }
@@ -222,7 +222,7 @@ class SvarSenderTest {
             final SvarSender svarSender = createSvarSender(buf, mottattMelding);
             svarSender.rejectWithRequeue();
             assertFalse(nackedWithRequeue.get());
-            assertTrue(rejectWithRequeue.get());
+            assertTrue(rejectedWithRequeue.get());
             verifyNoInteractions(fiksIOSender);
         }
     }
@@ -236,7 +236,7 @@ class SvarSenderTest {
                 })
                 .handleNack(() -> nacked.set(true))
                 .handNackWithRequeue(() -> nackedWithRequeue.set(true))
-                .handleRejectWithRequeue(() -> rejectWithRequeue.set(true))
+                .handleRejectWithRequeue(() -> rejectedWithRequeue.set(true))
                 .build())
             .encrypt(l -> new ByteArrayInputStream(buf))
             .meldingSomSkalKvitteres(mottattMelding)
