@@ -82,8 +82,18 @@ public class SvarSender {
         amqpChannelFeedbackHandler.getHandleNack().run();
     }
 
+    public void rejectWithRequeue() {
+        amqpChannelFeedbackHandler.getHandleRejectWithRequeue().run();
+    }
+
+    /**
+     *
+     * <p> Use {@link #rejectWithRequeue()} instead. </p>
+     * @return
+     */
+    @Deprecated(since = "3.9.0")
     public void nackWithRequeue() {
-        amqpChannelFeedbackHandler.getHandleNackWithRequeue().run();
+        amqpChannelFeedbackHandler.getHandleRejectWithRequeue().run();
     }
 
     private ImmutableMap<String, String> genererEgendefinerteHeadere() {

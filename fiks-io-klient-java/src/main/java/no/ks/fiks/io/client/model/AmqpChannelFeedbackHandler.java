@@ -9,7 +9,10 @@ public class AmqpChannelFeedbackHandler {
 
     private final Runnable handleNack;
 
+    @Deprecated(since = "3.9.0")
     private final Runnable handNackWithRequeue;
+
+    private final Runnable handleRejectWithRequeue;
 
     public Runnable getHandleAck() {
         if (handleAck == null) {
@@ -25,6 +28,18 @@ public class AmqpChannelFeedbackHandler {
         return handleNack;
     }
 
+    public Runnable getHandleRejectWithRequeue() {
+        if (handleRejectWithRequeue == null) {
+            throw new UnsupportedOperationException("\"rejectWithRequeue\" has not been implemented");
+        }
+        return handleRejectWithRequeue;
+    }
+
+    /**
+     *
+     * <p> Use {@link #getHandleRejectWithRequeue()} instead. </p>
+     */
+    @Deprecated(since = "3.9.0")
     public Runnable getHandleNackWithRequeue() {
         if (handNackWithRequeue == null) {
             throw new UnsupportedOperationException("\"nackWithRequeue\" has not been implemented");

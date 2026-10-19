@@ -42,12 +42,14 @@ class SvarSenderTest {
     private AtomicBoolean ackCompleted;
     private AtomicBoolean nacked;
     private AtomicBoolean nackedWithRequeue;
+    private AtomicBoolean rejectWithRequeue;
 
     @BeforeEach
     void setUp() {
         ackCompleted = new AtomicBoolean(false);
         nacked = new AtomicBoolean(false);
         nackedWithRequeue = new AtomicBoolean(false);
+        rejectWithRequeue = new AtomicBoolean(false);
     }
 
     @DisplayName("Sender svar")
@@ -196,6 +198,7 @@ class SvarSenderTest {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @DisplayName("Nack with requeue")
     @Test
     void nackWithRequeue() throws IOException {
@@ -204,12 +207,25 @@ class SvarSenderTest {
             final MottattMelding mottattMelding = createMottattMelding(buf, inputStream, false);
             final SvarSender svarSender = createSvarSender(buf, mottattMelding);
             svarSender.nackWithRequeue();
-            assertTrue(nackedWithRequeue.get());
+            assertFalse(nackedWithRequeue.get());
+            assertTrue(rejectWithRequeue.get());
             verifyNoInteractions(fiksIOSender);
         }
     }
 
-
+    @DisplayName("Reject with requeue")
+    @Test
+    void rejectWithRequeue() throws IOException {
+        final byte[] buf = {0, 1, 0, 1};
+        try (final InputStream inputStream = new ByteArrayInputStream(buf)) {
+            final MottattMelding mottattMelding = createMottattMelding(buf, inputStream, false);
+            final SvarSender svarSender = createSvarSender(buf, mottattMelding);
+            svarSender.rejectWithRequeue();
+            assertFalse(nackedWithRequeue.get());
+            assertTrue(rejectWithRequeue.get());
+            verifyNoInteractions(fiksIOSender);
+        }
+    }
 
     private SvarSender createSvarSender(final byte[] buf, final MottattMelding mottattMelding) {
         return SvarSender.builder()
@@ -220,6 +236,7 @@ class SvarSenderTest {
                 })
                 .handleNack(() -> nacked.set(true))
                 .handNackWithRequeue(() -> nackedWithRequeue.set(true))
+                .handleRejectWithRequeue(() -> rejectWithRequeue.set(true))
                 .build())
             .encrypt(l -> new ByteArrayInputStream(buf))
             .meldingSomSkalKvitteres(mottattMelding)
