@@ -1,0 +1,27 @@
+name: Autobuild library for all branches, does not release
+on:
+  push:
+    branches:
+      - '**'
+      - '!dependabot/**'
+      - '!combined-prs-branch'
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+jobs:
+  build:
+    # Kjorer hvis:
+    # 1. workflow_dispatch (manuell kjoring)
+    # 2. push til en hvilken som helst branch (unntatt dependabot og combined-prs-branch)
+    # 3. pull_request fra en dependabot-branch (siden push ikke trigges der)
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'push' ||
+      (github.event_name == 'pull_request' && startsWith(github.head_ref, 'dependabot/'))
+    uses: ks-no/github-actions-public/.github/workflows/java-library-maven-central-build.yml@main
+    with:
+      java_version: 'java17'
+      is_release: false
+      component_test_project: 'fiks-io-klient-java-komponent-test'
+    secrets: inherit
