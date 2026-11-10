@@ -66,7 +66,7 @@
         <maven-surefire-plugin.version>3.0.0</maven-surefire-plugin.version>
         <mockito.version>5.24.0</mockito.version>
         <openapi-generator-maven-plugin.version>7.27.0</openapi-generator-maven-plugin.version>
-        <rabbitmq-amqp-client.version>5.37.0</rabbitmq-amqp-client.version>
+        <rabbitmq-amqp-client.version>5.37.1</rabbitmq-amqp-client.version>
         <scribejava.version>8.3.3</scribejava.version>
         <slf4j.version>2.0.20</slf4j.version>
         <spec.postfix>json</spec.postfix>
